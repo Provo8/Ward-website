@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Provo YSA 8th Ward - Community Hub & Digital Ward Portal</title>
+    <meta name="description" content="Official website and community portal for the Provo YSA 8th Ward. Meeting schedules, digital sacrament program, Slack community, calendar, and leadership contacts.">
+  <meta name="keywords" content="Provo YSA 8th Ward, YSA, stake, church, community, digital sacrament, ward portal">
+  <meta property="og:title" content="Provo YSA 8th Ward - Community Hub & Digital Ward Portal">
+  <meta property="og:description" content="Official website and community portal for the Provo YSA 8th Ward. Meeting schedules, digital sacrament program, Slack community, calendar, and leadership contacts.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://provo8ward.vercel.app"> <!-- real URL -->
+  <meta property="og:image" content="icons/favicon.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Provo YSA 8th Ward">
+  <meta name="twitter:description" content="Official website and community portal for the Provo YSA 8th Ward. Meeting schedules, digital sacrament program, Slack community, calendar, and leadership contacts.">
+  <meta name="twitter:image" content="icons/favicon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="YSA Ward">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon.png">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Tailwind CSS CDN with Plugins -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Google Fonts: Hanken Grotesk, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-container": "#6f5900",
+            "surface": "#fcf8fb",
+            "on-tertiary": "#ffffff",
+            "on-primary-container": "#7699c5",
+            "on-surface": "#1b1b1d",
+            "surface-tint": "#3d608a",
+            "inverse-on-surface": "#f3f0f2",
+            "on-primary": "#ffffff",
+            "secondary-fixed": "#ffe07f",
+            "surface-bright": "#fcf8fb",
+            "surface-container-low": "#f6f3f5",
+            "secondary-container": "#fed000",
+            "error-container": "#ffdad6",
+            "secondary-fixed-dim": "#edc200",
+            "primary-fixed-dim": "#a6c9f8",
+            "error": "#ba1a1a",
+            "primary-container": "#003057",
+            "on-tertiary-container": "#95969b",
+            "surface-container-high": "#eae7ea",
+            "outline": "#73777f",
+            "inverse-surface": "#303032",
+            "tertiary-container": "#2d2f33",
+            "tertiary-fixed-dim": "#c6c6cb",
+            "success-green": "#34C759",
+            "on-error": "#ffffff",
+            "on-background": "#1b1b1d",
+            "outline-variant": "#c3c6cf",
+            "surface-container-highest": "#e4e2e4",
+            "on-secondary": "#ffffff",
+            "tertiary": "#181a1e",
+            "on-tertiary-fixed-variant": "#45474b",
+            "on-surface-variant": "#43474e",
+            "primary": "#001b35",
+            "surface-dim": "#dcd9dc",
+            "background": "#fcf8fb",
+            "on-primary-fixed": "#001c37",
+            "warning-amber": "#FF9500",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#f0edef",
+            "on-primary-fixed-variant": "#234871",
+            "tertiary-fixed": "#e2e2e7",
+            "secondary": "#725c00",
+            "surface-variant": "#e4e2e4",
+            "on-secondary-fixed-variant": "#564500",
+            "on-tertiary-fixed": "#1a1c1f",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed": "#231b00",
+            "inverse-primary": "#a6c9f8",
+            "surface-blue-tint": "#EBF2F8",
+            "primary-fixed": "#d2e4ff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "gutter": "16px",
+            "container-padding": "20px",
+            "base": "4px",
+            "stack-sm": "8px",
+            "stack-md": "16px",
+            "stack-lg": "32px"
+          },
+          fontFamily: {
+            "sans": ["Inter", "sans-serif"],
+            "headline": ["Hanken Grotesk", "sans-serif"],
+            "display": ["Hanken Grotesk", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-surface dark:bg-[#121417] text-on-surface dark:text-[#E2E2E7] font-sans antialiased min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- Desktop & Tablet Header / TopAppBar -->
+  <header class="bg-surface/90 dark:bg-[#181a1e]/90 backdrop-blur-md border-b border-surface-variant/40 dark:border-white/10 text-primary dark:text-primary-fixed-dim fixed top-0 w-full z-50 transition-all duration-200">
+    <div class="max-w-7xl mx-auto px-container-padding h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo / Title -->
+      <a href="#home" class="flex items-center gap-2.5 group cursor-pointer" onclick="navigateTab('home')">
+
+        <div class="flex flex-col">
+          <span class="font-headline font-bold text-lg md:text-xl text-primary dark:text-primary-fixed leading-tight">Provo YSA 8th Ward</span>
+          <span class="text-[11px] font-mono font-medium text-on-surface-variant dark:text-outline-variant hidden sm:inline-block tracking-wider uppercase">YSA 1st Stake</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav class="hidden md:flex items-center gap-1 bg-surface-container/60 dark:bg-surface-container-high/20 p-1.5 rounded-full border border-outline-variant/30 dark:border-white/10 shadow-inner">
+        <button onclick="navigateTab('home')" id="nav-btn-home" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 bg-secondary-container text-on-secondary-container shadow-sm">
+          <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">home</span>
+          <span>Home</span>
+        </button>
+        <button onclick="navigateTab('ward')" id="nav-btn-ward" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">groups</span>
+          <span>Ward</span>
+        </button>
+        <button onclick="navigateTab('reimbursements')" id="nav-btn-reimbursements" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+          <span>Reimbursements</span>
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Quick Info) -->
+      <div class="flex items-center gap-2">
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Live Meeting Banner (Appears on Sundays or when active) -->
+  <div id="status-banner" class="mt-16 bg-primary-container text-white py-2.5 px-4 text-xs sm:text-sm text-center font-medium border-b border-primary flex flex-wrap items-center justify-center gap-x-4 gap-y-1 shadow-sm">
+    <div class="flex items-center gap-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-success-green animate-pulse"></span>
+      <span><strong>Sacrament:</strong> Sunday 11:30 AM @ BYU LSB 2102</span>
+      <a href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank" class="underline hover:text-secondary-fixed ml-1 inline-flex items-center gap-0.5 text-xs font-mono">Map <span class="material-symbols-outlined text-[14px]">open_in_new</span></a>
+    </div>
+    <span class="opacity-40 hidden sm:inline">•</span>
+    <div class="flex items-center gap-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-secondary-container"></span>
+      <span><strong>Ward Prayer:</strong> Sunday 8:00 PM @ Grassy Knoll (GK)</span>
+    </div>
+  </div>
+
+  <!-- Main Multi-View Canvas -->
+  <main class="flex-grow max-w-7xl mx-auto w-full px-container-padding pt-6 pb-28 md:pb-16 flex flex-col gap-stack-lg">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: HOME PAGE VIEW -->
+    <!-- ======================================================== -->
+    <section id="view-home" class="tab-view active-view flex flex-col gap-stack-lg animate-fade-in">
+      
+      <!-- Welcome Hero Section -->
+      <div class="flex flex-col gap-2 pt-2">
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1 bg-surface-blue-tint dark:bg-primary-container/40 text-primary dark:text-primary-fixed font-mono text-xs font-semibold rounded-full border border-outline-variant/30">
+            Welcome to the 8th Ward
+          </span>
+          <span class="text-xs text-on-surface-variant font-mono">Updated weekly</span>
+        </div>
+        <h1 class="font-headline font-extrabold text-3xl sm:text-4xl md:text-5xl text-primary dark:text-white tracking-tight">
+          Provo YSA 8th Ward
+        </h1>
+        <p class="text-base sm:text-lg text-on-surface-variant dark:text-outline-variant max-w-2xl">
+          Welcome home. Join us this Sunday for worship, community, and gospel study.
+        </p>
+      </div>
+
+      <!-- Digital Sacrament Program CTA Banner -->
+      <div class="w-full">
+        <a href="https://app.wardbullet.com/channel/1003852" target="_blank" class="group w-full min-h-[64px] bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-lg sm:text-xl rounded-2xl px-6 py-4 flex items-center justify-between interactive-shadow active:scale-[0.99] transition-all duration-200 border border-secondary-fixed/50">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-on-secondary-container/10 flex items-center justify-center">
+              <span class="material-symbols-outlined text-2xl text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+            </div>
+            <div class="flex flex-col text-left">
+              <span class="leading-tight">Digital Sacrament Program</span>
+              <span class="text-xs font-mono font-medium opacity-80">WardBullet • Tap to open today's order of service</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </a>
+        
+      </div>
+
+      <!-- Bento Grid Layout (Sunday Schedule & Community Hub) -->
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+        
+        <!-- Sunday Meetings Bento Card (Span 8 on desktop) -->
+        <div class="col-span-1 md:col-span-8 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden group border border-surface-blue-tint dark:border-white/5">
+          <div class="absolute top-0 left-0 w-full h-2 bg-primary dark:bg-primary-container"></div>
+          
+          <div class="flex flex-col gap-4 relative z-10">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-lg bg-surface-blue-tint dark:bg-primary-container text-primary dark:text-primary-fixed-dim flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[20px]">schedule</span>
+                </div>
+                <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">Sunday Schedule</h2>
+              </div>
+              <span class="px-3 py-1 bg-surface-container dark:bg-tertiary-container text-on-surface-variant dark:text-outline-variant font-mono text-xs font-medium rounded-full">
+                Every Sunday
+              </span>
+            </div>
+
+            <!-- Schedule Items -->
+            <div class="flex flex-col divide-y divide-surface-variant/50 dark:divide-white/10 mt-1">
+              
+              <!-- Sacrament Meeting -->
+              <div class="py-3 flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-primary-container dark:bg-primary-fixed"></span>
+                    <span class="font-sans font-medium text-base sm:text-lg text-on-surface dark:text-white">Sacrament Meeting</span>
+                  </div>
+                  <span class="font-mono text-sm sm:text-base font-semibold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-primary-container/40 px-3 py-1 rounded-lg">11:30 AM</span>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between pl-5">
+                  <div class="flex items-center gap-1.5 text-on-surface-variant dark:text-outline-variant text-xs sm:text-sm">
+                    <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-[18px]">location_on</span>
+                    <span><strong>BYU Life Science Building (LSB)</strong> - Room 2102</span>
+                  </div>
+                  <a href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank" class="h-8 bg-surface-container-high dark:bg-tertiary-container hover:bg-surface-dim dark:hover:bg-tertiary text-on-surface dark:text-white font-mono text-[11px] uppercase tracking-wider font-semibold rounded-lg px-3 flex items-center gap-1.5 active:scale-95 transition-all border border-outline-variant/30">
+                    <span class="material-symbols-outlined text-[14px]">map</span>
+                    <span>Map</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Ward Prayer -->
+              <div class="py-3 flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+                    <span class="font-sans font-medium text-base sm:text-lg text-on-surface dark:text-white">Ward Prayer</span>
+                  </div>
+                  <span class="font-mono text-sm sm:text-base font-bold text-on-secondary-container bg-secondary-container px-3 py-1 rounded-lg shadow-sm">8:00 PM</span>
+                </div>
+                <div class="pl-5 flex items-center gap-1.5 text-on-surface-variant dark:text-outline-variant text-xs sm:text-sm">
+                  <span class="material-symbols-outlined text-secondary-container text-[18px]">park</span>
+                  <span><strong>&ldquo;Grassy Knoll&rdquo; (GK)</strong> between Victoria Place (VP) and Aretta Gardens (AG)</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Community Hub Quick 4-Grid (Span 4 on desktop) -->
+        <div class="col-span-1 md:col-span-4 grid grid-cols-2 gap-3 h-full">
+          <!-- Slack Hub -->
+          <a href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 group border border-surface-blue-tint dark:border-white/5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+              <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">forum</span>
+            </div>
+            <span class="font-headline font-bold text-sm text-primary dark:text-white">Ward Slack</span>
+            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Chat & FHE</span>
+          </a>
+
+          <!-- Calendar Hub (Directly adds Google Calendar) -->
+          <a href="https://calendar.google.com/calendar/u/0/r?cid=provoysaeighthward@gmail.com" target="_blank" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 group border border-surface-blue-tint dark:border-white/5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+              <span class="material-symbols-outlined text-2xl">calendar_month</span>
+            </div>
+            <span class="font-headline font-bold text-sm text-primary dark:text-white">Calendar</span>
+            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Add to Calendar</span>
+          </a>
+
+          <!-- Directory Hub -->
+          <button onclick="navigateTab('ward')" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 group border border-surface-blue-tint dark:border-white/5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+              <span class="material-symbols-outlined text-2xl">groups</span>
+            </div>
+            <span class="font-headline font-bold text-sm text-primary dark:text-white">Leadership</span>
+            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Contacts</span>
+          </button>
+
+          <!-- Photos Hub (Directly opens Google Photos album without popup) -->
+          <a href="https://photos.app.goo.gl/XJgJiWJox1ug2xyy5" target="_blank" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 active:scale-95 transition-all cursor-pointer hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 group border border-surface-blue-tint dark:border-white/5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-all shadow-sm">
+              <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">photo_library</span>
+            </div>
+            <span class="font-headline font-bold text-sm text-on-surface dark:text-white">Photo Drop</span>
+            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Click to view & add photos</span>
+          </a>
+        </div>
+
+        <!-- Sunday Attendance (Minimal Quick-Tap Checklist - Col 12) -->
+        <section id="sunday-checkin-card" class="col-span-1 md:col-span-12 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-3">
+          
+          <!-- Header row (Compact) -->
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-[20px]">how_to_reg</span>
+              <span class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white">Sunday Attendance</span>
+              <span id="current-sunday-text" class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant bg-surface-container dark:bg-tertiary-container px-2.5 py-0.5 rounded-md">This Sunday</span>
+            </div>
+
+            <!-- User Name Pill -->
+            <div class="flex items-center gap-2">
+              <button onclick="openNamePromptModal()" class="text-xs text-on-surface-variant hover:text-primary dark:text-outline-variant dark:hover:text-white flex items-center gap-1 bg-surface-container/60 dark:bg-tertiary-container/40 hover:bg-surface-container px-2.5 py-1 rounded-full transition-all border border-outline-variant/30">
+                <span class="material-symbols-outlined text-[14px]">person</span>
+                <span id="display-member-name" class="font-medium">Set Name</span>
+                <span class="material-symbols-outlined text-[12px] opacity-60">edit</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Minimal Checklist Items -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            
+            <!-- Sunday School -->
+            <button id="btn-checkin-ss" onclick="handleClassCheckIn('Sunday School')" 
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              <div class="flex items-center gap-3">
+                <!-- Simple circular checkmark from the image -->
+                <div id="circle-checkin-ss" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                  <span id="check-icon-ss" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-sans font-semibold text-sm text-on-surface dark:text-white leading-tight">Sunday School</span>
+                  <span id="status-text-ss" class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Tap to check in</span>
+                </div>
+              </div>
+            </button>
+
+            <!-- Elders Quorum -->
+            <button id="btn-checkin-eq" onclick="handleClassCheckIn('Elders Quorum')" 
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              <div class="flex items-center gap-3">
+                <!-- Simple circular checkmark from the image -->
+                <div id="circle-checkin-eq" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                  <span id="check-icon-eq" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-sans font-semibold text-sm text-on-surface dark:text-white leading-tight">Elders Quorum</span>
+                  <span id="status-text-eq" class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Tap to check in</span>
+                </div>
+              </div>
+            </button>
+
+            <!-- Relief Society -->
+            <button id="btn-checkin-rs" onclick="handleClassCheckIn('Relief Society')" 
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              <div class="flex items-center gap-3">
+                <!-- Simple circular checkmark from the image -->
+                <div id="circle-checkin-rs" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                  <span id="check-icon-rs" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-sans font-semibold text-sm text-on-surface dark:text-white leading-tight">Relief Society</span>
+                  <span id="status-text-rs" class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Tap to check in</span>
+                </div>
+              </div>
+            </button>
+
+          </div>
+        </section>
+
+        <!-- Upcoming Activities Card (Span 12 on Home Page) -->
+        <section class="col-span-1 md:col-span-12 bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl card-shadow overflow-hidden relative border border-surface-blue-tint dark:border-white/5">
+          <div class="h-2 w-full bg-surface-tint absolute top-0 left-0"></div>
+          
+          <div class="p-container-padding flex flex-col h-full gap-stack-md">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-2xl">calendar_month</span>
+                <h3 class="font-headline font-bold text-xl text-primary dark:text-white">Upcoming Activities</h3>
+              </div>
+              <a href="https://calendar.google.com/calendar/u/0/r?cid=provoysaeighthward@gmail.com" target="_blank" class="text-xs font-mono font-semibold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-primary-container/40 px-3 py-1.5 rounded-full hover:bg-primary-fixed/50 transition-colors flex items-center gap-1 active:scale-95">
+                <span class="material-symbols-outlined text-sm">notifications_active</span>
+                <span>Add to Calendar</span>
+              </a>
+            </div>
+
+            <!-- Calendar List (Dynamically populated from Google Calendar) -->
+            <div id="upcoming-activities-list" class="flex flex-col gap-2.5">
+              <!-- Loading Skeleton -->
+              <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low/50 dark:bg-surface-container/20 animate-pulse">
+                <div class="w-12 h-14 bg-surface-variant/40 rounded-xl"></div>
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-surface-variant/40 rounded w-3/4"></div>
+                  <div class="h-3 bg-surface-variant/40 rounded w-1/2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- New to the Ward CTA (Span 12 below Sunday Schedule & Attendance) -->
+        <a href="https://forms.gle/ZPZJLUgpoRkkfZMP8" target="_blank" class="col-span-1 md:col-span-12 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-7 relative overflow-hidden border border-surface-blue-tint dark:border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group hover:bg-surface-blue-tint/40 dark:hover:bg-primary-container/20 transition-all duration-200">
+          <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+          
+          <div class="flex items-start sm:items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+              <span class="material-symbols-outlined text-2xl">waving_hand</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <h3 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">New to the Ward?</h3>
+                <span class="font-mono text-xs font-semibold text-on-secondary-container bg-secondary-container/40 px-2.5 py-0.5 rounded-full">Move-in Form</span>
+              </div>
+              <p class="text-sm text-on-surface-variant dark:text-outline-variant max-w-2xl">
+                We're glad you're here! Tap to fill out our move-in form to get your records transferred and get connected.
+              </p>
+            </div>
+          </div>
+
+          <div class="w-full md:w-auto shrink-0 mt-2 md:mt-0">
+            <div class="w-full md:w-auto bg-secondary-container group-hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs uppercase tracking-wider font-bold h-12 rounded-xl px-6 flex items-center justify-center gap-2 transition-all shadow-sm">
+              <span>Open Move-In Form</span>
+              <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: WARD LEADERSHIP & CONTACT VIEW -->
+    <!-- ======================================================== -->
+    <section id="view-ward" class="tab-view hidden flex flex-col gap-stack-lg animate-fade-in">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col gap-2 md:text-center max-w-3xl md:mx-auto">
+        <h1 class="font-headline font-extrabold text-3xl sm:text-4xl text-primary dark:text-white tracking-tight">
+          Leadership &amp; Contact
+        </h1>
+        <p class="text-base sm:text-lg text-on-surface-variant dark:text-outline-variant">
+          Connect with ward leaders, schedule appointments, and submit inquiries.
+        </p>
+      </div>
+
+      <!-- Bishopric Directory Grid -->
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed">badge</span>
+            <span>Bishopric</span>
+          </h2>
+          <span class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Provo YSA 8th Ward</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+          <!-- Bishop Card -->
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-primary-container"></div>
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Bishop Hirtzel" src="pictures/Tom Hirtzel.png">
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Bishop Hirtzel</h3>
+            <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Bishop</p>
+            <div class="w-full grid grid-cols-2 gap-2">
+              <a class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-[11px] sm:text-xs uppercase tracking-wider font-bold py-3 px-1.5 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all shadow-sm whitespace-nowrap" href="https://calendly.com/bishophirtzel" target="_blank">
+                <span class="material-symbols-outlined text-[16px]">event</span>
+                <span>Schedule</span>
+              </a>
+              <a class="border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-[11px] sm:text-xs uppercase tracking-wider font-bold py-3 px-1.5 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30 whitespace-nowrap" href="tel:8013603503">
+                <span class="material-symbols-outlined text-[16px]">call</span>
+                <span>801-360-3503</span>
+              </a>
+            </div>
+          </div>
+
+<!-- 1st Counselor -->
+<div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+  <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Brayden Pickard" src="pictures/Brayden Pickard.jpg" />
+  </div>
+  <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Brayden Pickard</h3>
+  <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">1st Counselor</p>
+  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:2085968234">
+    <span class="material-symbols-outlined text-[18px]">call</span>
+    <span>208-596-8234</span>
+  </a>
+</div>
+
+<!-- 2nd Counselor -->
+<div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+  <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Ben Maughan" src="pictures/Ben Maughan.jpg" />
+  </div>
+  <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Ben Maughan</h3>
+  <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">2nd Counselor</p>
+  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:4067133187">
+    <span class="material-symbols-outlined text-[18px]">call</span>
+    <span>406-713-3187</span>
+  </a>
+</div>
+
+<!-- Ward Clerk -->
+<div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+  <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Josh Bretzing" src="pictures/Josh Bretzing.jpg" />
+  </div>
+  <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Josh Bretzing</h3>
+  <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Ward Clerk</p>
+  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5038671706">
+    <span class="material-symbols-outlined text-[18px]">call</span>
+    <span>503-867-1706</span>
+  </a>
+</div>
+
+<!-- Executive Secretary -->
+<div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+  <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+    <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="John Holman" src="pictures/John Holman.jpg" />
+  </div>
+  <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">John Holman</h3>
+  <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Executive Secretary</p>
+  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:6467501279">
+    <span class="material-symbols-outlined text-[18px]">call</span>
+    <span>646-750-1279</span>
+  </a>
+</div>
+<!-- Assistant Stake Executive Secretary -->
+<div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+  <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+  <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Daniel Hoag</h3>
+  <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Assistant Stake Executive Secretary</p>
+  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:8083878956">
+    <span class="material-symbols-outlined text-[18px]">call</span>
+    <span>808-387-8956</span>
+  </a>
+  <p class="text-sm text-on-surface-variant dark:text-outline-variant mb-2">Contact to meet with a member of the stake presidency.</p>
+</div>
+
+        </div>
+      </div>
+
+      <!-- Ward Leadership Directory Grid -->
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary dark:text-primary-fixed">groups</span>
+            <span>Ward Leadership</span>
+          </h2>
+          <span class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Provo YSA 8th Ward</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-stack-md">
+          <!-- Elders Quorum President -->
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Corley La Rochelle" src="pictures/Corley La Rochelle.jpg" />
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Corley La Rochelle</h3>
+            <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant">Elder's Quorum President</p>
+          </div>
+
+          <!-- Relief Society President -->
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Raelyn Whiting" src="pictures/Raelyn Whiting.jpg" />
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Raelyn Whiting</h3>
+            <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant">Relief Society President</p>
+          </div>
+
+          <!-- Sunday School President -->
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Kaia Farar" src="pictures/Kaia Farar.jpg" />
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Kaia Farar</h3>
+            <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant">Sunday School President</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ward Council Anonymous Feedback Form -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-6 sm:p-8 flex flex-col gap-5 shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm shrink-0">
+              <span class="material-symbols-outlined text-2xl">rate_review</span>
+            </div>
+            <div>
+              <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">
+                Questions or Feedback for Ward Council
+              </h2>
+              <span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 px-2.5 py-0.5 rounded-full mt-0.5">
+                <span class="material-symbols-outlined text-[14px]">lock</span>
+                <span>100% Anonymous</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <p class="text-sm text-on-surface-variant dark:text-outline-variant">
+          Have a question, idea, concern, or feedback for the ward council? Submit it here. Submissions are reviewed regularly during Ward Council meetings.
+        </p>
+
+        <form id="ward-feedback-form" onsubmit="handleWardFeedbackSubmit(event)" class="flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="ward-feedback-text" class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant dark:text-outline-variant">
+              Your Feedback or Question
+            </label>
+            <textarea
+              id="ward-feedback-text"
+              name="feedback"
+              required
+              rows="4"
+              placeholder="Share any questions or feedback for ward council..."
+              class="w-full p-4 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm resize-none"></textarea>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              id="btn-submit-feedback"
+              class="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-headline font-bold text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-md">
+              <span class="material-symbols-outlined text-[18px]">send</span>
+              <span id="btn-submit-feedback-text">Submit Feedback</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Ward Map Section -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-6 sm:p-8 flex flex-col gap-4 shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
+        
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary-container/40 text-primary dark:text-primary-fixed flex items-center justify-center shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-2xl">map</span>
+          </div>
+          <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">
+            Ward Map
+          </h2>
+        </div>
+
+        <div class="w-full flex justify-center">
+          <img
+            src="pictures/Ward Map.png"
+            alt="Provo YSA 8th Ward Map"
+            class="w-full max-w-2xl h-auto rounded-xl border border-surface-blue-tint dark:border-white/10 shadow-sm"
+            loading="lazy" />
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: REIMBURSEMENTS VIEW -->
+    <!-- ======================================================== -->
+    <section id="view-reimbursements" class="tab-view hidden flex flex-col gap-stack-lg animate-fade-in">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col gap-2 md:text-center max-w-3xl md:mx-auto">
+        <h1 class="font-headline font-extrabold text-3xl sm:text-4xl text-primary dark:text-white tracking-tight">
+          Ward Reimbursements
+        </h1>
+      </div>
+
+      <!-- Main Reimbursement Hero CTA Card -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-8 relative overflow-hidden border border-surface-blue-tint dark:border-white/5 flex flex-col items-center text-center gap-6">
+        <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+        
+        <div class="w-16 h-16 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+        </div>
+
+        <div class="flex flex-col gap-2 max-w-2xl">
+          <h2 class="font-headline font-bold text-2xl sm:text-3xl text-primary dark:text-white">
+            Expense Reimbursement Form
+          </h2>
+          <p class="text-sm sm:text-base text-on-surface-variant dark:text-outline-variant">
+            Did you purchase supplies or food for an 8th Ward event, or FHE group?
+          </p>
+        </div>
+
+<!-- Reimbursement Form Button -->
+<div class="flex justify-center">
+  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdTptmpPN647kAEMzjbd3AN5xpUUGgEbdD86IouTwfkKsp1GQ/viewform?usp=dialog"
+     target="_blank"
+     class="group bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-lg sm:text-xl py-4 px-8 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-200 interactive-shadow border border-secondary-fixed">
+    <span class="material-symbols-outlined text-2xl">description</span>
+    <span>Reimbursement Form</span>
+    <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">open_in_new</span>
+  </a>
+</div>
+<p class="text-sm text-on-surface-variant dark:text-outline-variant mt-2">Make sure you separate personal purchases from reimbursements</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODALS & INTERACTIVE OVERLAYS -->
+  <!-- ======================================================== -->
+
+  <!-- Modal: Come Follow Me Study Guide -->
+  <div id="cfm-guide-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-container">auto_stories</span>
+          <h3 class="font-headline font-bold text-xl">Come, Follow Me Guide</h3>
+        </div>
+        <button onclick="closeModal('cfm-guide-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="text-sm text-on-surface-variant dark:text-outline-variant space-y-3">
+        <p class="font-semibold text-primary dark:text-primary-fixed">3 Nephi 8–11: "Behold, I Am Jesus Christ"</p>
+        <p><strong>Key Principles:</strong></p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>The darkness following the destruction contrasts with the Light of the World appearing in Bountiful.</li>
+          <li>The Savior invites each person one by one to feel the prints in His hands and feet.</li>
+          <li>True discipleship involves a broken heart and a contrite spirit.</li>
+        </ul>
+        <div class="p-3 bg-surface-blue-tint dark:bg-primary-container/20 rounded-xl font-mono text-xs text-primary dark:text-primary-fixed">
+          <strong>Daily Reading Goal:</strong> 1 chapter per day + reflection on how Christ ministered individually.
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('cfm-guide-modal')" class="px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-mono font-bold uppercase tracking-wider">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: CFM Discussion Board -->
+  <div id="cfm-discussion-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed">forum</span>
+          <h3 class="font-headline font-bold text-xl">Ward Discussion Board</h3>
+        </div>
+        <button onclick="closeModal('cfm-discussion-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant">
+        Share what stood out to you from this week's reading in 3 Nephi.
+      </p>
+      
+      <!-- Existing Comments -->
+      <div id="discussion-list" class="max-h-48 overflow-y-auto space-y-2 pr-1 text-xs">
+        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30">
+          <span class="font-bold text-primary dark:text-primary-fixed">Emma S.</span>
+          <p class="text-on-surface-variant dark:text-outline-variant mt-0.5">&ldquo;I love how Christ welcomed the children and blessed them one by one. It shows how personal His love is.&rdquo;</p>
+        </div>
+        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30">
+          <span class="font-bold text-primary dark:text-primary-fixed">Jake W.</span>
+          <p class="text-on-surface-variant dark:text-outline-variant mt-0.5">&ldquo;The small still voice in 3 Nephi 11:3 is such a great reminder to tune out distractions.&rdquo;</p>
+        </div>
+      </div>
+
+      <!-- Input form -->
+      <form onsubmit="handleCommentSubmit(event)" class="flex gap-2">
+        <input id="comment-input" type="text" placeholder="Add your thought or scripture insight..." class="flex-grow rounded-xl border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3 py-2" required>
+        <button type="submit" class="bg-primary hover:bg-primary-container text-white px-4 py-2 rounded-xl font-mono text-xs font-bold">Post</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Activity Idea Form -->
+  <div id="activity-idea-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-container">lightbulb</span>
+          <h3 class="font-headline font-bold text-xl">Suggest a Ward Activity</h3>
+        </div>
+        <button onclick="closeModal('activity-idea-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form onsubmit="handleActivityIdeaSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Activity Title / Idea</label>
+          <input id="idea-title" type="text" placeholder="e.g. Sunset Hike at Y Mountain & S'mores" class="w-full rounded-xl border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3 py-2.5" required>
+        </div>
+        <div>
+          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Category</label>
+          <select id="idea-category" class="w-full rounded-xl border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3 py-2.5">
+            <option>FHE (Family Home Evening)</option>
+            <option>Outdoor & Sports</option>
+            <option>Service Project</option>
+            <option>Spiritual / Temple</option>
+            <option>Social & Dinner</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Details & Proposed Location</label>
+          <textarea id="idea-desc" rows="3" placeholder="Tell us more about how to make this happen..." class="w-full rounded-xl border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs p-3 resize-none" required></textarea>
+        </div>
+        <button type="submit" class="w-full bg-secondary-container text-on-secondary-container font-mono text-xs uppercase tracking-wider font-bold py-3 rounded-xl active:scale-[0.98] transition-all">
+          Submit to Activities Committee
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Shared Photos Album -->
+  <div id="photos-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-container">photo_library</span>
+          <h3 class="font-headline font-bold text-xl">Ward Photo Drop</h3>
+        </div>
+        <button onclick="closeModal('photos-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant">
+        Upload your photos directly to our shared ward Google Photos album or Slack #photos channel!
+      </p>
+      <div class="grid grid-cols-2 gap-3">
+        <a href="https://photos.google.com" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
+          <span class="material-symbols-outlined text-3xl text-primary dark:text-primary-fixed">add_photo_alternate</span>
+          <span class="font-bold text-xs">Google Photos Album</span>
+          <span class="text-[10px] text-on-surface-variant">Click to view & add photos</span>
+        </a>
+        <a href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
+          <span class="material-symbols-outlined text-3xl text-primary dark:text-primary-fixed">forum</span>
+          <span class="font-bold text-xs">Slack #photos</span>
+          <span class="text-[10px] text-on-surface-variant">Post directly into chat</span>
+        </a>
+      </div>
+      <button onclick="closeModal('photos-modal')" class="w-full py-2.5 bg-surface-container-high dark:bg-tertiary-container rounded-xl text-xs font-mono font-bold">Done</button>
+    </div>
+  </div>
+
+  <!-- Modal: Quick Contact / Bishopric Details -->
+  <div id="quick-contact-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed">contact_phone</span>
+          <h3 class="font-headline font-bold text-xl">Quick Ward Directory</h3>
+        </div>
+        <button onclick="closeModal('quick-contact-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+          <strong class="text-primary dark:text-primary-fixed block text-sm">Bishop Hirtzel</strong>
+          <span class="text-on-surface-variant">Appointments: <a href="https://calendly.com/bishophirtzel" target="_blank" class="underline text-primary dark:text-primary-fixed">Calendly Link</a></span>
+        </div>
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+          <strong class="text-primary dark:text-primary-fixed block text-sm">Brother Smith (1st Counselor)</strong>
+          <span class="text-on-surface-variant">Phone: (555) 0123</span>
+        </div>
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+          <strong class="text-primary dark:text-primary-fixed block text-sm">Brother Johnson (2nd Counselor)</strong>
+          <span class="text-on-surface-variant">Phone: (555) 0124</span>
+        </div>
+      </div>
+      <button onclick="navigateTab('ward'); closeModal('quick-contact-modal');" class="w-full bg-primary text-white py-2.5 rounded-xl font-mono text-xs uppercase font-bold">Go to Leadership Page</button>
+    </div>
+  </div>
+
+  <!-- Modal: Set Member Name Prompt (One-time Setup / Edit) -->
+  <div id="name-prompt-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed">person</span>
+          <h3 class="font-headline font-bold text-xl">Set Member Name</h3>
+        </div>
+        <button onclick="closeModal('name-prompt-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant">
+        Enter your full name once. It will be remembered on your device so all future Sunday check-ins are instant 1-tap!
+      </p>
+      <form onsubmit="handleSaveNameModal(event)" class="flex flex-col gap-3">
+        <div>
+          <label class="block text-xs font-bold font-mono text-on-surface-variant uppercase tracking-wider mb-1">Your Full Name</label>
+          <input type="text" id="modal-member-name-input" required placeholder="e.g., Alex Johnson" 
+            class="w-full bg-surface-container-low dark:bg-surface-container border border-outline-variant/50 rounded-xl px-3.5 py-2.5 text-sm text-on-surface dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+        </div>
+        <div class="flex gap-2 justify-end mt-2">
+          <button type="button" onclick="closeModal('name-prompt-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-primary text-white hover:bg-primary-container active:scale-95 transition-all shadow-sm">Save &amp; Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toast" class="fixed bottom-20 md:bottom-8 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-primary text-white px-5 py-3 rounded-2xl shadow-xl border border-primary-fixed/30 flex items-center gap-3 text-sm">
+    <span class="material-symbols-outlined text-secondary-container" id="toast-icon">check_circle</span>
+    <span id="toast-message">Action completed successfully!</span>
+  </div>
+
+  <!-- Footer (Desktop & Tablet) -->
+  <footer class="bg-surface-container-lowest dark:bg-[#15171a] text-on-surface dark:text-[#c6c6cb] font-sans w-full py-8 mt-auto border-t border-surface-variant/40 dark:border-white/10 hidden md:block">
+    <div class="max-w-7xl mx-auto px-container-padding flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-headline font-bold text-primary dark:text-white">Provo YSA 8th Ward</span>
+      </div>
+      <div class="flex gap-6 text-sm font-medium">
+        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank">Slack</a>
+        
+        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://app.wardbullet.com/channel/1003852" target="_blank">Sacrament Bulletin</a>
+        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://forms.gle/ZPZJLUgpoRkkfZMP8" target="_blank">Move-in Form</a>
+        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank">BYU LSB Map</a>
+      </div>
+    </div>
+<div class="text-xs text-on-surface-variant dark:text-outline-variant text-center mt-4">
+  This app is not an official Church of Jesus Christ of Latter-day Saints sponsored product.
+</div>
+  </footer>
+
+  <!-- Mobile Bottom Navigation Bar (Fixed Bottom) -->
+  <nav class="md:hidden bg-surface/95 dark:bg-[#181a1e]/95 backdrop-blur-md text-primary dark:text-primary-fixed-dim font-mono fixed bottom-0 left-0 w-full z-50 border-t border-outline-variant/30 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex justify-around items-center px-3 py-2">
+    <!-- Home Tab -->
+    <button onclick="navigateTab('home')" id="tab-home" class="nav-tab-btn flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-all duration-200">
+      <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">home</span>
+      <span class="text-[10px] font-bold mt-0.5">Home</span>
+    </button>
+
+    <!-- Ward Tab -->
+    <button onclick="navigateTab('ward')" id="tab-ward" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+      <span class="material-symbols-outlined text-[20px]">groups</span>
+      <span class="text-[10px] font-medium mt-0.5">Ward</span>
+    </button>
+
+    <!-- Reimbursements Tab -->
+    <button onclick="navigateTab('reimbursements')" id="tab-reimbursements" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+      <span class="material-symbols-outlined text-[20px]">receipt_long</span>
+      <span class="text-[10px] font-medium mt-0.5">Reimbursement</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
