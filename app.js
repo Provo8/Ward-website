@@ -475,8 +475,11 @@ function applyCheckInButtonState(config, isChecked) {
 
   if (!btn) return;
 
+  const isSunday = new Date().getDay() === 0;
+
   if (isChecked) {
     btn.classList.add('border-primary/40', 'bg-surface-blue-tint/40', 'dark:bg-primary-container/20');
+    btn.classList.remove('opacity-75');
     if (circle) {
       circle.className = "w-7 h-7 rounded-full border-2 border-primary dark:border-primary-fixed bg-surface-blue-tint dark:bg-primary-container/60 flex items-center justify-center transition-all shrink-0 shadow-sm";
     }
@@ -498,8 +501,15 @@ function applyCheckInButtonState(config, isChecked) {
       checkIcon.textContent = "check";
     }
     if (status) {
-      status.textContent = "Tap to check in";
-      status.className = "text-[11px] font-mono text-on-surface-variant dark:text-outline-variant";
+      if (isSunday) {
+        status.textContent = "Tap to check in";
+        status.className = "text-[11px] font-mono text-on-surface-variant dark:text-outline-variant";
+        btn.classList.remove('opacity-75');
+      } else {
+        status.textContent = "Opens Sunday";
+        status.className = "text-[11px] font-mono text-on-surface-variant/80 dark:text-outline-variant/80";
+        btn.classList.add('opacity-75');
+      }
     }
   }
 }
@@ -554,6 +564,13 @@ const inFlightCheckIns = new Set();
  * Handle Single-Click Check-In for a Class
  */
 async function handleClassCheckIn(organization) {
+  // Only allow attendance marking on Sunday
+  const isSunday = new Date().getDay() === 0;
+  if (!isSunday) {
+    showToast("Attendance can only be marked on Sunday.", "event_busy");
+    return;
+  }
+
   const savedName = localStorage.getItem('ward_member_name');
 
   // If no name is set yet, ask once via modal and auto-complete after save
