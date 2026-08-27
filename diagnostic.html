@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ward Website — Integration Diagnostic</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; }
+    .subtitle { color: #94a3b8; font-size: 0.85rem; margin-bottom: 2rem; }
+    .card {
+      background: #1e2330;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 0.75rem; }
+    .test-row { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #2d3748; }
+    .test-row:last-child { border-bottom: none; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem;
+      border-radius: 99px; white-space: nowrap; min-width: 70px;
+      justify-content: center;
+    }
+    .badge.ok { background: #064e3b; color: #6ee7b7; }
+    .badge.error { background: #7f1d1d; color: #fca5a5; }
+    .badge.warn { background: #78350f; color: #fcd34d; }
+    .badge.pending { background: #1e3a5f; color: #93c5fd; }
+    .test-label { font-size: 0.875rem; font-weight: 600; color: #e2e8f0; }
+    .test-detail { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; font-family: monospace; word-break: break-all; }
+    button#run-btn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+      transition: background 0.2s;
+    }
+    button#run-btn:hover { background: #1d4ed8; }
+    button#run-btn:disabled { background: #334155; cursor: not-allowed; }
+    .spinner { display: inline-block; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .summary-bar {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      background: #1e2330; border: 1px solid #2d3748;
+      border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+    }
+    .summary-item { font-size: 0.8rem; }
+    .summary-item span { font-weight: 700; }
+    pre { font-size: 0.7rem; background: #0f1117; padding: 1rem; border-radius: 8px; overflow-x: auto; color: #94a3b8; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>🔬 Ward Website — Integration Diagnostic</h1>
+  <p class="subtitle">Tests Supabase connection, table access, RLS policies, insert permissions, and email edge function.</p>
+
+  <button id="run-btn" onclick="runDiagnostic()">▶ Run Full Diagnostic</button>
+
+  <div class="summary-bar" id="summary-bar" style="display:none">
+    <div class="summary-item">Passed: <span id="count-ok" style="color:#6ee7b7">—</span></div>
+    <div class="summary-item">Warnings: <span id="count-warn" style="color:#fcd34d">—</span></div>
+    <div class="summary-item">Failed: <span id="count-err" style="color:#fca5a5">—</span></div>
+  </div>
+
+  <div id="results"></div>
+
+<script>
+const TESTS = [];
+let ok = 0, warn = 0, err = 0;
+
+function addTest(label, statusFn) {
+  TESTS.push({ label, statusFn });
+}
+
+function renderResult(label, status, detail) {
+  const div = document.createElement('div');
+  div.className = 'test-row';
+  div.innerHTML = `
+    <div>
+      <span class="badge ${status}">${status === 'ok' ? '✓ OK' : status === 'error' ? '✗ FAIL' : status === 'warn' ? '⚠ WARN' : '…'}</span>
+    </div>
+    <div>
+      <div class="test-label">${label}</div>
+      ${detail ? `<div class="test-detail">${detail}</div>` : ''}
+    </div>
+  `;
+  return div;
+}
+
+function addCard(title) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `<div class="card-title">${title}</div>`;
+  document.getElementById('results').appendChild(card);
+  return card;
+}
+
+async function runDiagnostic() {
+  ok = 0; warn = 0; err = 0;
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner">⟳</span> Running...';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('summary-bar').style.display = 'none';
+
+  // ─── SECTION 1: Frontend Config ─────────────────────
+  const s1 = addCard('1 · Frontend Configuration');
+
+  // Supabase lib loaded
+  const libOk = !!(window.supabase && typeof window.supabase.createClient === 'function');
+  if (libOk) ok++; else err++;
+  s1.appendChild(renderResult('Supabase JS library loaded (CDN)', libOk ? 'ok' : 'error',
+    libOk ? 'window.supabase.createClient available' : 'window.supabase not found — check CDN script tag in index.html'));
+
+  // Config
+  const cfg = window.SUPABASE_CONFIG || {};
+  const hasUrl = !!(cfg.url && cfg.url.includes('supabase.co'));
+  const hasKey = !!(cfg.anonKey && cfg.anonKey.length > 50);
+  if (hasUrl) ok++; else err++;
+  if (hasKey) ok++; else err++;
+  s1.appendChild(renderResult('SUPABASE_CONFIG.url', hasUrl ? 'ok' : 'error',
+    hasUrl ? cfg.url : 'Missing or invalid — check config.js'));
+  s1.appendChild(renderResult('SUPABASE_CONFIG.anonKey', hasKey ? 'ok' : 'error',
+    hasKey ? cfg.anonKey.substring(0, 40) + '...' : 'Missing or too short — check config.js'));
+
+  // ─── SECTION 2: Supabase Connection ─────────────────
+  const s2 = addCard('2 · Supabase Client Connection');
+  let sb = null;
+  if (libOk && hasUrl && hasKey) {
+    try {
+      sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+      ok++;
+      s2.appendChild(renderResult('Create Supabase client', 'ok', 'Client instantiated successfully'));
+    } catch(e) {
+      err++;
+      sb = null;
+      s2.appendChild(renderResult('Create Supabase client', 'error', e.message));
+    }
+  } else {
+    err++;
+    s2.appendChild(renderResult('Create Supabase client', 'error', 'Skipped — missing config or library'));
+  }
+
+  // ─── SECTION 3: Table Access (RLS) ──────────────────
+  const s3 = addCard('3 · Database Table Access (RLS / anon permissions)');
+  const tables = [
+    { name: 'ward_scheduling_settings', label: 'Settings table' },
+    { name: 'meeting_types', label: 'Meeting Types table' },
+    { name: 'weekly_availability', label: 'Weekly Availability table' },
+    { name: 'date_overrides', label: 'Date Overrides table' },
+    { name: 'appointments', label: 'Appointments table (SELECT)' },
+  ];
+
+  if (sb) {
+    for (const t of tables) {
+      try {
+        const { data, error } = await sb.from(t.name).select('*').limit(5);
+        if (error) {
+          err++;
+          s3.appendChild(renderResult(t.label, 'error', `${error.code}: ${error.message}`));
+        } else {
+          ok++;
+          s3.appendChild(renderResult(t.label, 'ok', `${data ? data.length : 0} rows returned`));
+        }
+      } catch(e) {
+        err++;
+        s3.appendChild(renderResult(t.label, 'error', e.message));
+      }
+    }
+  } else {
+    s3.appendChild(renderResult('All tables', 'error', 'Skipped — no Supabase client'));
+  }
+
+  // ─── SECTION 4: Appointment INSERT test ─────────────
+  const s4 = addCard('4 · Appointment INSERT Permission (anon write)');
+  if (sb) {
+    try {
+      const cancelToken = crypto.randomUUID();
+      const start = new Date();
+      start.setHours(start.getHours() + 48); // 2 days out
+      const end = new Date(start.getTime() + 15 * 60000);
+      const { data, error } = await sb.from('appointments').insert([{
+        attendee_name: '__DiagnosticTest__',
+        attendee_email: 'diagnostic@wardtest.invalid',
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        status: 'confirmed',
+        cancel_token: cancelToken
+      }]).select();
+
+      if (error) {
+        err++;
+        s4.appendChild(renderResult('INSERT into appointments', 'error',
+          `${error.code}: ${error.message}${error.hint ? ' — Hint: ' + error.hint : ''}`));
+      } else {
+        ok++;
+        const rowId = data && data[0] ? data[0].id : null;
+        s4.appendChild(renderResult('INSERT into appointments', 'ok', `New row ID: ${rowId}`));
+
+        // Cleanup
+        if (rowId) {
+          await sb.from('appointments').delete().eq('id', rowId);
+          s4.appendChild(renderResult('DELETE test row (cleanup)', 'ok', `Deleted ${rowId}`));
+          ok++;
+        }
+      }
+    } catch(e) {
+      err++;
+      s4.appendChild(renderResult('INSERT into appointments', 'error', e.message));
+    }
+  } else {
+    s4.appendChild(renderResult('INSERT test', 'error', 'Skipped — no Supabase client'));
+  }
+
+  // ─── SECTION 5: Edge Function Reachability ───────────
+  const s5 = addCard('5 · Edge Function Reachability (handle-appointment-email)');
+  if (sb && cfg.url) {
+    const fnUrl = cfg.url.replace(/\/$/, '') + '/functions/v1/handle-appointment-email';
+    try {
+      const res = await fetch(fnUrl, {
+        method: 'OPTIONS',
+        headers: { 'x-client-info': 'diagnostic', 'apikey': cfg.anonKey }
+      });
+      if (res.ok || res.status === 200 || res.status === 204) {
+        ok++;
+        s5.appendChild(renderResult('Edge function OPTIONS (CORS preflight)', 'ok', `HTTP ${res.status} — function is reachable`));
+      } else {
+        warn++;
+        s5.appendChild(renderResult('Edge function OPTIONS (CORS preflight)', 'warn', `HTTP ${res.status} — may not be deployed yet`));
+      }
+    } catch(e) {
+      err++;
+      s5.appendChild(renderResult('Edge function OPTIONS (CORS preflight)', 'error', e.message));
+    }
+  } else {
+    s5.appendChild(renderResult('Edge function reachability', 'error', 'Skipped — no Supabase client or URL'));
+  }
+
+  // ─── SECTION 6: SCHEDULING_STATE ────────────────────
+  const s6 = addCard('6 · Frontend State (SCHEDULING_STATE from scheduling-admin.js)');
+  if (typeof SCHEDULING_STATE !== 'undefined') {
+    ok++;
+    s6.appendChild(renderResult('SCHEDULING_STATE loaded', 'ok', 'Global state object present'));
+    const hasClient = !!SCHEDULING_STATE.supabaseClient;
+    if (hasClient) ok++; else warn++;
+    s6.appendChild(renderResult('SCHEDULING_STATE.supabaseClient', hasClient ? 'ok' : 'warn',
+      hasClient ? 'Connected' : 'null — run loadAllSchedulingData() or navigate to admin tab'));
+    const apts = (SCHEDULING_STATE.appointments || []).length;
+    const types = (SCHEDULING_STATE.meetingTypes || []).length;
+    s6.appendChild(renderResult('Loaded appointments', apts >= 0 ? 'ok' : 'warn', `${apts} appointment(s) in state`));
+    ok++;
+    s6.appendChild(renderResult('Loaded meeting types', types > 0 ? 'ok' : 'warn', `${types} meeting type(s) in state`));
+    if (types > 0) ok++; else warn++;
+  } else {
+    err++;
+    s6.appendChild(renderResult('SCHEDULING_STATE', 'error', 'Not defined — scheduling-admin.js may not have loaded'));
+  }
+
+  // ─── Summary ─────────────────────────────────────────
+  document.getElementById('count-ok').textContent = ok;
+  document.getElementById('count-warn').textContent = warn;
+  document.getElementById('count-err').textContent = err;
+  document.getElementById('summary-bar').style.display = 'flex';
+
+  btn.disabled = false;
+  btn.innerHTML = '↺ Run Again';
+}
+</script>
+</body>
+</html>

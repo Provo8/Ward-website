@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize Activities Feed from Google Calendar
   initActivitiesFeed();
 
+  // If opened as an installed home-screen app, subscribe this device for
+  // ward announcements (and, if it's booked before, appointment reminders).
+  initSitePushNotifications();
+
   // Listen for hash changes
   window.addEventListener('hashchange', () => {
     const hash = window.location.hash.replace('#', '') || 'home';
@@ -33,14 +37,69 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Site Push Notifications (ward announcements + appointment reminders)
+ * Only runs when launched as an installed home-screen app (required on iOS
+ * for push to work at all). Subscribes the device regardless of whether
+ * it's ever booked an appointment — a booking email is attached if this
+ * browser has one remembered, so appointment reminders can target it, but
+ * it isn't required just to receive admin broadcast announcements.
+ */
+async function initSitePushNotifications() {
+  try {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (!isStandalone) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+    if (!window.VAPID_PUBLIC_KEY) return;
+
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
+    if (permission !== 'granted') return;
+
+    const registration = await navigator.serviceWorker.register('sw.js');
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(window.VAPID_PUBLIC_KEY),
+      });
+    }
+
+    const email = localStorage.getItem('ward_member_email') || null;
+    await fetch('/api/attendee-push-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, subscription: subscription.toJSON() }),
+    });
+  } catch (err) {
+    console.warn('Site push notification setup failed:', err);
+  }
+}
+
+/**
  * Tab Navigation Management
- * Supports 'home', 'ward', 'reimbursements'
+ * Supports 'home', 'ward'
  */
 function navigateTab(tabId, updateHash = true) {
-  if (tabId === 'tools') {
-    tabId = 'reimbursements';
+  if (tabId === 'tools' || tabId === 'reimbursements') {
+    tabId = 'ward';
   }
-  const validTabs = ['home', 'ward', 'reimbursements'];
+
+  // Check authentication if attempting to access admin scheduling
+  const isAuth = typeof hasValidAdminSession === 'function'
+    ? hasValidAdminSession()
+    : sessionStorage.getItem('ward_admin_authenticated') === 'true';
+  if (tabId === 'admin-scheduling' && !isAuth) {
+    if (typeof openAdminLoginModal === 'function') {
+      openAdminLoginModal();
+    }
+    // Do not switch to admin view if not authenticated
+    tabId = window.location.hash.replace('#', '') || 'home';
+    if (tabId === 'admin-scheduling') tabId = 'home';
+  }
+
+  const validTabs = ['home', 'ward', 'schedule', 'admin-scheduling'];
   if (!validTabs.includes(tabId)) {
     tabId = 'home';
   }
@@ -66,14 +125,31 @@ function navigateTab(tabId, updateHash = true) {
     activeView.classList.add('active-view');
   }
 
+  // If entering public schedule flow, initialize or refresh
+  if (tabId === 'schedule' && typeof initPublicBookingUI === 'function') {
+    initPublicBookingUI();
+  }
+
+  // If entering admin scheduling, verify auth / refresh data
+  if (tabId === 'admin-scheduling' && typeof checkAdminAuth === 'function') {
+    checkAdminAuth();
+  }
+
   // Update Desktop Nav Buttons
   validTabs.forEach(id => {
     const btn = document.getElementById(`nav-btn-${id}`);
     if (btn) {
-      if (id === tabId) {
-        btn.className = "nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 bg-secondary-container text-on-secondary-container shadow-sm";
+      if (id === 'admin-scheduling' && !isAuth) {
+        btn.classList.add('hidden');
       } else {
-        btn.className = "nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5";
+        if (id === 'admin-scheduling') {
+          btn.classList.remove('hidden');
+        }
+        if (id === tabId) {
+          btn.className = "nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 bg-secondary-container text-on-secondary-container shadow-sm";
+        } else {
+          btn.className = "nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5";
+        }
       }
     }
   });
@@ -82,10 +158,17 @@ function navigateTab(tabId, updateHash = true) {
   validTabs.forEach(id => {
     const mobileBtn = document.getElementById(`tab-${id}`);
     if (mobileBtn) {
-      if (id === tabId) {
-        mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-all duration-200 font-bold";
+      if (id === 'admin-scheduling' && !isAuth) {
+        mobileBtn.classList.add('hidden');
       } else {
-        mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container";
+        if (id === 'admin-scheduling') {
+          mobileBtn.classList.remove('hidden');
+        }
+        if (id === tabId) {
+          mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-all duration-200 font-bold";
+        } else {
+          mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container";
+        }
       }
     }
   });
@@ -160,6 +243,11 @@ function handleBishopricSubmit(event) {
   const name = document.getElementById('sender-name').value;
   const message = document.getElementById('message').value;
 
+  if (name && name.trim() && !getStoredMemberName()) {
+    setStoredMemberName(name);
+    initCheckInUI();
+  }
+
   showToast(`Inquiry sent to Bishopric regarding "${topic}"!`, "mail");
   event.target.reset();
 }
@@ -169,6 +257,12 @@ function handleNewMemberSubmit(event) {
   const firstName = document.getElementById('first-name').value;
   const lastName = document.getElementById('last-name').value;
   const address = document.getElementById('address').value;
+
+  const fullName = `${firstName || ''} ${lastName || ''}`.trim();
+  if (fullName && !getStoredMemberName()) {
+    setStoredMemberName(fullName);
+    initCheckInUI();
+  }
 
   showToast(`Welcome to 8th Ward, ${firstName}! We've logged your move-in.`, "celebration");
   event.target.reset();
@@ -417,6 +511,48 @@ function getSundayDisplayString() {
 }
 
 /**
+ * Helper to get the saved member name reliably from localStorage with Cookie fallback
+ */
+function getStoredMemberName() {
+  try {
+    const local = localStorage.getItem('ward_member_name');
+    if (local && local.trim()) return local.trim();
+
+    // Check cookie fallback in case localStorage was cleared or isolated in an in-app WebView
+    const match = document.cookie.match(/(?:^|; )ward_member_name=([^;]*)/);
+    if (match && match[1]) {
+      const decoded = decodeURIComponent(match[1]).trim();
+      if (decoded) {
+        try { localStorage.setItem('ward_member_name', decoded); } catch (_) {}
+        return decoded;
+      }
+    }
+  } catch (err) {
+    console.warn("Could not retrieve member name:", err);
+  }
+  return '';
+}
+
+/**
+ * Helper to store the member name reliably across localStorage and persistent Cookie (1 year)
+ */
+function setStoredMemberName(name) {
+  const cleanName = (name || '').trim();
+  try {
+    if (cleanName) {
+      localStorage.setItem('ward_member_name', cleanName);
+      document.cookie = `ward_member_name=${encodeURIComponent(cleanName)}; max-age=31536000; path=/; SameSite=Lax`;
+    } else {
+      localStorage.removeItem('ward_member_name');
+      document.cookie = `ward_member_name=; max-age=0; path=/; SameSite=Lax`;
+    }
+  } catch (err) {
+    console.warn("Could not persist member name:", err);
+  }
+  return cleanName;
+}
+
+/**
  * Initialize check-in UI and restore checked-in state for this week
  */
 function initCheckInUI() {
@@ -430,18 +566,33 @@ function initCheckInUI() {
   }
 
   // Restore saved member name
-  const savedName = localStorage.getItem('ward_member_name') || '';
+  const savedName = getStoredMemberName();
   const nameDisplayEl = document.getElementById('display-member-name');
-  const nameBtnLabel = document.getElementById('name-btn-label');
+  const nameIconEl = document.getElementById('display-member-name-icon');
+  const namePillBtn = document.getElementById('btn-member-name-pill');
   const modalNameInput = document.getElementById('modal-member-name-input');
 
   if (nameDisplayEl) {
     if (savedName) {
       nameDisplayEl.textContent = savedName;
-      if (nameBtnLabel) nameBtnLabel.textContent = "Change";
+      nameDisplayEl.className = "font-semibold text-primary dark:text-white max-w-[140px] truncate";
+      if (nameIconEl) {
+        nameIconEl.textContent = "account_circle";
+        nameIconEl.className = "material-symbols-outlined text-[15px] text-primary dark:text-primary-fixed";
+      }
+      if (namePillBtn) {
+        namePillBtn.title = `Signed in as ${savedName} (click to edit)`;
+      }
     } else {
-      nameDisplayEl.textContent = "Tap below to set your name";
-      if (nameBtnLabel) nameBtnLabel.textContent = "Set Name";
+      nameDisplayEl.textContent = "Set Name";
+      nameDisplayEl.className = "font-medium";
+      if (nameIconEl) {
+        nameIconEl.textContent = "person_add";
+        nameIconEl.className = "material-symbols-outlined text-[15px] text-amber-600";
+      }
+      if (namePillBtn) {
+        namePillBtn.title = "Set your name for Sunday attendance";
+      }
     }
   }
 
@@ -522,11 +673,14 @@ function openNamePromptModal(pendingClass = null) {
   pendingClassForCheckIn = pendingClass;
   const modalNameInput = document.getElementById('modal-member-name-input');
   if (modalNameInput) {
-    modalNameInput.value = localStorage.getItem('ward_member_name') || '';
+    modalNameInput.value = getStoredMemberName();
   }
   openModal('name-prompt-modal');
   setTimeout(() => {
-    if (modalNameInput) modalNameInput.focus();
+    if (modalNameInput) {
+      modalNameInput.focus();
+      modalNameInput.select();
+    }
   }, 100);
 }
 
@@ -544,10 +698,10 @@ function handleSaveNameModal(event) {
 
   if (!name) return;
 
-  localStorage.setItem('ward_member_name', name);
+  setStoredMemberName(name);
   initCheckInUI();
   closeModal('name-prompt-modal');
-  showToast(`Name set to "${name}"!`, "person");
+  showToast(`Name saved as "${name}"!`, "person");
 
   // If user clicked a class before having a name, auto-execute check-in now
   if (pendingClassForCheckIn) {
@@ -571,7 +725,7 @@ async function handleClassCheckIn(organization) {
     return;
   }
 
-  const savedName = localStorage.getItem('ward_member_name');
+  const savedName = getStoredMemberName();
 
   // If no name is set yet, ask once via modal and auto-complete after save
   if (!savedName || !savedName.trim()) {

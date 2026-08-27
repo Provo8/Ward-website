@@ -1,0 +1,10 @@
+{
+  "name": "ward-website",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "nodemailer": "^6.9.9",
+    "web-push": "^3.6.7"
+  }
+}
