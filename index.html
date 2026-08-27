@@ -740,23 +740,12 @@
       <!-- Wizard Card Outer Shell -->
       <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-3xl p-5 sm:p-8 border border-surface-blue-tint dark:border-white/5 relative overflow-hidden transition-all duration-300">
         
-        <!-- Top Progress Bar (Visual Stepper) -->
-        <div class="w-full mb-6">
-          <div class="flex items-center justify-between mb-2">
-            <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
-              <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-              <span>Back</span>
-            </button>
-            <span id="booking-step-badge" class="text-[11px] font-mono font-extrabold uppercase tracking-widest text-secondary bg-secondary-container/40 px-3 py-1 rounded-full">
-              STEP 1 OF 4
-            </span>
-          </div>
-          <div class="grid grid-cols-4 gap-2 h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
-            <div id="booking-progress-1" class="h-full bg-secondary-container rounded-full transition-all duration-300"></div>
-            <div id="booking-progress-2" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
-            <div id="booking-progress-3" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
-            <div id="booking-progress-4" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
-          </div>
+        <!-- Back Navigation (no step counter / progress bar, per ward request) -->
+        <div class="w-full mb-4">
+          <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span>Back</span>
+          </button>
         </div>
 
         <!-- ======================================================== -->
@@ -764,13 +753,9 @@
         <!-- ======================================================== -->
         <div id="booking-step-1" class="booking-step-container flex flex-col gap-5">
           <div class="text-center flex flex-col gap-1.5">
-            <span class="text-xs font-mono font-bold uppercase tracking-wider text-primary dark:text-primary-fixed">Provo YSA 8th Ward</span>
             <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
-              Select Meeting Type
+              Select Meeting with Bishop
             </h2>
-            <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant max-w-sm mx-auto">
-              Choose the purpose of your appointment to see available times.
-            </p>
           </div>
 
           <!-- Dynamic List of Meeting Types -->
@@ -791,6 +776,7 @@
                 <span id="booking-step2-type-name">Meeting</span>
               </span>
             </div>
+            <p id="booking-step2-type-description" class="hidden text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant whitespace-pre-line leading-relaxed max-w-sm mx-auto"></p>
             <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
               Select Date
             </h2>
@@ -843,12 +829,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Continue to Time Action Button -->
-          <button id="btn-booking-step2-next" onclick="goToBookingStep(3)" disabled class="w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-md">
-            <span>Continue to Time</span>
-            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
         </div>
 
         <!-- ======================================================== -->
@@ -876,12 +856,6 @@
               <button onclick="goToBookingStep(2)" class="mt-2 text-xs font-mono font-bold text-primary underline">Pick another day</button>
             </div>
           </div>
-
-          <!-- Continue Action Button -->
-          <button id="btn-booking-step3-next" onclick="goToBookingStep(4)" disabled class="w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-md">
-            <span>Continue</span>
-            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
         </div>
 
         <!-- ======================================================== -->
