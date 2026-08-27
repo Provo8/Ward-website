@@ -25,6 +25,9 @@
   <!-- Tailwind CSS CDN with Plugins -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <!-- Google Fonts: Hanken Grotesk, Inter, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -141,16 +144,32 @@
         </button>
         <button onclick="navigateTab('ward')" id="nav-btn-ward" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[18px]">groups</span>
-          <span>Ward</span>
+          <span>Leaders</span>
         </button>
-        <button onclick="navigateTab('reimbursements')" id="nav-btn-reimbursements" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
-          <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-          <span>Reimbursements</span>
+        <button onclick="navigateTab('schedule')" id="nav-btn-schedule" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">event</span>
+          <span>Schedule</span>
+        </button>
+        <button onclick="navigateTab('admin-scheduling')" id="nav-btn-admin-scheduling" class="hidden nav-desktop-item px-4 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
+          <span>Dashboard</span>
         </button>
       </nav>
 
       <!-- Right Header Actions (Quick Info) -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 relative">
+        <button id="header-admin-btn" onclick="handleHeaderAdminClick(event)" title="Leadership Scheduling Portal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-semibold bg-surface-container hover:bg-surface-container-high text-primary border border-outline-variant/30 transition-all active:scale-95">
+          <span class="material-symbols-outlined text-[16px] text-secondary" id="header-admin-icon">lock</span>
+          <span class="hidden sm:inline" id="header-admin-text">Admin</span>
+        </button>
+
+        <!-- Admin Quick Menu / Sign Out Dropdown -->
+        <div id="header-admin-dropdown" class="hidden absolute right-0 top-11 w-36 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-1.5 border border-surface-blue-tint dark:border-white/10 shadow-xl z-50 animate-scale-up flex flex-col text-xs">
+          <button onclick="handleAdminLogout(); closeHeaderAdminDropdown();" class="w-full px-3 py-2 rounded-xl text-left hover:bg-error-container/20 flex items-center gap-2 text-error font-semibold transition-all">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -203,7 +222,6 @@
             </div>
             <div class="flex flex-col text-left">
               <span class="leading-tight">Digital Sacrament Program</span>
-              <span class="text-xs font-mono font-medium opacity-80">WardBullet • Tap to open today's order of service</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
@@ -282,7 +300,6 @@
               <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">forum</span>
             </div>
             <span class="font-headline font-bold text-sm text-primary dark:text-white">Ward Slack</span>
-            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Chat & FHE</span>
           </a>
 
           <!-- Calendar Hub (Directly adds Google Calendar) -->
@@ -291,7 +308,6 @@
               <span class="material-symbols-outlined text-2xl">calendar_month</span>
             </div>
             <span class="font-headline font-bold text-sm text-primary dark:text-white">Calendar</span>
-            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Add to Calendar</span>
           </a>
 
           <!-- Directory Hub -->
@@ -300,7 +316,6 @@
               <span class="material-symbols-outlined text-2xl">groups</span>
             </div>
             <span class="font-headline font-bold text-sm text-primary dark:text-white">Leadership</span>
-            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Contacts</span>
           </button>
 
           <!-- Photos Hub (Directly opens Google Photos album without popup) -->
@@ -309,7 +324,6 @@
               <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">photo_library</span>
             </div>
             <span class="font-headline font-bold text-sm text-on-surface dark:text-white">Photo Drop</span>
-            <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">Click to view & add photos</span>
           </a>
         </div>
 
@@ -326,8 +340,8 @@
 
             <!-- User Name Pill -->
             <div class="flex items-center gap-2">
-              <button onclick="openNamePromptModal()" class="text-xs text-on-surface-variant hover:text-primary dark:text-outline-variant dark:hover:text-white flex items-center gap-1 bg-surface-container/60 dark:bg-tertiary-container/40 hover:bg-surface-container px-2.5 py-1 rounded-full transition-all border border-outline-variant/30">
-                <span class="material-symbols-outlined text-[14px]">person</span>
+              <button id="btn-member-name-pill" onclick="openNamePromptModal()" title="Set your name for Sunday attendance" class="text-xs text-on-surface-variant hover:text-primary dark:text-outline-variant dark:hover:text-white flex items-center gap-1.5 bg-surface-container/60 dark:bg-tertiary-container/40 hover:bg-surface-container px-3 py-1 rounded-full transition-all border border-outline-variant/30 active:scale-95 shadow-sm">
+                <span id="display-member-name-icon" class="material-symbols-outlined text-[15px] text-amber-600">person_add</span>
                 <span id="display-member-name" class="font-medium">Set Name</span>
                 <span class="material-symbols-outlined text-[12px] opacity-60">edit</span>
               </button>
@@ -656,6 +670,33 @@
         </form>
       </div>
 
+      <!-- Expense Reimbursement Form -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-6 sm:p-8 flex flex-col items-center text-center gap-5 shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+
+        <div class="w-16 h-16 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+        </div>
+
+        <div class="flex flex-col gap-2 max-w-2xl">
+          <h2 class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">
+            Expense Reimbursement Form
+          </h2>
+          <p class="text-sm text-on-surface-variant dark:text-outline-variant">
+            Did you purchase supplies or food for an 8th Ward event, or FHE group?
+          </p>
+        </div>
+
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSdTptmpPN647kAEMzjbd3AN5xpUUGgEbdD86IouTwfkKsp1GQ/viewform?usp=dialog"
+           target="_blank"
+           class="group bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base sm:text-lg py-3.5 px-7 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-200 interactive-shadow border border-secondary-fixed">
+          <span class="material-symbols-outlined text-2xl">description</span>
+          <span>Reimbursement Form</span>
+          <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">open_in_new</span>
+        </a>
+        <p class="text-sm text-on-surface-variant dark:text-outline-variant">Make sure you separate personal purchases from reimbursements</p>
+      </div>
+
       <!-- Ward Map Section -->
       <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-6 sm:p-8 flex flex-col gap-4 shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
@@ -681,45 +722,660 @@
     </section>
 
     <!-- ======================================================== -->
-    <!-- TAB 3: REIMBURSEMENTS VIEW -->
+    <!-- TAB: PUBLIC SCHEDULING FLOW (4-STEP WIZARD) -->
     <!-- ======================================================== -->
-    <section id="view-reimbursements" class="tab-view hidden flex flex-col gap-stack-lg animate-fade-in">
-      
-      <!-- Page Header -->
-      <div class="flex flex-col gap-2 md:text-center max-w-3xl md:mx-auto">
-        <h1 class="font-headline font-extrabold text-3xl sm:text-4xl text-primary dark:text-white tracking-tight">
-          Ward Reimbursements
-        </h1>
+    <section id="view-schedule" class="tab-view hidden flex flex-col gap-stack-lg animate-fade-in max-w-xl mx-auto w-full">
+
+      <!-- My Appointments (shown when this visitor has upcoming appointments) -->
+      <div id="booking-my-appointments-section" class="hidden bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-3xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-3.5">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-xl">event_available</span>
+          <h2 class="font-headline font-bold text-lg text-primary dark:text-white">My Appointments</h2>
+        </div>
+        <div id="booking-my-appointments-list" class="flex flex-col gap-2.5">
+          <!-- Rendered dynamically by JS -->
+        </div>
       </div>
 
-      <!-- Main Reimbursement Hero CTA Card -->
-      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-8 relative overflow-hidden border border-surface-blue-tint dark:border-white/5 flex flex-col items-center text-center gap-6">
-        <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+      <!-- Wizard Card Outer Shell -->
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-3xl p-5 sm:p-8 border border-surface-blue-tint dark:border-white/5 relative overflow-hidden transition-all duration-300">
         
-        <div class="w-16 h-16 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
-          <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">receipt_long</span>
+        <!-- Top Progress Bar (Visual Stepper) -->
+        <div class="w-full mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
+              <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+              <span>Back</span>
+            </button>
+            <span id="booking-step-badge" class="text-[11px] font-mono font-extrabold uppercase tracking-widest text-secondary bg-secondary-container/40 px-3 py-1 rounded-full">
+              STEP 1 OF 4
+            </span>
+          </div>
+          <div class="grid grid-cols-4 gap-2 h-1.5 w-full bg-surface-container rounded-full overflow-hidden">
+            <div id="booking-progress-1" class="h-full bg-secondary-container rounded-full transition-all duration-300"></div>
+            <div id="booking-progress-2" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
+            <div id="booking-progress-3" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
+            <div id="booking-progress-4" class="h-full bg-surface-container rounded-full transition-all duration-300"></div>
+          </div>
         </div>
 
-        <div class="flex flex-col gap-2 max-w-2xl">
-          <h2 class="font-headline font-bold text-2xl sm:text-3xl text-primary dark:text-white">
-            Expense Reimbursement Form
-          </h2>
-          <p class="text-sm sm:text-base text-on-surface-variant dark:text-outline-variant">
-            Did you purchase supplies or food for an 8th Ward event, or FHE group?
+        <!-- ======================================================== -->
+        <!-- STEP 1: SELECT MEETING TYPE -->
+        <!-- ======================================================== -->
+        <div id="booking-step-1" class="booking-step-container flex flex-col gap-5">
+          <div class="text-center flex flex-col gap-1.5">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-primary dark:text-primary-fixed">Provo YSA 8th Ward</span>
+            <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
+              Select Meeting Type
+            </h2>
+            <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant max-w-sm mx-auto">
+              Choose the purpose of your appointment to see available times.
+            </p>
+          </div>
+
+          <!-- Dynamic List of Meeting Types -->
+          <div id="booking-meeting-types-list" class="flex flex-col gap-3">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- STEP 2: SELECT DATE -->
+        <!-- ======================================================== -->
+        <div id="booking-step-2" class="booking-step-container hidden flex flex-col gap-5">
+          <div class="text-center flex flex-col gap-1.5">
+            <!-- Selected Type Pill -->
+            <div class="flex justify-center">
+              <span id="booking-step2-type-pill" class="text-xs font-mono font-bold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-primary-container/30 px-3.5 py-1 rounded-full border border-outline-variant/30 flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-[15px]">event_note</span>
+                <span id="booking-step2-type-name">Meeting</span>
+              </span>
+            </div>
+            <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
+              Select Date
+            </h2>
+            <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+              Choose an available day for your appointment.
+            </p>
+          </div>
+
+          <!-- Month Calendar Picker Widget -->
+          <div class="bg-surface-container/50 dark:bg-surface-container-high/10 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 flex flex-col gap-4">
+            
+            <!-- Calendar Navigation Header -->
+            <div class="flex items-center justify-between">
+              <button onclick="changeBookingMonth(-1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-90 text-primary dark:text-white transition-all">
+                <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+              </button>
+              <h3 id="booking-calendar-month-year" class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white">
+                October 2026
+              </h3>
+              <button onclick="changeBookingMonth(1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-90 text-primary dark:text-white transition-all">
+                <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+              </button>
+            </div>
+
+            <!-- Day of Week Headers -->
+            <div class="grid grid-cols-7 text-center font-mono text-[11px] font-bold text-on-surface-variant/80 uppercase">
+              <span>SU</span>
+              <span>MO</span>
+              <span>TU</span>
+              <span>WE</span>
+              <span>TH</span>
+              <span>FR</span>
+              <span>SA</span>
+            </div>
+
+            <!-- Calendar Days Grid -->
+            <div id="booking-calendar-grid" class="grid grid-cols-7 gap-1.5 text-center">
+              <!-- Rendered dynamically by JS -->
+            </div>
+
+            <!-- Calendar Legend -->
+            <div class="flex items-center justify-center gap-6 pt-2 border-t border-outline-variant/20 text-[11px] font-mono text-on-surface-variant">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span>Available</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-secondary-container border border-secondary-fixed"></span>
+                <span class="font-bold text-primary dark:text-white">Selected</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Continue to Time Action Button -->
+          <button id="btn-booking-step2-next" onclick="goToBookingStep(3)" disabled class="w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-md">
+            <span>Continue to Time</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- STEP 3: SELECT TIME SLOT -->
+        <!-- ======================================================== -->
+        <div id="booking-step-3" class="booking-step-container hidden flex flex-col gap-5">
+          <div class="text-center flex flex-col gap-1.5">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-primary dark:text-primary-fixed">Provo YSA 8th Ward</span>
+            <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
+              Select a Time
+            </h2>
+            <p id="booking-step3-date-subtitle" class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant font-medium">
+              Thursday, October 24th
+            </p>
+          </div>
+
+          <!-- Time Slots Container -->
+          <div id="booking-slots-container" class="flex flex-col gap-3">
+            <div id="booking-time-slots-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-72 overflow-y-auto p-1">
+              <!-- Rendered dynamically by JS -->
+            </div>
+            <div id="booking-no-slots-msg" class="hidden p-6 text-center bg-surface-container rounded-2xl border border-outline-variant/30 flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined text-3xl text-on-surface-variant/60">schedule</span>
+              <p class="text-sm font-medium text-on-surface-variant">No available appointment slots on this date.</p>
+              <button onclick="goToBookingStep(2)" class="mt-2 text-xs font-mono font-bold text-primary underline">Pick another day</button>
+            </div>
+          </div>
+
+          <!-- Continue Action Button -->
+          <button id="btn-booking-step3-next" onclick="goToBookingStep(4)" disabled class="w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-md">
+            <span>Continue</span>
+            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- STEP 4: CONFIRM EVENT & CONTACT INFO -->
+        <!-- ======================================================== -->
+        <div id="booking-step-4" class="booking-step-container hidden flex flex-col gap-5">
+          <div class="text-center flex flex-col gap-1.5">
+            <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
+              Confirm Event
+            </h2>
+            <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+              Please review details and provide your contact information.
+            </p>
+          </div>
+
+          <!-- Event Summary Card -->
+          <div class="bg-surface-container/60 dark:bg-surface-container-high/20 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 flex flex-col gap-3">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+              <div class="flex flex-col">
+                <span class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant font-bold">EVENT TYPE</span>
+                <span id="booking-summary-title" class="font-headline font-extrabold text-lg text-primary dark:text-white">Bishop's Interview</span>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
+                <span id="booking-summary-icon" class="material-symbols-outlined text-xl">groups</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2 text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-primary dark:text-primary-fixed">calendar_month</span>
+                <span id="booking-summary-date" class="font-medium text-primary dark:text-white">Sunday, October 15, 2026</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-primary dark:text-primary-fixed">schedule</span>
+                <span id="booking-summary-time" class="font-medium text-primary dark:text-white">2:00 PM – 2:15 PM (MST)</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-primary dark:text-primary-fixed">location_on</span>
+                <span id="booking-summary-location" class="font-medium text-primary dark:text-white">Bishop's Office (LSB) / In Person</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Details Form -->
+          <form id="booking-contact-form" onsubmit="handlePublicBookingSubmit(event)" class="flex flex-col gap-3.5">
+            <div class="flex flex-col gap-1">
+              <label for="booking-input-name" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+                Full Name <span class="text-error">*</span>
+              </label>
+              <input type="text" id="booking-input-name" required placeholder="e.g. Jane Doe" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="booking-input-email" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+                Email Address <span class="text-error">*</span>
+              </label>
+              <input type="email" id="booking-input-email" required placeholder="jane@example.com" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label for="booking-input-notes" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+                Meeting Reason / Notes <span class="text-[10px] font-normal text-on-surface-variant/70">(Optional)</span>
+              </label>
+              <textarea id="booking-input-notes" rows="2" placeholder="e.g. Endorsement renewal for BYU, general counsel..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
+            </div>
+
+            <!-- Submit CTA -->
+            <button type="submit" id="btn-booking-submit" class="mt-2 w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all shadow-md interactive-shadow">
+              <span>Schedule Event</span>
+              <span class="material-symbols-outlined text-[20px]">calendar_today</span>
+            </button>
+            
+            <p class="text-[11px] text-center text-on-surface-variant/70 mt-1">
+              By confirming, you agree to receive appointment reminders and calendar invites.
+            </p>
+          </form>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: LEADERSHIP SCHEDULING ADMIN VIEW -->
+    <!-- ======================================================== -->
+    <section id="view-admin-scheduling" class="tab-view hidden flex flex-col gap-stack-lg animate-fade-in max-w-4xl mx-auto w-full">
+      
+      <!-- 1. Passcode Authentication Gate (Shown when locked) -->
+      <div id="admin-auth-gate" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-3xl p-6 sm:p-10 border border-surface-blue-tint dark:border-white/5 flex flex-col items-center text-center gap-6 max-w-md mx-auto my-8">
+        <div class="w-16 h-16 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
+          <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-secondary">Provo YSA 8th Ward</span>
+          <h2 class="font-headline font-bold text-2xl sm:text-3xl text-primary dark:text-white">Leadership Portal</h2>
+          <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+            Enter leadership passcode to manage meeting types, multi-slot availability hours, and date overrides.
           </p>
         </div>
+        
+        <form onsubmit="handleAdminLogin(event)" class="w-full flex flex-col gap-4">
+          <div class="flex flex-col gap-1.5 text-left">
+            <label for="admin-passcode-input" class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant dark:text-outline-variant">
+              Passcode (PIN)
+            </label>
+            <div class="relative">
+              <input
+                id="admin-passcode-input"
+                type="password"
+                inputmode="numeric"
+                maxlength="10"
+                placeholder="Enter PIN"
+                required
+                autocomplete="current-password"
+                class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-center tracking-widest" />
+              <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
+            </div>
+          </div>
 
-<!-- Reimbursement Form Button -->
-<div class="flex justify-center">
-  <a href="https://docs.google.com/forms/d/e/1FAIpQLSdTptmpPN647kAEMzjbd3AN5xpUUGgEbdD86IouTwfkKsp1GQ/viewform?usp=dialog"
-     target="_blank"
-     class="group bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-lg sm:text-xl py-4 px-8 rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-200 interactive-shadow border border-secondary-fixed">
-    <span class="material-symbols-outlined text-2xl">description</span>
-    <span>Reimbursement Form</span>
-    <span class="material-symbols-outlined text-2xl group-hover:translate-x-1 transition-transform">open_in_new</span>
-  </a>
-</div>
-<p class="text-sm text-on-surface-variant dark:text-outline-variant mt-2">Make sure you separate personal purchases from reimbursements</p>
+          <button
+            type="submit"
+            class="w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">lock_open</span>
+            <span>Unlock Dashboard</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 2. Authenticated Admin Dashboard Workspace -->
+      <div id="admin-main-content" class="hidden flex flex-col gap-6 w-full">
+        
+        <!-- Dashboard Top Action Header -->
+        <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+            </div>
+            <div>
+              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-secondary block">Ward Scheduling</span>
+              <h1 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Provo YSA 8th Ward</h1>
+            </div>
+          </div>
+        </div>
+
+        <!-- Segmented Navigation Tabs (Desktop & Tablet) -->
+        <div class="flex items-center gap-1.5 p-1.5 bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 card-shadow overflow-x-auto">
+          <button id="subtab-btn-dashboard" onclick="switchAdminSubTab('dashboard')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-secondary-container text-on-secondary-container shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
+            <span>Dashboard</span>
+          </button>
+          <button id="subtab-btn-types" onclick="switchAdminSubTab('types')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[18px]">style</span>
+            <span>Meeting Types</span>
+          </button>
+          <button id="subtab-btn-weekly" onclick="switchAdminSubTab('weekly')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[18px]">schedule</span>
+            <span>Availability</span>
+          </button>
+          <button id="subtab-btn-announce" onclick="switchAdminSubTab('announce')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[18px]">campaign</span>
+            <span>Announcement</span>
+          </button>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- SUB-VIEW 1: DASHBOARD OVERVIEW (Mockup Screen 1) -->
+        <!-- ====================================================== -->
+        <div id="admin-subview-dashboard" class="flex flex-col gap-6">
+          
+          <!-- Hero Card -->
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-7 border border-surface-blue-tint dark:border-white/5 relative overflow-hidden flex flex-col gap-2">
+            <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
+            <h2 class="font-headline font-bold text-2xl sm:text-3xl text-primary dark:text-white">Admin Dashboard</h2>
+            <p class="text-sm text-on-surface-variant dark:text-outline-variant">
+              Manage schedules, meeting types, and availability.
+            </p>
+          </div>
+
+          <!-- Section 1: Upcoming Appointments -->
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[22px]">calendar_today</span>
+                <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Upcoming Appointments</h3>
+              </div>
+
+              <!-- Filter chips -->
+              <div class="flex items-center gap-1.5">
+                <button id="filter-apt-all" onclick="filterAppointments('all')" class="px-3 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-sm transition-all">All</button>
+                <button id="filter-apt-today" onclick="filterAppointments('today')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Today</button>
+                <button id="filter-apt-upcoming" onclick="filterAppointments('upcoming')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Upcoming</button>
+              </div>
+            </div>
+
+            <!-- Appointments Feed Container -->
+            <div id="admin-appointments-feed" class="flex flex-col gap-4">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+          <!-- Section 2: Past Appointments (Collapsible) -->
+          <div id="admin-past-appointments-section" class="hidden flex flex-col gap-3">
+            <button onclick="togglePastAppointments()" class="w-full flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#202327] hover:bg-surface-container rounded-2xl border border-outline-variant/30 transition-all">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
+                <span class="font-headline font-bold text-sm text-primary dark:text-white">Past Appointments</span>
+                <span id="past-appointments-count" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant">0</span>
+              </div>
+              <span id="past-appointments-chevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
+            </button>
+
+            <div id="admin-past-appointments-feed" class="hidden flex flex-col gap-4">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- SUB-VIEW 2: MEETING TYPES MANAGER (Mockup Screen 4) -->
+        <!-- ====================================================== -->
+        <div id="admin-subview-types" class="hidden flex flex-col gap-5">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h2 class="font-headline font-bold text-2xl text-primary dark:text-white">Meeting Types</h2>
+              <p class="text-xs text-on-surface-variant dark:text-outline-variant">Create and customize appointment options for members.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openCreateMeetingTypeModal()" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 active:scale-95 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                <span>New Meeting Type</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Meeting Types List Container -->
+          <div id="admin-meeting-types-list" class="flex flex-col gap-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- SUB-VIEW 3: AVAILABILITY & OVERRIDES (Mockup Screens 2 & 3) -->
+        <!-- ====================================================== -->
+        <div id="admin-subview-weekly" class="hidden flex flex-col gap-5">
+          
+          <!-- Top Navigation Header with Hours / Overrides Mini Pill Switch -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <button onclick="switchAdminSubTab('dashboard')" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all">
+                <span class="material-symbols-outlined text-[22px]">arrow_back</span>
+              </button>
+              <div>
+                <h2 id="avail-header-title" class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">Edit Weekly Availability</h2>
+                <span id="avail-header-subtitle" class="text-xs font-mono text-on-surface-variant">Set recurring open hours</span>
+              </div>
+            </div>
+
+            <!-- Hours vs Overrides Segmented Mini Pill Toggle -->
+            <div class="flex items-center p-1 bg-surface-container dark:bg-[#202327] rounded-full border border-outline-variant/30 text-xs font-mono">
+              <button id="avail-mini-tab-hours" onclick="switchAvailabilityMiniTab('hours')" class="px-3.5 py-1 rounded-full font-bold bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm transition-all">
+                Hours
+              </button>
+              <button id="avail-mini-tab-overrides" onclick="switchAvailabilityMiniTab('overrides')" class="px-3.5 py-1 rounded-full font-medium text-on-surface-variant hover:text-primary transition-all">
+                Overrides
+              </button>
+            </div>
+          </div>
+
+          <!-- SECTION A: WEEKLY HOURS -->
+          <div id="avail-section-hours" class="flex flex-col gap-5">
+            
+            <!-- Accepting Appointments Master Toggle Card -->
+            <div class="p-4 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl border border-surface-blue-tint dark:border-white/5 flex items-center justify-between">
+              <div class="flex flex-col">
+                <span class="font-headline font-bold text-sm sm:text-base text-primary dark:text-white">Accepting Appointments</span>
+                <span class="text-xs text-on-surface-variant">Master switch to open or pause public bookings</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="toggle-accepting-appointments" onchange="handleToggleAcceptingAppointments(event)" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-outline-variant/60 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+              </label>
+            </div>
+
+            <!-- Weekly Hours Configuration Card -->
+            <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-5">
+              
+              <!-- Circular Day Pill Selector -->
+              <div class="flex flex-col gap-2">
+                <div id="weekly-day-chips" class="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                  <!-- Day chips dynamically rendered -->
+                </div>
+              </div>
+
+              <!-- "Use same hours for all days" Switch Row -->
+              <div class="py-2.5 px-3 bg-surface-container-low dark:bg-[#202327] rounded-xl flex items-center justify-between border border-outline-variant/20">
+                <span class="text-xs sm:text-sm font-medium text-on-surface dark:text-white">Use same hours for all days</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="toggle-same-hours" onchange="handleToggleSameHours(event)" class="sr-only peer">
+                  <div class="w-10 h-5 bg-outline-variant/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary-container"></div>
+                </label>
+              </div>
+
+              <!-- Timezone Row (always Mountain Time) -->
+              <div class="flex items-center justify-between text-xs py-1">
+                <span class="flex items-center gap-1.5 text-on-surface-variant dark:text-outline-variant font-medium">
+                  <span class="material-symbols-outlined text-[16px]">location_on</span>
+                  <span id="weekly-timezone-label">Mountain Time - US &amp; Canada (America/Denver)</span>
+                </span>
+              </div>
+
+              <!-- Multi-Slot Weekly Windows List -->
+              <div id="weekly-hours-container" class="flex flex-col gap-4">
+                <!-- Dynamically rendered -->
+              </div>
+
+              <!-- Actions Footer -->
+              <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-variant/40">
+                <button onclick="switchAdminSubTab('dashboard')" class="px-5 py-2.5 rounded-xl border border-outline-variant text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all">
+                  Cancel
+                </button>
+                <button onclick="handleSaveWeeklyAvailability()" class="px-6 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container text-xs font-mono font-bold active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">save</span>
+                  <span>Save and apply</span>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SECTION B: DATE OVERRIDES (Interactive Calendar & Form) -->
+          <div id="avail-section-overrides" class="hidden flex flex-col gap-5">
+            
+            <!-- Interactive Calendar Card -->
+            <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
+              
+              <!-- Calendar Navigation Header -->
+              <div class="flex items-center justify-between border-b border-surface-variant/40 pb-3">
+                <h3 id="override-calendar-month" class="font-headline font-bold text-lg text-primary dark:text-white">October 2026</h3>
+                <div class="flex items-center gap-1">
+                  <button onclick="handleCalendarPrevMonth()" class="p-1.5 rounded-lg hover:bg-surface-container text-primary transition-all">
+                    <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                  </button>
+                  <button onclick="handleCalendarNextMonth()" class="p-1.5 rounded-lg hover:bg-surface-container text-primary transition-all">
+                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Calendar Days Header (S M T W T F S) -->
+              <div class="grid grid-cols-7 gap-1 text-center font-mono text-[11px] font-bold text-on-surface-variant/80">
+                <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+              </div>
+
+              <!-- Calendar Days Grid -->
+              <div id="override-calendar-days" class="grid grid-cols-7 gap-1 text-center">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Add Override Form for Selected Date -->
+            <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
+              <div class="flex items-center justify-between border-b border-surface-variant/40 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[20px]">event_note</span>
+                  <h3 class="font-headline font-bold text-base text-primary dark:text-white">
+                    Add Override for <span id="override-selected-date-display" class="text-secondary">Today</span>
+                  </h3>
+                </div>
+              </div>
+
+              <!-- Segmented Selection: Available vs Unavailable -->
+              <div class="grid grid-cols-2 gap-2 p-1 bg-surface-container-low rounded-xl border border-outline-variant/30">
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-primary has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant">
+                  <input type="radio" name="override-status-toggle" id="override-type-available" onchange="handleOverrideTypeChange(false)" checked class="sr-only">
+                  <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                  <span>Available</span>
+                </label>
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-error has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant">
+                  <input type="radio" name="override-status-toggle" id="override-type-unavailable" onchange="handleOverrideTypeChange(true)" class="sr-only">
+                  <span class="material-symbols-outlined text-[16px] text-error">block</span>
+                  <span>Unavailable</span>
+                </label>
+              </div>
+
+              <!-- Custom Hours Window (Hidden if marked Unavailable) -->
+              <div id="override-timeslot-fields" class="flex flex-col gap-3">
+                <span class="text-xs font-mono text-on-surface-variant">Specify available hours for this date:</span>
+                <div class="flex items-center justify-between p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30">
+                  <!-- Mobile Trigger -->
+                  <div class="md:hidden flex items-center">
+                    <button type="button" onclick="openOverrideMobileTimePicker()" id="override-mobile-time-pill" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
+                      <span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+                      <span id="override-time-pill-text">9:00 AM – 12:00 PM</span>
+                    </button>
+                  </div>
+
+                  <!-- Desktop Clean Selects -->
+                  <div class="hidden md:flex items-center gap-2 text-xs font-mono">
+                    <select id="override-start-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                      <!-- Options populated via JS -->
+                    </select>
+                    <span class="text-on-surface-variant font-bold px-1">to</span>
+                    <select id="override-end-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                      <!-- Options populated via JS -->
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button type="button" id="btn-delete-date-override" onclick="handleDeleteSelectedDateOverride()" class="hidden w-1/3 bg-error-container/20 hover:bg-error-container/40 text-error font-headline font-bold text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                  <span>Delete</span>
+                </button>
+                <button onclick="handleSaveDateOverrideForm(event)" class="flex-1 bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-[18px]">save</span>
+                  <span>Save Override</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Upcoming Overrides List Card -->
+            <div class="flex flex-col gap-3">
+              <h3 class="font-headline font-bold text-lg text-primary dark:text-white">Upcoming Overrides</h3>
+              <div id="upcoming-overrides-list" class="flex flex-col gap-2.5">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ====================================================== -->
+        <!-- SUB-VIEW 4: SEND ANNOUNCEMENT (Push Notification) -->
+        <!-- ====================================================== -->
+        <div id="admin-subview-announce" class="hidden flex flex-col gap-5">
+          <div>
+            <h2 class="font-headline font-bold text-2xl text-primary dark:text-white">Send Announcement</h2>
+            <p class="text-xs text-on-surface-variant dark:text-outline-variant">Push a notification to everyone who has added the app to their home screen.</p>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">campaign</span>
+              <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">New Announcement</h3>
+            </div>
+            <form onsubmit="handleSendBroadcast(event)" class="flex flex-col gap-3">
+              <input
+                id="broadcast-title"
+                type="text"
+                maxlength="60"
+                required
+                placeholder="Title (e.g. Ward Activity Tonight!)"
+                class="w-full p-3 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+              <textarea
+                id="broadcast-body"
+                rows="3"
+                maxlength="180"
+                required
+                placeholder="Message..."
+                class="w-full p-3 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
+              <button
+                type="submit"
+                id="btn-send-broadcast"
+                class="w-full sm:w-auto self-end bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                <span id="btn-send-broadcast-text">Send Notification</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Mobile Bottom Mini-Navigation for Admin (3 Tabs: Dashboard, Types, Availability) -->
+        <div class="md:hidden flex items-center justify-around p-2 bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 card-shadow sticky bottom-4 z-20 font-mono text-[10px]">
+          <button id="admin-mob-tab-dashboard" onclick="switchAdminSubTab('dashboard')" class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-2xl py-1.5 px-3 font-bold transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
+            <span>Dashboard</span>
+          </button>
+          <button id="admin-mob-tab-types" onclick="switchAdminSubTab('types')" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 transition-all">
+            <span class="material-symbols-outlined text-[18px]">style</span>
+            <span>Types</span>
+          </button>
+          <button id="admin-mob-tab-weekly" onclick="switchAdminSubTab('weekly')" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 transition-all">
+            <span class="material-symbols-outlined text-[18px]">schedule</span>
+            <span>Availability</span>
+          </button>
+          <button id="admin-mob-tab-announce" onclick="switchAdminSubTab('announce')" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 transition-all">
+            <span class="material-symbols-outlined text-[18px]">campaign</span>
+            <span>Announce</span>
+          </button>
+        </div>
+
       </div>
 
     </section>
@@ -913,12 +1569,334 @@
       <form onsubmit="handleSaveNameModal(event)" class="flex flex-col gap-3">
         <div>
           <label class="block text-xs font-bold font-mono text-on-surface-variant uppercase tracking-wider mb-1">Your Full Name</label>
-          <input type="text" id="modal-member-name-input" required placeholder="e.g., Alex Johnson" 
+          <input type="text" id="modal-member-name-input" name="name" autocomplete="name" required placeholder="e.g., Alex Johnson" 
             class="w-full bg-surface-container-low dark:bg-surface-container border border-outline-variant/50 rounded-xl px-3.5 py-2.5 text-sm text-on-surface dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
         </div>
         <div class="flex gap-2 justify-end mt-2">
           <button type="button" onclick="closeModal('name-prompt-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
           <button type="submit" class="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-primary text-white hover:bg-primary-container active:scale-95 transition-all shadow-sm">Save &amp; Continue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Meeting Type Add/Edit -->
+  <div id="meeting-type-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-secondary text-2xl">style</span>
+          <h3 id="mt-modal-title-header" class="font-headline font-bold text-xl">New Meeting Type</h3>
+        </div>
+        <button onclick="closeModal('meeting-type-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="meeting-type-form" onsubmit="handleSaveMeetingTypeForm(event)" class="flex flex-col gap-3.5">
+        <input type="hidden" id="mt-modal-id">
+
+        <div>
+          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Title</label>
+          <input id="mt-modal-title" type="text" placeholder="e.g. Temple Recommend Interview" required class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-medium">
+        </div>
+
+        <div>
+          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Description (Optional)</label>
+          <textarea id="mt-modal-desc" rows="2" placeholder="Brief note explaining the purpose of this appointment..." class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs p-3 resize-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Duration (Minutes)</label>
+            <input id="mt-modal-duration" type="number" min="5" max="180" step="5" value="15" required class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-mono">
+          </div>
+          <div>
+            <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Buffer After (Minutes)</label>
+            <input id="mt-modal-buffer" type="number" min="0" max="60" step="5" value="0" class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-mono">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="mt-modal-active" checked class="rounded border-outline-variant text-primary focus:ring-primary">
+          <label for="mt-modal-active" class="text-xs text-on-surface font-medium">Active (Available for member booking)</label>
+        </div>
+
+        <div class="flex justify-between items-center pt-3 border-t border-surface-variant/40">
+          <button type="button" id="btn-delete-from-edit-mt" onclick="handleDeleteFromEditModal()" class="hidden px-3 py-2 rounded-xl text-xs font-mono font-bold text-error hover:bg-error-container/20 transition-all flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">delete</span>
+            <span>Delete</span>
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" onclick="closeModal('meeting-type-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm">Save Type</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Appointment Details & Actions -->
+  <div id="appointment-details-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-2xl">event</span>
+          <h3 class="font-headline font-bold text-xl">Appointment Details</h3>
+        </div>
+        <button onclick="closeModal('appointment-details-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div id="appointment-modal-body" class="flex flex-col gap-3">
+        <!-- Dynamically filled -->
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 pt-3 border-t border-surface-variant/40">
+        <div class="flex items-center gap-2">
+          <button onclick="handleRescheduleMeetingAdmin()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">edit_calendar</span>
+            <span>Reschedule</span>
+          </button>
+          <button onclick="handleCancelSelectedMeetingAdmin()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error-container/20 hover:bg-error-container/35 text-error active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">cancel</span>
+            <span>Cancel</span>
+          </button>
+        </div>
+        <button onclick="closeModal('appointment-details-modal')" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary dark:text-white text-xs font-mono font-bold transition-all">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Manage Meeting (Reschedule or Cancel) -->
+  <div id="manage-meeting-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-secondary text-2xl">event_upcoming</span>
+          <h3 class="font-headline font-bold text-xl">Manage Meeting</h3>
+        </div>
+        <button onclick="closeModal('manage-meeting-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant">
+        Choose an action for this scheduled appointment:
+      </p>
+
+      <div class="flex flex-col gap-2.5">
+        <!-- Reschedule Option Button -->
+        <button onclick="handleRescheduleMeetingAdmin()" class="w-full p-3.5 rounded-2xl bg-surface-container-low hover:bg-surface-blue-tint/50 border border-outline-variant/30 flex items-center justify-between text-left transition-all active:scale-[0.98] group">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-surface-blue-tint text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-bold text-xs text-primary dark:text-white">Reschedule Meeting</span>
+              <span class="text-[10px] text-on-surface-variant font-mono">Change date or time window</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+        </button>
+
+        <!-- Cancel Option Button -->
+        <button onclick="handleCancelSelectedMeetingAdmin()" class="w-full p-3.5 rounded-2xl bg-error-container/10 hover:bg-error-container/25 border border-error/20 flex items-center justify-between text-left transition-all active:scale-[0.98] group">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-error-container/30 text-error flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[20px]">cancel</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-bold text-xs text-error">Cancel Meeting</span>
+              <span class="text-[10px] text-on-surface-variant font-mono">Remove appointment slot</span>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-[18px] text-error group-hover:translate-x-1 transition-transform">chevron_right</span>
+        </button>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-surface-variant/40">
+        <button onclick="closeModal('manage-meeting-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">
+          Back
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Cancel Appointment (In-App Styled) -->
+  <div id="cancel-appointment-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-error/20 flex flex-col gap-4 animate-scale-up">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-error-container/30 text-error flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl">event_busy</span>
+        </div>
+        <div class="flex flex-col">
+          <h3 class="font-headline font-bold text-lg text-error">Cancel Appointment</h3>
+          <span class="text-[11px] text-on-surface-variant font-mono">Confirm cancellation</span>
+        </div>
+      </div>
+
+      <div id="cancel-appointment-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 flex flex-col gap-1 text-xs">
+        <!-- Dynamically populated attendee & time details -->
+      </div>
+
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant leading-relaxed">
+        Are you sure you want to cancel this meeting? A cancellation email will be sent to the attendee and the time slot will be reopened.
+      </p>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
+        <button type="button" onclick="closeModal('cancel-appointment-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+          Keep Meeting
+        </button>
+        <button type="button" id="btn-confirm-cancel-appointment" onclick="executeConfirmedAppointmentCancellation()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error hover:bg-error/90 text-white shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[16px]">cancel</span>
+          <span>Yes, Cancel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Confirm Delete Meeting Type (In-App Styled) -->
+  <div id="delete-meeting-type-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-error/20 flex flex-col gap-4 animate-scale-up">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-error-container/30 text-error flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl">delete_forever</span>
+        </div>
+        <div class="flex flex-col">
+          <h3 class="font-headline font-bold text-lg text-error">Delete Meeting Type</h3>
+          <span class="text-[11px] text-on-surface-variant font-mono">Permanent removal</span>
+        </div>
+      </div>
+
+      <div id="delete-meeting-type-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 flex flex-col gap-1 text-xs">
+        <!-- Dynamically populated meeting type details -->
+      </div>
+
+      <p class="text-xs text-on-surface-variant dark:text-outline-variant leading-relaxed">
+        Are you sure you want to delete this meeting type? It will be removed from your appointment options and deleted from Supabase.
+      </p>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
+        <button type="button" onclick="closeModal('delete-meeting-type-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+          Keep Type
+        </button>
+        <button type="button" id="btn-confirm-delete-meeting-type" onclick="executeConfirmedMeetingTypeDeletion()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error hover:bg-error/90 text-white shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[16px]">delete</span>
+          <span>Delete Type</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mobile Time Picker Bottom Sheet (Matching Screenshot) -->
+  <div id="mobile-time-picker-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-slide-up sm:animate-scale-up">
+      
+      <!-- Top Time Toggle Tabs (Start Time vs End Time) -->
+      <div class="grid grid-cols-2 gap-2 bg-surface-container-low dark:bg-[#22252a] p-1.5 rounded-2xl border border-outline-variant/30">
+        <button id="picker-tab-start" onclick="switchPickerMode(true)" class="p-3 rounded-xl flex flex-col items-center bg-white dark:bg-[#2d3137] card-shadow text-primary dark:text-white transition-all">
+          <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant font-medium">Start time</span>
+          <span id="picker-display-start" class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white">10:00 AM</span>
+        </button>
+        <button id="picker-tab-end" onclick="switchPickerMode(false)" class="p-3 rounded-xl flex flex-col items-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all">
+          <span class="text-[11px] font-mono font-medium">End time</span>
+          <span id="picker-display-end" class="font-headline font-bold text-base sm:text-lg">10:45 AM</span>
+        </button>
+      </div>
+
+      <!-- Wheel Roller / Time Selector Wheel -->
+      <div class="relative h-44 flex items-center justify-center overflow-hidden my-1 select-none">
+        <!-- Center Active Highlight Bar -->
+        <div class="absolute inset-x-2 top-1/2 -translate-y-1/2 h-11 bg-secondary-container/20 dark:bg-white/10 rounded-2xl pointer-events-none border border-secondary-fixed/40 dark:border-white/10"></div>
+
+        <!-- Top & Bottom Gradient Shadows -->
+        <div class="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-surface-container-lowest dark:from-[#1a1c20] to-transparent z-10"></div>
+        <div class="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-surface-container-lowest dark:from-[#1a1c20] to-transparent z-10"></div>
+
+        <div class="grid grid-cols-3 w-full h-full text-center relative z-0">
+          <!-- Hours Column (1 - 12) -->
+          <div id="wheel-hours" class="wheel-column h-full overflow-y-auto snap-y snap-mandatory py-16 flex flex-col gap-1 items-center">
+            <!-- Dynamically populated 1..12 -->
+          </div>
+
+          <!-- Minutes Column (00 - 55 in 5m steps) -->
+          <div id="wheel-minutes" class="wheel-column h-full overflow-y-auto snap-y snap-mandatory py-16 flex flex-col gap-1 items-center">
+            <!-- Dynamically populated 00, 05, 10... -->
+          </div>
+
+          <!-- AM / PM Column -->
+          <div id="wheel-ampm" class="wheel-column h-full overflow-y-auto snap-y snap-mandatory py-16 flex flex-col gap-1 items-center">
+            <!-- AM, PM -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col gap-2 pt-1">
+        <button onclick="applyMobileTimePicker()" class="w-full py-3.5 rounded-2xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2">
+          <span>Use these times</span>
+        </button>
+        <button onclick="closeModal('mobile-time-picker-modal')" class="w-full py-2 text-on-surface-variant hover:text-primary dark:hover:text-white font-mono text-sm font-semibold text-center transition-colors">
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Admin Sign In / Passcode Prompt -->
+  <div id="admin-login-modal" class="modal-backdrop hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-5 animate-scale-up">
+      <div class="flex justify-between items-start">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">lock</span>
+          </div>
+          <div>
+            <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-secondary block">Leadership Access</span>
+            <h3 class="font-headline font-bold text-xl text-primary dark:text-white">Sign In as Admin</h3>
+          </div>
+        </div>
+        <button onclick="closeModal('admin-login-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+        Enter the leadership PIN to unlock the scheduling dashboard and management tools.
+      </p>
+
+      <form onsubmit="handleAdminModalLogin(event)" class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1.5">
+          <label for="modal-admin-pin-input" class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant dark:text-outline-variant">
+            Leadership PIN
+          </label>
+          <div class="relative">
+            <input
+              id="modal-admin-pin-input"
+              type="password"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="Enter PIN"
+              required
+              autocomplete="current-password"
+              class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-center tracking-widest" />
+            <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
+          <button type="button" onclick="closeModal('admin-login-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">lock_open</span>
+            <span>Sign In</span>
+          </button>
         </div>
       </form>
     </div>
@@ -950,26 +1928,34 @@
   </footer>
 
   <!-- Mobile Bottom Navigation Bar (Fixed Bottom) -->
-  <nav class="md:hidden bg-surface/95 dark:bg-[#181a1e]/95 backdrop-blur-md text-primary dark:text-primary-fixed-dim font-mono fixed bottom-0 left-0 w-full z-50 border-t border-outline-variant/30 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex justify-around items-center px-3 py-2">
+  <nav class="md:hidden bg-surface/95 dark:bg-[#181a1e]/95 backdrop-blur-md text-primary dark:text-primary-fixed-dim font-mono fixed bottom-0 left-0 w-full z-50 border-t border-outline-variant/30 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex justify-around items-center px-2 py-2">
     <!-- Home Tab -->
-    <button onclick="navigateTab('home')" id="tab-home" class="nav-tab-btn flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-all duration-200">
+    <button onclick="navigateTab('home')" id="tab-home" class="nav-tab-btn flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-3.5 py-1.5 active:scale-90 transition-all duration-200">
       <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">home</span>
       <span class="text-[10px] font-bold mt-0.5">Home</span>
     </button>
 
     <!-- Ward Tab -->
-    <button onclick="navigateTab('ward')" id="tab-ward" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+    <button onclick="navigateTab('ward')" id="tab-ward" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
       <span class="material-symbols-outlined text-[20px]">groups</span>
-      <span class="text-[10px] font-medium mt-0.5">Ward</span>
+      <span class="text-[10px] font-medium mt-0.5">Leaders</span>
     </button>
 
-    <!-- Reimbursements Tab -->
-    <button onclick="navigateTab('reimbursements')" id="tab-reimbursements" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
-      <span class="material-symbols-outlined text-[20px]">receipt_long</span>
-      <span class="text-[10px] font-medium mt-0.5">Reimbursement</span>
+    <!-- Schedule Tab -->
+    <button onclick="navigateTab('schedule')" id="tab-schedule" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+      <span class="material-symbols-outlined text-[20px]">event</span>
+      <span class="text-[10px] font-medium mt-0.5">Schedule</span>
+    </button>
+
+    <!-- Dashboard Tab (Hidden until signed in) -->
+    <button onclick="navigateTab('admin-scheduling')" id="tab-admin-scheduling" class="hidden nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+      <span class="material-symbols-outlined text-[20px]">space_dashboard</span>
+      <span class="text-[10px] font-medium mt-0.5">Dashboard</span>
     </button>
   </nav>
 
+  <script src="config.js"></script>
   <script src="app.js"></script>
+  <script src="scheduling-admin.js"></script>
 </body>
 </html>

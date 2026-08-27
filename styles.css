@@ -96,3 +96,108 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(115, 119, 127, 0.5);
 }
+
+/* Scheduling Admin Helpers */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.calendar-day-active {
+  background-color: #001b35 !important;
+  color: #ffffff !important;
+}
+
+/* Wheel / Roller Time Picker */
+.wheel-column {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.wheel-column::-webkit-scrollbar {
+  display: none;
+}
+.wheel-item {
+  scroll-snap-align: center;
+  user-select: none;
+}
+
+/* Public Booking 4-Step Wizard Styles */
+.booking-calendar-day {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease-in-out;
+}
+
+.booking-calendar-day:hover:not(.day-disabled):not(.day-selected) {
+  background-color: #f0edef;
+}
+
+.booking-calendar-day.day-selected {
+  background-color: #fed000 !important;
+  color: #231b00 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(254, 208, 0, 0.4);
+}
+
+.booking-calendar-day.day-has-slots::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background-color: #eab308;
+}
+
+.booking-calendar-day.day-selected::after {
+  background-color: #231b00 !important;
+}
+
+.booking-calendar-day.day-disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.booking-calendar-day.day-today {
+  border: 1.5px solid #fed000;
+}
+
+.slot-btn-selected {
+  background-color: #fed000 !important;
+  color: #231b00 !important;
+  border-color: #fed000 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(254, 208, 0, 0.35);
+  transform: scale(1.02);
+}
+
+.slot-btn-booked {
+  background-color: rgba(229, 231, 235, 0.75) !important;
+  color: #9ca3af !important;
+  border-color: rgba(209, 213, 219, 0.8) !important;
+  text-decoration: line-through !important;
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  box-shadow: none !important;
+}
+
+.dark .slot-btn-booked {
+  background-color: rgba(39, 42, 48, 0.85) !important;
+  color: #6b7280 !important;
+  border-color: rgba(55, 65, 81, 0.8) !important;
+}
