@@ -579,6 +579,14 @@ async function loadAllSchedulingData() {
     SCHEDULING_STATE.weeklyAvailability = DEFAULT_WEEKLY_AVAILABILITY;
   }
 
+  // Keep the "active day" pills in the availability editor in sync with
+  // whatever days actually have hours saved (e.g. rows seeded directly in
+  // the database) — otherwise a day with real availability can end up with
+  // no card/delete button in the admin UI at all, since activeDaysSelected
+  // only ever started as a hardcoded [Sunday, Wednesday].
+  const daysWithHours = [...new Set(SCHEDULING_STATE.weeklyAvailability.map(s => s.day_of_week))].sort((a, b) => a - b);
+  SCHEDULING_STATE.activeDaysSelected = daysWithHours;
+
   // 4. Date Overrides
   try {
     if (sb) {
@@ -2300,46 +2308,40 @@ function renderPublicMeetingTypes() {
     else if (lowerTitle.includes('bishop')) iconName = 'account_circle';
     else if (lowerTitle.includes('secretary')) iconName = 'support_agent';
 
-    const locationText = type.location || '395 E 600 N, Manavu chapel, up the stairs';
-
     return `
-      <div onclick="selectBookingMeetingType('${escapeHtml(type.id)}')" 
-           class="group bg-surface-container-lowest dark:bg-[#202227] hover:bg-surface-blue-tint/50 dark:hover:bg-primary-container/20 border ${isSelected ? 'border-primary bg-surface-blue-tint/50 shadow-md ring-2 ring-primary/30' : 'border-outline-variant/30 dark:border-white/5'} rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer transition-all duration-200 active:scale-[0.99] shadow-sm hover:shadow-md">
-        
-        <div class="flex items-start gap-4">
-          <div class="w-11 h-11 rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-xs mt-0.5">
-            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">${iconName}</span>
+      <div onclick="selectBookingMeetingType('${escapeHtml(type.id)}')"
+           class="group bg-surface-container-lowest dark:bg-[#202227] hover:bg-surface-blue-tint/50 dark:hover:bg-primary-container/20 border ${isSelected ? 'border-primary bg-surface-blue-tint/50 shadow-md ring-2 ring-primary/30' : 'border-outline-variant/30 dark:border-white/5'} rounded-2xl p-3 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 cursor-pointer transition-all duration-200 active:scale-[0.99] shadow-sm hover:shadow-md">
+
+        <div class="flex items-start gap-2.5 sm:gap-4 min-w-0">
+          <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-xs mt-0.5">
+            <span class="material-symbols-outlined text-base sm:text-2xl" style="font-variation-settings: 'FILL' 1;">${iconName}</span>
           </div>
 
-          <div class="flex flex-col gap-1.5 text-left max-w-xl">
+          <div class="flex flex-col gap-0.5 sm:gap-1.5 text-left min-w-0">
             <div class="flex items-center gap-2.5 flex-wrap">
-              <h3 class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white group-hover:text-secondary-container-dark transition-colors">
+              <h3 class="font-headline font-bold text-sm sm:text-lg text-primary dark:text-white group-hover:text-secondary-container-dark transition-colors">
                 ${escapeHtml(type.title)}
               </h3>
             </div>
 
-            <!-- Duration & Location Badges -->
+            <!-- Duration Badge -->
             <div class="flex items-center gap-3 text-xs font-mono text-on-surface-variant flex-wrap">
               <span class="flex items-center gap-1 font-bold text-primary dark:text-primary-fixed">
                 <span class="material-symbols-outlined text-[15px]">schedule</span>
                 <span>${type.duration_minutes || 15} min</span>
               </span>
-              <span class="flex items-center gap-1 text-[11px]">
-                <span class="material-symbols-outlined text-[15px] text-secondary">location_on</span>
-                <span>${escapeHtml(locationText)}</span>
-              </span>
             </div>
 
             ${type.description ? `
-              <p class="text-xs text-on-surface-variant dark:text-outline-variant whitespace-pre-line leading-relaxed mt-0.5">
+              <p class="text-xs text-on-surface-variant dark:text-outline-variant leading-snug sm:leading-relaxed mt-0.5 line-clamp-2 sm:line-clamp-none sm:whitespace-pre-line">
                 ${formatMeetingDescription(type.description)}
               </p>
             ` : ''}
           </div>
         </div>
 
-        <div class="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
-          <span class="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary group-hover:translate-x-1 transition-all text-2xl">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <span class="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary group-hover:translate-x-1 transition-all text-xl sm:text-2xl">
             chevron_right
           </span>
         </div>
@@ -2369,10 +2371,6 @@ function selectBookingMeetingType(typeId) {
   // a new one.
   PUBLIC_BOOKING_STATE.reschedulingAppointment = null;
 
-  // Update step 2 pill badge
-  const pillName = document.getElementById('booking-step2-type-name');
-  if (pillName) pillName.textContent = found.title;
-
   goToBookingStep(2);
 }
 
@@ -2399,28 +2397,14 @@ function goToBookingStep(step) {
     }
   }
 
-  // Update Progress Stepper
+  // No step counter or progress bar (per ward request) — just a Back
+  // button, visible from Step 2 onward.
   const backBtn = document.getElementById('booking-nav-back-btn');
-  const stepBadge = document.getElementById('booking-step-badge');
-
   if (backBtn) {
     if (step > 1) {
       backBtn.classList.remove('invisible');
     } else {
       backBtn.classList.add('invisible');
-    }
-  }
-
-  if (stepBadge) {
-    stepBadge.textContent = `STEP ${step} OF 4`;
-  }
-
-  for (let i = 1; i <= 4; i++) {
-    const bar = document.getElementById(`booking-progress-${i}`);
-    if (bar) {
-      bar.className = i <= step
-        ? "h-full bg-secondary-container rounded-full transition-all duration-300"
-        : "h-full bg-surface-container rounded-full transition-all duration-300";
     }
   }
 
@@ -2477,8 +2461,25 @@ function hasAvailabilityOnDate(dateStr) {
 function renderPublicBookingCalendar() {
   const container = document.getElementById('booking-calendar-grid');
   const monthYearLabel = document.getElementById('booking-calendar-month-year');
-  const nextBtn = document.getElementById('btn-booking-step2-next');
   if (!container || !monthYearLabel) return;
+
+  // Keep the type pill + full description in sync with whatever meeting
+  // type is selected — covers both picking a type on Step 1 and the
+  // reschedule flow, which jumps straight to Step 2. The description shows
+  // here in full since Step 1's cards clamp it to 2 lines on mobile.
+  const selectedType = PUBLIC_BOOKING_STATE.selectedType || DEFAULT_MEETING_TYPES[0];
+  const pillName = document.getElementById('booking-step2-type-name');
+  if (pillName) pillName.textContent = selectedType.title;
+  const descEl = document.getElementById('booking-step2-type-description');
+  if (descEl) {
+    if (selectedType.description) {
+      descEl.innerHTML = formatMeetingDescription(selectedType.description);
+      descEl.classList.remove('hidden');
+    } else {
+      descEl.innerHTML = '';
+      descEl.classList.add('hidden');
+    }
+  }
 
   const year = PUBLIC_BOOKING_STATE.calendarYear;
   const month = PUBLIC_BOOKING_STATE.calendarMonth;
@@ -2542,11 +2543,6 @@ function renderPublicBookingCalendar() {
   }
 
   container.innerHTML = html;
-
-  // Toggle next button
-  if (nextBtn) {
-    nextBtn.disabled = !PUBLIC_BOOKING_STATE.selectedDate;
-  }
 }
 
 /**
@@ -2556,9 +2552,6 @@ async function selectBookingDate(dateStr) {
   PUBLIC_BOOKING_STATE.selectedDate = dateStr;
   PUBLIC_BOOKING_STATE.selectedSlotTime = null; // reset slot
   renderPublicBookingCalendar();
-
-  const nextBtn = document.getElementById('btn-booking-step2-next');
-  if (nextBtn) nextBtn.disabled = false;
 
   // Pull the latest booked appointments before showing slots, so a time
   // someone else just booked shows up crossed out instead of stale-available.
@@ -2790,7 +2783,6 @@ function renderPublicTimeSlots() {
   const container = document.getElementById('booking-time-slots-grid');
   const noSlotsMsg = document.getElementById('booking-no-slots-msg');
   const dateSubtitle = document.getElementById('booking-step3-date-subtitle');
-  const nextBtn = document.getElementById('btn-booking-step3-next');
   if (!container || !noSlotsMsg) return;
 
   const dateStr = PUBLIC_BOOKING_STATE.selectedDate;
@@ -2805,7 +2797,6 @@ function renderPublicTimeSlots() {
   if (availableSlots.length === 0) {
     container.innerHTML = '';
     noSlotsMsg.classList.remove('hidden');
-    if (nextBtn) nextBtn.disabled = true;
     return;
   }
 
@@ -2837,10 +2828,6 @@ function renderPublicTimeSlots() {
       </button>
     `;
   }).join('');
-
-  if (nextBtn) {
-    nextBtn.disabled = !PUBLIC_BOOKING_STATE.selectedSlotTime;
-  }
 }
 
 /**
@@ -2849,9 +2836,6 @@ function renderPublicTimeSlots() {
 function selectBookingSlot(slotTime) {
   PUBLIC_BOOKING_STATE.selectedSlotTime = slotTime;
   renderPublicTimeSlots();
-
-  const nextBtn = document.getElementById('btn-booking-step3-next');
-  if (nextBtn) nextBtn.disabled = false;
 
   // Auto-advance to confirmation after a brief pause
   setTimeout(() => {
