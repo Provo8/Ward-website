@@ -3,7 +3,7 @@
 // the confirmation email. Verifies the appointment's cancel_token, marks it
 // cancelled in Supabase, emails a cancellation notice, and shows a result page.
 
-const { supabaseServiceFetch, transporter, renderCancellationHtml } = require("./_lib");
+const { supabaseServiceFetch, transporter, renderCancellationHtml, renderMessagePage: messagePage, sendAdminPush } = require("./_lib");
 const { deleteCalendarEvent } = require("./_googleCalendar");
 
 module.exports = async function handler(req, res) {
@@ -65,6 +65,16 @@ module.exports = async function handler(req, res) {
       console.warn("cancel-appointment: failed to remove Google Calendar event", calErr);
     }
 
+    try {
+      await sendAdminPush({
+        title: "Appointment Cancelled",
+        body: `${appt.attendee_name} — ${title} on ${formattedDate} at ${formattedTime}`,
+        url: "/#admin-scheduling",
+      });
+    } catch (pushErr) {
+      console.warn("cancel-appointment: failed to push-notify admins", pushErr);
+    }
+
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && appt.attendee_email) {
       try {
         const cancelHtml = renderCancellationHtml({
@@ -91,18 +101,3 @@ module.exports = async function handler(req, res) {
     return res.status(500).send(messagePage("Something Went Wrong", "We couldn't process your request. Please try again later.", origin));
   }
 };
-
-function messagePage(heading, message, origin) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f6f8fb;margin:0;padding:24px;display:flex;min-height:100vh;align-items:center;justify-content:center}
-    .card{max-width:440px;width:100%;background:#fff;border-radius:20px;padding:36px 28px;text-align:center;box-shadow:0 8px 30px rgba(0,27,53,.08);border:1px solid #ebf2f8}
-    h1{font-size:20px;font-weight:800;color:#001b35;margin:0 0 10px}
-    p{color:#73777f;font-size:14px;line-height:1.6;margin:0}
-    a.btn{display:inline-block;margin-top:20px;background:#fed000;color:#231b00;font-weight:700;font-size:14px;padding:12px 24px;border-radius:12px;text-decoration:none}
-  </style></head><body><div class="card">
-  <h1>${heading}</h1>
-  <p>${message}</p>
-  ${origin ? `<a class="btn" href="${origin}/#schedule">Go to Scheduling Page</a>` : ""}
-  </div></body></html>`;
-}

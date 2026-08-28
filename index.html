@@ -1356,11 +1356,11 @@
             <div>
               <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-secondary block">Leadership Access</span>
               <h2 class="font-headline font-bold text-lg text-primary dark:text-white">Admins</h2>
-              <p class="text-xs text-on-surface-variant dark:text-outline-variant mt-1">Full Access admins can manage everything; Announcements Only admins can only send notifications.</p>
+              <p class="text-xs text-on-surface-variant dark:text-outline-variant mt-1">Full Access admins can manage everything, including other admins. Scheduling admins can manage appointments and availability, but not other admins. Announcements Only admins can only send notifications.</p>
             </div>
             <button onclick="openCreateAdminModal()" class="shrink-0 bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm">
               <span class="material-symbols-outlined text-[18px]">add</span>
-              <span>Add Admin</span>
+              <span>Invite Admin</span>
             </button>
           </div>
 
@@ -1813,35 +1813,35 @@
       <div class="flex justify-between items-start">
         <div class="flex items-center gap-2.5">
           <span class="material-symbols-outlined text-secondary text-2xl">admin_panel_settings</span>
-          <h3 class="font-headline font-bold text-xl">New Admin</h3>
+          <h3 id="admin-user-modal-title" class="font-headline font-bold text-xl">Invite Admin</h3>
         </div>
         <button onclick="closeModal('admin-user-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
+      <p id="admin-user-modal-subtitle" class="text-xs text-on-surface-variant dark:text-outline-variant -mt-2">
+        They'll get an email with a link to set their own password.
+      </p>
+
       <form id="admin-user-form" onsubmit="handleSaveAdminUserForm(event)" class="flex flex-col gap-3.5">
         <div>
           <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Email</label>
-          <input id="admin-user-modal-email" type="email" placeholder="you@example.com" required class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-medium">
-        </div>
-
-        <div>
-          <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Password</label>
-          <input id="admin-user-modal-password" type="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password" class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-medium">
+          <input id="admin-user-modal-email" type="email" placeholder="you@example.com" required class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-medium disabled:opacity-60">
         </div>
 
         <div>
           <label class="block font-mono text-xs font-semibold text-on-surface dark:text-outline-variant mb-1">Permission Level</label>
           <select id="admin-user-modal-role" required class="w-full rounded-xl border border-outline-variant/60 dark:border-white/10 bg-surface dark:bg-[#141619] text-xs px-3.5 py-2.5 font-medium">
             <option value="full_access">Full Access — everything, including managing admins</option>
+            <option value="scheduling_access">Scheduling — manage appointments &amp; availability, no admin management</option>
             <option value="announcements_only">Announcements Only — can only send notifications</option>
           </select>
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-surface-variant/40">
           <button type="button" onclick="closeModal('admin-user-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm">Create Admin</button>
+          <button type="submit" id="admin-user-modal-submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm">Send Invite</button>
         </div>
       </form>
     </div>

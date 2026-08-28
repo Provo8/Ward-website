@@ -3,8 +3,8 @@
 // new-appointment push alerts, dispatched by `action`. Combined into one
 // route (was api/push-subscribe.js + api/push-unsubscribe.js) to stay under
 // Vercel's per-deployment serverless function limit on the Hobby plan.
-// full_access only — only signed-in full_access admins may listen in on
-// new bookings.
+// full_access/scheduling_access only — only signed-in admins who can see
+// the scheduling dashboard may listen in on new bookings/cancellations.
 
 const { supabaseServiceFetch, requireAdmin } = require("./_lib");
 
@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const auth = await requireAdmin(req, { role: "full_access" });
+  const auth = await requireAdmin(req, { role: ["full_access", "scheduling_access"] });
   if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
   const { action } = req.body || {};
