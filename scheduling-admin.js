@@ -3322,36 +3322,32 @@ async function handlePublicBookingSubmit(event) {
         newAppointment.cancel_token = data[0].cancel_token || cancelToken;
         console.log('Successfully saved appointment to Supabase:', data[0]);
 
-        // Send confirmation email via Vercel API route
-        try {
-          const emailResult = await sendAppointmentEmail('create', newAppointment);
-          if (emailResult) {
-            console.log('Confirmation email result:', emailResult);
-          }
-        } catch (fnEx) {
-          console.warn('Error sending confirmation email:', fnEx);
-        }
-
-        // Mirror onto the bishop's personal Google Calendar
-        try {
-          const calResult = await syncAppointmentToGoogleCalendar('upsert', newAppointment);
-          if (calResult && calResult.google_event_id) {
-            newAppointment.google_event_id = calResult.google_event_id;
-          }
-        } catch (calEx) {
-          console.warn('Error syncing appointment to Google Calendar:', calEx);
-        }
-
-        // Push-notify any signed-in admin devices
-        try {
-          await fetch('/api/notify-admins', {
+        // Confirmation email, Google Calendar sync, and admin push-notify are
+        // all best-effort side effects that don't need to block the booking
+        // flow — run them concurrently in the background instead of awaiting
+        // each in turn (which was adding several seconds of visible wait per
+        // appointment) so the user sees the confirmation immediately.
+        Promise.allSettled([
+          sendAppointmentEmail('create', newAppointment).then((emailResult) => {
+            if (emailResult) console.log('Confirmation email result:', emailResult);
+          }),
+          syncAppointmentToGoogleCalendar('upsert', newAppointment).then((calResult) => {
+            if (calResult && calResult.success === false) {
+              console.warn('Calendar sync did not succeed:', calResult.error || calResult.reason);
+            } else if (calResult && calResult.google_event_id) {
+              newAppointment.google_event_id = calResult.google_event_id;
+            }
+          }),
+          fetch('/api/notify-admins', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ appointment: newAppointment }),
+          }),
+        ]).then((results) => {
+          results.forEach((r) => {
+            if (r.status === 'rejected') console.warn('Post-booking side effect failed:', r.reason);
           });
-        } catch (notifyEx) {
-          console.warn('Error notifying admins:', notifyEx);
-        }
+        });
 
         // If this device is already installed & subscribed (e.g. subscribed
         // before ever booking), re-link the subscription to this email now
