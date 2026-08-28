@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS weekly_availability (
   end_time     TIME NOT NULL   -- e.g. '11:00:00'
 );
 
--- Seed Default Availability (Sundays 1:00 PM - 3:00 PM, Wednesdays & Thursdays 6:30 PM - 8:30 PM)
+-- Seed Default Availability (Sundays 1:00 PM - 3:00 PM, Wednesdays 6:30 PM - 8:30 PM)
 INSERT INTO weekly_availability (day_of_week, start_time, end_time)
 SELECT 0, '13:00:00', '15:00:00'
 WHERE NOT EXISTS (SELECT 1 FROM weekly_availability WHERE day_of_week = 0);
@@ -70,10 +70,6 @@ WHERE NOT EXISTS (SELECT 1 FROM weekly_availability WHERE day_of_week = 0);
 INSERT INTO weekly_availability (day_of_week, start_time, end_time)
 SELECT 3, '18:30:00', '20:30:00'
 WHERE NOT EXISTS (SELECT 1 FROM weekly_availability WHERE day_of_week = 3);
-
-INSERT INTO weekly_availability (day_of_week, start_time, end_time)
-SELECT 4, '18:30:00', '20:30:00'
-WHERE NOT EXISTS (SELECT 1 FROM weekly_availability WHERE day_of_week = 4);
 
 -- ============================================================
 -- 3. Date Overrides
@@ -131,6 +127,10 @@ CREATE TABLE IF NOT EXISTS appointments (
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_24h_sent_at TIMESTAMPTZ;
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_30m_sent_at TIMESTAMPTZ;
 
+-- Google Calendar event id for this appointment, set once it has been
+-- synced to the bishop's personal Google Calendar (see api/calendar-sync.js)
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS google_event_id TEXT;
+
 -- ============================================================
 -- 5b. Admin Push Subscriptions
 --     Web Push endpoints for admins who opted into new-appointment
@@ -144,14 +144,16 @@ CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- RLS enabled with NO anon/authenticated policies: only the service-role
+-- key (used server-side in api/push-subscribe.js, api/push-unsubscribe.js,
+-- api/admin-broadcast.js, api/notify-admins.js) can touch this table —
+-- it bypasses RLS by design. This table only ever holds signed-in admins'
+-- push subscriptions, so the public anon key has no legitimate reason to
+-- read or write it.
 ALTER TABLE admin_push_subscriptions ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Public insert admin_push_subscriptions" ON admin_push_subscriptions;
-CREATE POLICY "Public insert admin_push_subscriptions" ON admin_push_subscriptions FOR INSERT TO anon, authenticated WITH CHECK (true);
 DROP POLICY IF EXISTS "Public select admin_push_subscriptions" ON admin_push_subscriptions;
-CREATE POLICY "Public select admin_push_subscriptions" ON admin_push_subscriptions FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public delete admin_push_subscriptions" ON admin_push_subscriptions;
-CREATE POLICY "Public delete admin_push_subscriptions" ON admin_push_subscriptions FOR DELETE TO anon, authenticated USING (true);
 
 -- ============================================================
 -- 5c. Site Push Subscriptions
@@ -175,14 +177,38 @@ ALTER TABLE attendee_push_subscriptions ALTER COLUMN email DROP NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_attendee_push_subscriptions_email ON attendee_push_subscriptions (lower(email));
 
+-- Anonymous visitors legitimately need to INSERT here (installing the PWA
+-- without logging in), but reading/deleting other people's subscriptions
+-- has no public use case — those move server-side onto the service-role key.
 ALTER TABLE attendee_push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public insert attendee_push_subscriptions" ON attendee_push_subscriptions;
 CREATE POLICY "Public insert attendee_push_subscriptions" ON attendee_push_subscriptions FOR INSERT TO anon, authenticated WITH CHECK (true);
 DROP POLICY IF EXISTS "Public select attendee_push_subscriptions" ON attendee_push_subscriptions;
-CREATE POLICY "Public select attendee_push_subscriptions" ON attendee_push_subscriptions FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public delete attendee_push_subscriptions" ON attendee_push_subscriptions;
-CREATE POLICY "Public delete attendee_push_subscriptions" ON attendee_push_subscriptions FOR DELETE TO anon, authenticated USING (true);
+
+-- ============================================================
+-- 5d. Admin User Accounts
+--     Real per-person leadership logins, replacing the old shared PIN.
+--     `role` gates dashboard access: 'full_access' can do everything
+--     including managing other admins; 'announcements_only' can only
+--     send broadcast notifications (see api/admin-broadcast.js).
+-- ============================================================
+CREATE TABLE IF NOT EXISTS admin_users (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         TEXT        NOT NULL UNIQUE,
+  password_hash TEXT        NOT NULL,
+  role          TEXT        NOT NULL CHECK (role IN ('full_access', 'announcements_only')),
+  created_at    TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users (lower(email));
+
+-- RLS enabled with NO anon/authenticated policies at all — this table is
+-- completely inaccessible via the public anon key. Only the service-role
+-- key (api/_lib.js requireAdmin(), api/admin-users-*.js,
+-- scripts/create-admin-user.js) can read or write admin accounts.
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
 -- 6. Overlap Guard
@@ -212,41 +238,60 @@ ALTER TABLE date_overrides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ward_scheduling_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 
--- Meeting Types Policies
+-- Meeting Types Policies — public read-only. Creating/editing/deleting
+-- meeting types is an admin action and goes through api/admin-meeting-types.js
+-- (service-role key) instead.
 DROP POLICY IF EXISTS "Public select meeting_types" ON meeting_types;
 CREATE POLICY "Public select meeting_types" ON meeting_types FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public modify meeting_types" ON meeting_types;
-CREATE POLICY "Public modify meeting_types" ON meeting_types FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Weekly Availability Policies
+-- Weekly Availability Policies — public read-only. Edits go through
+-- api/admin-weekly-availability.js.
 DROP POLICY IF EXISTS "Public select weekly_availability" ON weekly_availability;
 CREATE POLICY "Public select weekly_availability" ON weekly_availability FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public modify weekly_availability" ON weekly_availability;
-CREATE POLICY "Public modify weekly_availability" ON weekly_availability FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Date Overrides Policies
+-- Date Overrides Policies — public read-only. Edits go through
+-- api/admin-date-overrides.js.
 DROP POLICY IF EXISTS "Public select date_overrides" ON date_overrides;
 CREATE POLICY "Public select date_overrides" ON date_overrides FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public modify date_overrides" ON date_overrides;
-CREATE POLICY "Public modify date_overrides" ON date_overrides FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Settings Policies
+-- Settings Policies — public read-only. Edits go through api/admin-settings.js.
 DROP POLICY IF EXISTS "Public select settings" ON ward_scheduling_settings;
 CREATE POLICY "Public select settings" ON ward_scheduling_settings FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public modify settings" ON ward_scheduling_settings;
-CREATE POLICY "Public modify settings" ON ward_scheduling_settings FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
 
--- Appointments Policies (Public insert, read, update, delete)
+-- Appointments Policies — anonymous visitors may INSERT (public booking)
+-- and SELECT only the non-PII columns needed to compute slot availability
+-- (the column-level GRANT below is what actually restricts the columns;
+-- the row policy alone would not hide attendee_name/email/phone/notes).
+-- Reading full records, updating, and deleting are admin-only and go
+-- through api/appointments-admin-feed.js / api/admin-cancel-appointment.js;
+-- the public reschedule flow goes through api/reschedule-appointment.js,
+-- which checks the emailed cancel_token in application code before writing.
 DROP POLICY IF EXISTS "Public insert appointments" ON appointments;
 CREATE POLICY "Public insert appointments" ON appointments FOR INSERT TO anon, authenticated WITH CHECK (true);
 DROP POLICY IF EXISTS "Public select appointments" ON appointments;
-CREATE POLICY "Public select appointments" ON appointments FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public select appointment slots (non-PII columns only)" ON appointments FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public update appointments" ON appointments;
-CREATE POLICY "Public update appointments" ON appointments FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS "Public delete appointments" ON appointments;
-CREATE POLICY "Public delete appointments" ON appointments FOR DELETE TO anon, authenticated USING (true);
 
--- Grant schema permissions to anon and authenticated roles
+-- Revoke the old blanket grants first — GRANT is additive in Postgres, so
+-- if this script was run before (when it granted ALL on every table),
+-- simply not repeating that GRANT below would NOT actually revoke it, and
+-- anon would still hold table-level privileges wider than the narrow
+-- grants intended here (RLS restricts which ROWS are visible, not which
+-- privileges a role holds — both layers must agree). Always start clean.
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+
+-- Grant schema permissions to anon and authenticated roles — narrow,
+-- resource-by-resource, replacing the old blanket GRANT ALL. The
+-- service_role key used by the api/*.js functions bypasses RLS/grants
+-- entirely by default in Supabase, so it's intentionally never listed here.
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+GRANT SELECT ON meeting_types, weekly_availability, date_overrides, ward_scheduling_settings TO anon, authenticated;
+GRANT INSERT ON appointments TO anon, authenticated;
+GRANT SELECT (id, meeting_type_id, start_time, end_time, status) ON appointments TO anon, authenticated;
+GRANT INSERT ON attendee_push_subscriptions TO anon, authenticated;

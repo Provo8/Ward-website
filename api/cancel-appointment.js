@@ -3,7 +3,8 @@
 // the confirmation email. Verifies the appointment's cancel_token, marks it
 // cancelled in Supabase, emails a cancellation notice, and shows a result page.
 
-const { SUPABASE_URL, SUPABASE_ANON_KEY, transporter, renderCancellationHtml } = require("./_lib");
+const { supabaseServiceFetch, transporter, renderCancellationHtml } = require("./_lib");
+const { deleteCalendarEvent } = require("./_googleCalendar");
 
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -18,13 +19,9 @@ module.exports = async function handler(req, res) {
   }
 
   const origin = `https://${req.headers.host}`;
-  const supabaseHeaders = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 
   try {
-    const getRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/appointments?id=eq.${encodeURIComponent(id)}&select=*,meeting_types(title)`,
-      { headers: supabaseHeaders }
-    );
+    const getRes = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}&select=*,meeting_types(title)`);
     const rows = await getRes.json();
     const appt = Array.isArray(rows) ? rows[0] : null;
 
@@ -51,15 +48,21 @@ module.exports = async function handler(req, res) {
       return res.status(200).send(messagePage("Already Cancelled", `This appointment on ${formattedDate} at ${formattedTime} has already been cancelled.`, origin));
     }
 
-    const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/appointments?id=eq.${encodeURIComponent(id)}`, {
+    const patchRes = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}`, {
       method: "PATCH",
-      headers: { ...supabaseHeaders, "Content-Type": "application/json", Prefer: "return=minimal" },
+      headers: { Prefer: "return=minimal" },
       body: JSON.stringify({ status: "cancelled" }),
     });
 
     if (!patchRes.ok) {
       console.error("cancel-appointment: Supabase update failed", await patchRes.text());
       return res.status(500).send(messagePage("Something Went Wrong", "We couldn't cancel your appointment. Please try again or contact the ward.", origin));
+    }
+
+    try {
+      await deleteCalendarEvent(appt.google_event_id);
+    } catch (calErr) {
+      console.warn("cancel-appointment: failed to remove Google Calendar event", calErr);
     }
 
     if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && appt.attendee_email) {

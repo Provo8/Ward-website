@@ -5,12 +5,10 @@
 // (admin_push_subscriptions). Requires a valid admin session token.
 
 const webpush = require("web-push");
-const { SUPABASE_URL, SUPABASE_ANON_KEY, verifyAdminToken } = require("./_lib");
+const { supabaseServiceFetch, requireAdmin } = require("./_lib");
 
 async function fetchAllSubscriptions(table) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=endpoint,p256dh,auth`, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
+  const res = await supabaseServiceFetch(`${table}?select=endpoint,p256dh,auth`);
   if (!res.ok) return [];
   return res.json();
 }
@@ -18,10 +16,7 @@ async function fetchAllSubscriptions(table) {
 async function removeSubscriptionEverywhere(endpoint) {
   await Promise.all(
     ["attendee_push_subscriptions", "admin_push_subscriptions"].map((table) =>
-      fetch(`${SUPABASE_URL}/rest/v1/${table}?endpoint=eq.${encodeURIComponent(endpoint)}`, {
-        method: "DELETE",
-        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-      })
+      supabaseServiceFetch(`${table}?endpoint=eq.${encodeURIComponent(endpoint)}`, { method: "DELETE" })
     )
   );
 }
@@ -34,10 +29,11 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { token, title, body, url } = req.body || {};
-  if (!verifyAdminToken(token)) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
+  const { title, body, url } = req.body || {};
+  // No role restriction: both full_access and announcements_only may send
+  // broadcasts — this is the one thing the announcements_only role is for.
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
   if (!title || !body || typeof title !== "string" || typeof body !== "string") {
     return res.status(400).json({ error: "Missing title or message." });

@@ -6,9 +6,27 @@ require("dotenv").config({ path: require("path").join(__dirname, "..", ".env.loc
 
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
 
 const SUPABASE_URL = "https://dvsuzohrgbrwkgzsylbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2c3V6b2hyZ2Jyd2tnenN5bGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAwOTUsImV4cCI6MjEwMzI2NjA5NX0.qXRW92s1BaiAT3uPGWBxe-UnMEPLYJamYs-JtyCJNR8";
+
+// Server-only — never hardcoded and never sent to the client. Bypasses RLS,
+// so this is the only key allowed to touch admin-only tables/columns.
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Convenience wrapper for authenticated (service-role) Supabase REST calls.
+function supabaseServiceFetch(path, options = {}) {
+  return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+}
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -18,33 +36,74 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ── Admin session tokens ──────────────────────────────────────────
-// Signed with the server-only ADMIN_PIN so a token can only have been
-// issued by api/admin-login.js after a correct PIN was submitted.
-function signAdminPayload(payloadB64) {
-  return crypto.createHmac("sha256", process.env.ADMIN_PIN).update(payloadB64).digest("hex");
+// ── Admin passwords ────────────────────────────────────────────────
+function hashPassword(plain) {
+  return bcrypt.hash(plain, 10);
 }
 
+function verifyPassword(plain, hash) {
+  return bcrypt.compare(plain, hash);
+}
+
+// ── Admin session tokens ──────────────────────────────────────────
+// Signed with a dedicated, rotatable secret (never a user's own password)
+// so a token can only have been issued by api/admin-login.js after a real
+// admin account's credentials were verified.
+function signAdminPayload(payloadB64) {
+  return crypto.createHmac("sha256", process.env.ADMIN_SESSION_SECRET).update(payloadB64).digest("hex");
+}
+
+// Verifies signature + expiry only. Returns the decoded { sub, role, exp }
+// payload, or null if invalid/expired. The embedded `role` is a fast UI
+// hint ONLY — callers that need to authorize an action must use
+// requireAdmin() below, which re-checks the account's *current* role and
+// existence against the database, so a deleted/demoted admin loses access
+// on their very next request instead of waiting out the token's lifetime.
 function verifyAdminToken(token) {
-  if (!token || typeof token !== "string" || !process.env.ADMIN_PIN) return false;
+  if (!token || typeof token !== "string" || !process.env.ADMIN_SESSION_SECRET) return null;
 
   const parts = token.split(".");
-  if (parts.length !== 2) return false;
+  if (parts.length !== 2) return null;
   const [payloadB64, signature] = parts;
 
   const expected = signAdminPayload(payloadB64);
   const sigBuf = Buffer.from(signature);
   const expBuf = Buffer.from(expected);
   if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
-    return false;
+    return null;
   }
 
   try {
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"));
-    return typeof payload.exp === "number" && Date.now() < payload.exp;
+    if (typeof payload.sub !== "string" || typeof payload.role !== "string") return null;
+    if (typeof payload.exp !== "number" || Date.now() >= payload.exp) return null;
+    return payload;
   } catch (e) {
-    return false;
+    return null;
   }
+}
+
+// Verifies the token, then confirms (fresh DB lookup, service-role key)
+// that the account still exists and — if `role` is given — that its
+// CURRENT role satisfies the requirement. Every admin-mutating endpoint
+// should gate on this rather than verifyAdminToken() alone.
+async function requireAdmin(req, { role } = {}) {
+  const token = req.body && req.body.token;
+  const payload = verifyAdminToken(token);
+  if (!payload) return { ok: false, status: 401, error: "Unauthorized" };
+
+  const res = await supabaseServiceFetch(`admin_users?id=eq.${encodeURIComponent(payload.sub)}&select=id,email,role`);
+  if (!res.ok) return { ok: false, status: 500, error: "Failed to verify admin session." };
+
+  const rows = await res.json();
+  const admin = Array.isArray(rows) ? rows[0] : null;
+  if (!admin) return { ok: false, status: 401, error: "Session no longer valid." };
+
+  if (role && admin.role !== role) {
+    return { ok: false, status: 403, error: "Forbidden" };
+  }
+
+  return { ok: true, admin };
 }
 
 function renderConfirmationHtml({ name, title, formattedDate, formattedTime, location, notes, gcalUrl, cancelUrl, rescheduleUrl }) {
@@ -173,10 +232,15 @@ function renderCancellationHtml({ name, title, formattedDate, formattedTime, res
 module.exports = {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
+  SUPABASE_SERVICE_ROLE_KEY,
+  supabaseServiceFetch,
   transporter,
   renderConfirmationHtml,
   renderReminderHtml,
   renderCancellationHtml,
+  hashPassword,
+  verifyPassword,
   signAdminPayload,
   verifyAdminToken,
+  requireAdmin,
 };
