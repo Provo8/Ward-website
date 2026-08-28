@@ -839,9 +839,9 @@ function switchAdminSubTab(subTabId) {
     const btn = document.getElementById(`subtab-btn-${tab}`);
     if (btn) {
       if (tab === subTabId) {
-        btn.className = "flex-1 min-w-0 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-secondary-container text-on-secondary-container shadow-sm flex items-center justify-center gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all bg-secondary-container text-on-secondary-container shadow-sm flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       } else {
-        btn.className = "flex-1 min-w-0 px-2 sm:px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       }
     }
   });
@@ -899,9 +899,9 @@ function switchDashboardPanel(panelId) {
     const btn = document.getElementById(`dashtab-btn-${panel}`);
     if (btn) {
       if (panel === panelId) {
-        btn.className = "flex-1 min-w-0 px-2 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex items-center justify-center gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       } else {
-        btn.className = "flex-1 min-w-0 px-2 sm:px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center justify-center gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       }
     }
   });
