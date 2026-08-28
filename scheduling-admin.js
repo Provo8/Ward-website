@@ -6,7 +6,8 @@
 // Global Admin State
 const SCHEDULING_STATE = {
   authenticated: false,
-  activeSubTab: 'dashboard', // 'dashboard', 'types', 'weekly', 'overrides'
+  activeSubTab: 'dashboard', // 'dashboard', 'announce', 'admins'
+  activeDashPanel: 'appointments', // 'appointments', 'types', 'weekly' — nested inside the Dashboard tab
   selectedDate: new Date(),
   currentCalendarMonth: new Date().getMonth(),
   currentCalendarYear: new Date().getFullYear(),
@@ -379,16 +380,17 @@ function renderHeaderAdminIdentity() {
   el.classList.remove('hidden');
 }
 
-// Hides dashboard/types/weekly tabs for announcements_only admins, and the
-// admins tab for anyone but full_access — UX only; the real authorization
-// boundary is each admin-*.js endpoint's server-side requireAdmin() check.
+// Hides the Dashboard tab (appointments/types/weekly all live inside it) for
+// announcements_only admins, and the admins tab for anyone but full_access —
+// UX only; the real authorization boundary is each admin-*.js endpoint's
+// server-side requireAdmin() check.
 function applyRoleBasedVisibility() {
   const admin = SCHEDULING_STATE.currentAdmin;
   const role = admin ? admin.role : 'full_access';
   const canSchedule = adminCanSchedule(role);
   const isFullAccess = role === 'full_access';
 
-  ['dashboard', 'types', 'weekly'].forEach((tab) => {
+  ['dashboard'].forEach((tab) => {
     const desktopBtn = document.getElementById(`subtab-btn-${tab}`);
     const mobileBtn = document.getElementById(`admin-mob-tab-${tab}`);
     if (desktopBtn) desktopBtn.classList.toggle('hidden', !canSchedule);
@@ -816,7 +818,7 @@ function switchAdminSubTab(subTabId) {
   }
 
   SCHEDULING_STATE.activeSubTab = subTabId;
-  const subTabs = ['dashboard', 'types', 'weekly', 'announce', 'admins'];
+  const subTabs = ['dashboard', 'announce', 'admins'];
 
   // Toggle Sub-View Containers
   subTabs.forEach(tab => {
@@ -856,8 +858,56 @@ function switchAdminSubTab(subTabId) {
     }
   });
 
+  if (subTabId === 'admins') {
+    renderAdminUsersList();
+  }
+
+  // Re-sync whichever nested Dashboard panel (appointments/types/weekly) was
+  // last active, since the Dashboard tab may have been left mid-panel.
+  if (subTabId === 'dashboard') {
+    switchDashboardPanel(SCHEDULING_STATE.activeDashPanel || 'appointments');
+  }
+
+  // Scroll to top of container
+  const container = document.getElementById('view-admin-scheduling');
+  if (container) window.scrollTo({ top: container.offsetTop - 70, behavior: 'smooth' });
+}
+
+/**
+ * Switch nested panel inside the Dashboard tab: appointments, meeting types,
+ * or availability. These used to be top-level tabs; they now live inside
+ * the Dashboard tab to cut down the number of tabs shown.
+ */
+function switchDashboardPanel(panelId) {
+  SCHEDULING_STATE.activeDashPanel = panelId;
+  const panels = ['appointments', 'types', 'weekly'];
+
+  panels.forEach((panel) => {
+    const el = document.getElementById(`admin-dash-panel-${panel}`);
+    if (el) {
+      if (panel === panelId) {
+        el.classList.remove('hidden');
+        el.classList.add('animate-fade-in');
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('animate-fade-in');
+      }
+    }
+  });
+
+  panels.forEach((panel) => {
+    const btn = document.getElementById(`dashtab-btn-${panel}`);
+    if (btn) {
+      if (panel === panelId) {
+        btn.className = "px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex items-center gap-1.5 whitespace-nowrap";
+      } else {
+        btn.className = "px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap";
+      }
+    }
+  });
+
   // If entering availability, render current active mini-tab
-  if (subTabId === 'weekly') {
+  if (panelId === 'weekly') {
     if (SCHEDULING_STATE.availMiniTab === 'overrides') {
       renderDateOverridesCalendar();
       renderUpcomingOverridesList();
@@ -865,14 +915,6 @@ function switchAdminSubTab(subTabId) {
       renderWeeklyAvailabilityEditor();
     }
   }
-
-  if (subTabId === 'admins') {
-    renderAdminUsersList();
-  }
-
-  // Scroll to top of container
-  const container = document.getElementById('view-admin-scheduling');
-  if (container) window.scrollTo({ top: container.offsetTop - 70, behavior: 'smooth' });
 }
 
 function switchAvailabilityMiniTab(mode) {
@@ -940,24 +982,6 @@ async function handleToggleAcceptingAppointments(e) {
   showToast(isAccepting ? 'Ward is accepting appointments' : 'Appointments paused', isAccepting ? 'check_circle' : 'pause_circle');
 }
 
-let appointmentFilter = 'all'; // 'all', 'today', 'upcoming'
-
-function filterAppointments(filterType) {
-  appointmentFilter = filterType;
-  const chips = ['all', 'today', 'upcoming'];
-  chips.forEach(c => {
-    const btn = document.getElementById(`filter-apt-${c}`);
-    if (btn) {
-      if (c === filterType) {
-        btn.className = "px-3 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-sm transition-all";
-      } else {
-        btn.className = "px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all";
-      }
-    }
-  });
-  renderAppointmentsFeed();
-}
-
 function renderAppointmentsFeed() {
   const container = document.getElementById('admin-appointments-feed');
   if (!container) return;
@@ -997,9 +1021,6 @@ function renderAppointmentsFeed() {
       groupKey = aptDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     }
 
-    if (appointmentFilter === 'today' && groupKey !== 'Today') return;
-    if (appointmentFilter === 'upcoming' && (aptDate < now && groupKey !== 'Today')) return;
-
     if (!grouped[groupKey]) grouped[groupKey] = [];
     grouped[groupKey].push(apt);
   });
@@ -1007,7 +1028,7 @@ function renderAppointmentsFeed() {
   if (Object.keys(grouped).length === 0) {
     container.innerHTML = `
       <div class="p-6 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-        <p class="text-sm text-on-surface-variant">No appointments matching this filter.</p>
+        <p class="text-sm text-on-surface-variant">No upcoming appointments.</p>
       </div>
     `;
   } else {
