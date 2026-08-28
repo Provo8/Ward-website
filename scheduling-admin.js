@@ -1264,6 +1264,57 @@ async function handleRescheduleMeetingAdmin() {
   showToast(`Rescheduling for ${apt.attendee_name}. Please pick a new date and time.`, 'info');
 }
 
+/**
+ * Admin: start booking a new appointment with the Bishop on behalf of
+ * someone else (e.g. a member who called or stopped by in person).
+ * Reuses the same public booking wizard, just entered from the dashboard.
+ */
+function handleAdminBookForSomeone() {
+  PUBLIC_BOOKING_STATE.reschedulingAppointment = null;
+  PUBLIC_BOOKING_STATE.adminBookingMode = true;
+  PUBLIC_BOOKING_STATE.selectedTypeId = null;
+  PUBLIC_BOOKING_STATE.selectedType = null;
+  PUBLIC_BOOKING_STATE.selectedDate = null;
+  PUBLIC_BOOKING_STATE.selectedSlotTime = null;
+
+  if (typeof navigateTab === 'function') {
+    navigateTab('schedule');
+  } else {
+    window.location.hash = 'schedule';
+  }
+
+  // Don't carry over this device's own saved member identity (name/email) —
+  // initPublicBookingUI() may have just prefilled them from localStorage.
+  const nameInput = document.getElementById('booking-input-name');
+  const emailInput = document.getElementById('booking-input-email');
+  const phoneInput = document.getElementById('booking-input-phone');
+  const notesInput = document.getElementById('booking-input-notes');
+  if (nameInput) nameInput.value = '';
+  if (emailInput) emailInput.value = '';
+  if (phoneInput) phoneInput.value = '';
+  if (notesInput) notesInput.value = '';
+
+  goToBookingStep(1);
+  showToast('Booking a meeting with the Bishop for someone else.', 'info');
+}
+
+/**
+ * Admin: abandon the "book for someone else" flow and return to the dashboard.
+ */
+function cancelAdminBooking() {
+  PUBLIC_BOOKING_STATE.adminBookingMode = false;
+  PUBLIC_BOOKING_STATE.selectedType = null;
+  PUBLIC_BOOKING_STATE.selectedTypeId = null;
+  PUBLIC_BOOKING_STATE.selectedDate = null;
+  PUBLIC_BOOKING_STATE.selectedSlotTime = null;
+
+  if (typeof navigateTab === 'function') {
+    navigateTab('admin-scheduling');
+  } else {
+    window.location.hash = 'admin-scheduling';
+  }
+}
+
 async function handleCancelAppointmentAdmin(aptId) {
   const cancelledApt = (SCHEDULING_STATE.appointments || []).find(a => a.id === aptId || String(a.id) === String(aptId));
   const aptIndex = (SCHEDULING_STATE.appointments || []).findIndex(a => a.id === aptId || String(a.id) === String(aptId));
@@ -2452,6 +2503,7 @@ const PUBLIC_BOOKING_STATE = {
   selectedDate: null,
   selectedSlotTime: null,
   reschedulingAppointment: null,
+  adminBookingMode: false,
   lastBookedAppointment: null,
   lastIcsContent: null,
   lastIcsFilename: 'Provo8thWard_Appointment.ics'
@@ -2652,6 +2704,18 @@ function goToBookingStep(step) {
   if (step > 4) step = 4;
 
   PUBLIC_BOOKING_STATE.step = step;
+
+  // Show a banner (with a way back to the dashboard) while an admin is
+  // booking this appointment on behalf of someone else.
+  const adminBanner = document.getElementById('admin-booking-banner');
+  if (adminBanner) adminBanner.classList.toggle('hidden', !PUBLIC_BOOKING_STATE.adminBookingMode);
+
+  const step4Subtitle = document.getElementById('booking-step4-subtitle');
+  if (step4Subtitle) {
+    step4Subtitle.textContent = PUBLIC_BOOKING_STATE.adminBookingMode
+      ? "Please review details and provide the attendee's contact information."
+      : 'Please review details and provide your contact information.';
+  }
 
   // Toggle step containers
   for (let i = 1; i <= 4; i++) {
@@ -2994,7 +3058,12 @@ function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15) {
 
   // 4. Tag each candidate slot as booked/available instead of dropping it,
   //    so already-booked times are shown grayed out, crossed out, and unclickable.
-  const allAppointments = SCHEDULING_STATE.appointments || DEFAULT_APPOINTMENTS;
+  // While rescheduling, exclude the appointment's own (still-current) slot —
+  // otherwise the time it already occupies shows as booked/crossed out even
+  // though it's free to re-select (or for other slots on the same day to open up).
+  const reschedulingId = PUBLIC_BOOKING_STATE.reschedulingAppointment && PUBLIC_BOOKING_STATE.reschedulingAppointment.id;
+  const allAppointments = (SCHEDULING_STATE.appointments || DEFAULT_APPOINTMENTS)
+    .filter(apt => !reschedulingId || String(apt.id) !== String(reschedulingId));
 
   const taggedSlots = candidateSlots.map(slot => {
     const booked = isSlotBookedByAppointments(dateStr, slot.start_minutes, slot.end_minutes, allAppointments);
@@ -3186,9 +3255,13 @@ async function handlePublicBookingSubmit(event) {
     return;
   }
 
-  // Save member credentials for instant recall next time
-  localStorage.setItem('ward_member_name', name);
-  localStorage.setItem('ward_member_email', email);
+  // Save member credentials for instant recall next time — skip this when an
+  // admin is booking on behalf of someone else, so the attendee's info doesn't
+  // overwrite this device's own saved identity (and "My Appointments" list).
+  if (!PUBLIC_BOOKING_STATE.adminBookingMode) {
+    localStorage.setItem('ward_member_name', name);
+    localStorage.setItem('ward_member_email', email);
+  }
 
   const submitBtn = document.getElementById('btn-booking-submit');
   const originalBtnContent = submitBtn ? submitBtn.innerHTML : '';
@@ -3377,19 +3450,35 @@ async function handlePublicBookingSubmit(event) {
       renderAppointmentsFeed();
     }
 
+    const wasAdminBooking = PUBLIC_BOOKING_STATE.adminBookingMode;
+
     PUBLIC_BOOKING_STATE.lastBookedAppointment = newAppointment;
     PUBLIC_BOOKING_STATE.reschedulingAppointment = null; // Clear reschedule mode
+    PUBLIC_BOOKING_STATE.adminBookingMode = false;
 
     // 3. Show the "My Appointments" card and reset the wizard for booking another
     renderMyAppointmentsSection();
 
-    showToast(reschedulingApt ? 'Appointment successfully rescheduled! Confirmation email sent.' : 'Appointment successfully scheduled! Confirmation email sent.', 'check_circle');
+    showToast(
+      reschedulingApt
+        ? 'Appointment successfully rescheduled! Confirmation email sent.'
+        : wasAdminBooking
+          ? `Appointment successfully booked for ${name}! Confirmation email sent.`
+          : 'Appointment successfully scheduled! Confirmation email sent.',
+      'check_circle'
+    );
 
     PUBLIC_BOOKING_STATE.selectedDate = null;
     PUBLIC_BOOKING_STATE.selectedSlotTime = null;
     const notesField = document.getElementById('booking-input-notes');
     if (notesField) notesField.value = '';
     goToBookingStep(1);
+
+    // Admin booked this on behalf of someone else — return to the dashboard
+    // instead of leaving them sitting on the public booking wizard.
+    if (wasAdminBooking && typeof navigateTab === 'function') {
+      navigateTab('admin-scheduling');
+    }
   } catch (ex) {
     console.error('Error submitting appointment:', ex);
     showToast('Failed to schedule appointment. Please try again.', 'error');
