@@ -3,20 +3,17 @@
 // new appointment is booked (or rescheduled) through the public booking flow.
 
 const webpush = require("web-push");
-const { SUPABASE_URL, SUPABASE_ANON_KEY } = require("./_lib");
+const { supabaseServiceFetch } = require("./_lib");
 
 async function fetchSubscriptions() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/admin_push_subscriptions?select=*`, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
+  const res = await supabaseServiceFetch("admin_push_subscriptions?select=*");
   if (!res.ok) throw new Error(`Failed to load subscriptions: ${res.status}`);
   return res.json();
 }
 
 async function removeSubscription(endpoint) {
-  await fetch(`${SUPABASE_URL}/rest/v1/admin_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
+  await supabaseServiceFetch(`admin_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
     method: "DELETE",
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
   });
 }
 

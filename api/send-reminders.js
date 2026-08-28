@@ -6,7 +6,7 @@
 // if they've subscribed (home-screen app), and marks them as sent.
 
 const webpush = require("web-push");
-const { SUPABASE_URL, SUPABASE_ANON_KEY, transporter, renderReminderHtml } = require("./_lib");
+const { supabaseServiceFetch, transporter, renderReminderHtml } = require("./_lib");
 
 // Cron runs every 5 min; a wider window means a missed/late run still catches
 // the appointment on the next pass. The *_sent_at flag prevents duplicates.
@@ -29,9 +29,7 @@ async function fetchDueAppointments(minutesAhead, column) {
   params.append("start_time", `gte.${from.toISOString()}`);
   params.append("start_time", `lte.${to.toISOString()}`);
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/appointments?${params.toString()}`, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
+  const res = await supabaseServiceFetch(`appointments?${params.toString()}`);
   if (!res.ok) {
     throw new Error(`Supabase select failed: ${res.status} ${await res.text()}`);
   }
@@ -39,14 +37,9 @@ async function fetchDueAppointments(minutesAhead, column) {
 }
 
 async function markReminded(id, column) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/appointments?id=eq.${encodeURIComponent(id)}`, {
+  const res = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal",
-    },
+    headers: { Prefer: "return=minimal" },
     body: JSON.stringify({ [column]: new Date().toISOString() }),
   });
   if (!res.ok) {
@@ -56,18 +49,14 @@ async function markReminded(id, column) {
 
 async function fetchAttendeeSubscriptions(email) {
   if (!email) return [];
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/attendee_push_subscriptions?email=eq.${encodeURIComponent(email.trim().toLowerCase())}`,
-    { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
-  );
+  const res = await supabaseServiceFetch(`attendee_push_subscriptions?email=eq.${encodeURIComponent(email.trim().toLowerCase())}`);
   if (!res.ok) return [];
   return res.json();
 }
 
 async function removeAttendeeSubscription(endpoint) {
-  await fetch(`${SUPABASE_URL}/rest/v1/attendee_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
+  await supabaseServiceFetch(`attendee_push_subscriptions?endpoint=eq.${encodeURIComponent(endpoint)}`, {
     method: "DELETE",
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
   });
 }
 
