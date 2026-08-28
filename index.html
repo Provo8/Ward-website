@@ -1029,14 +1029,6 @@
             <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
             <span>Dashboard</span>
           </button>
-          <button id="subtab-btn-types" onclick="switchAdminSubTab('types')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
-            <span class="material-symbols-outlined text-[18px]">style</span>
-            <span>Meeting Types</span>
-          </button>
-          <button id="subtab-btn-weekly" onclick="switchAdminSubTab('weekly')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
-            <span class="material-symbols-outlined text-[18px]">schedule</span>
-            <span>Availability</span>
-          </button>
           <button id="subtab-btn-announce" onclick="switchAdminSubTab('announce')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
             <span class="material-symbols-outlined text-[18px]">campaign</span>
             <span>Announcement</span>
@@ -1051,30 +1043,32 @@
         <!-- SUB-VIEW 1: DASHBOARD OVERVIEW (Mockup Screen 1) -->
         <!-- ====================================================== -->
         <div id="admin-subview-dashboard" class="flex flex-col gap-6">
-          
-          <!-- Hero Card -->
-          <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-6 sm:p-7 border border-surface-blue-tint dark:border-white/5 relative overflow-hidden flex flex-col gap-2">
-            <div class="absolute top-0 left-0 w-full h-2 bg-secondary-container"></div>
-            <h2 class="font-headline font-bold text-2xl sm:text-3xl text-primary dark:text-white">Admin Dashboard</h2>
-            <p class="text-sm text-on-surface-variant dark:text-outline-variant">
-              Manage schedules, meeting types, and availability.
-            </p>
+
+          <!-- Dashboard Inner Tabs: Appointments / Meeting Types / Availability -->
+          <div class="flex items-center gap-1.5 p-1.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/20 overflow-x-auto">
+            <button id="dashtab-btn-appointments" onclick="switchDashboardPanel('appointments')" class="px-4 py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+              <span class="material-symbols-outlined text-[18px]">calendar_today</span>
+              <span>Appointments</span>
+            </button>
+            <button id="dashtab-btn-types" onclick="switchDashboardPanel('types')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
+              <span class="material-symbols-outlined text-[18px]">style</span>
+              <span>Meeting Types</span>
+            </button>
+            <button id="dashtab-btn-weekly" onclick="switchDashboardPanel('weekly')" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex items-center gap-1.5 whitespace-nowrap">
+              <span class="material-symbols-outlined text-[18px]">schedule</span>
+              <span>Availability</span>
+            </button>
           </div>
 
-          <!-- Section 1: Upcoming Appointments -->
-          <div class="flex flex-col gap-4">
-            <div class="flex items-center justify-between flex-wrap gap-2">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-[22px]">calendar_today</span>
-                <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Upcoming Appointments</h3>
-              </div>
+          <!-- PANEL: Appointments -->
+          <div id="admin-dash-panel-appointments" class="flex flex-col gap-6">
 
-              <div class="flex items-center gap-2 flex-wrap">
-                <!-- Filter chips -->
-                <div class="flex items-center gap-1.5">
-                  <button id="filter-apt-all" onclick="filterAppointments('all')" class="px-3 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-sm transition-all">All</button>
-                  <button id="filter-apt-today" onclick="filterAppointments('today')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Today</button>
-                  <button id="filter-apt-upcoming" onclick="filterAppointments('upcoming')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Upcoming</button>
+            <!-- Section 1: Upcoming Appointments -->
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-[22px]">calendar_today</span>
+                  <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Upcoming Appointments</h3>
                 </div>
 
                 <button onclick="handleAdminBookForSomeone()" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold py-1.5 px-3.5 rounded-full flex items-center gap-1.5 active:scale-95 transition-all shadow-sm">
@@ -1082,66 +1076,58 @@
                   <span>Book for Someone</span>
                 </button>
               </div>
-            </div>
 
-            <!-- Appointments Feed Container -->
-            <div id="admin-appointments-feed" class="flex flex-col gap-4">
-              <!-- Dynamically rendered -->
-            </div>
-          </div>
-
-          <!-- Section 2: Past Appointments (Collapsible) -->
-          <div id="admin-past-appointments-section" class="hidden flex flex-col gap-3">
-            <button onclick="togglePastAppointments()" class="w-full flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#202327] hover:bg-surface-container rounded-2xl border border-outline-variant/30 transition-all">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
-                <span class="font-headline font-bold text-sm text-primary dark:text-white">Past Appointments</span>
-                <span id="past-appointments-count" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant">0</span>
+              <!-- Appointments Feed Container -->
+              <div id="admin-appointments-feed" class="flex flex-col gap-4">
+                <!-- Dynamically rendered -->
               </div>
-              <span id="past-appointments-chevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
-            </button>
-
-            <div id="admin-past-appointments-feed" class="hidden flex flex-col gap-4">
-              <!-- Dynamically rendered -->
             </div>
-          </div>
 
-        </div>
-
-        <!-- ====================================================== -->
-        <!-- SUB-VIEW 2: MEETING TYPES MANAGER (Mockup Screen 4) -->
-        <!-- ====================================================== -->
-        <div id="admin-subview-types" class="hidden flex flex-col gap-5">
-          <div class="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h2 class="font-headline font-bold text-2xl text-primary dark:text-white">Meeting Types</h2>
-              <p class="text-xs text-on-surface-variant dark:text-outline-variant">Create and customize appointment options for members.</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="openCreateMeetingTypeModal()" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 active:scale-95 transition-all shadow-sm">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                <span>New Meeting Type</span>
+            <!-- Section 2: Past Appointments (Collapsible) -->
+            <div id="admin-past-appointments-section" class="hidden flex flex-col gap-3">
+              <button onclick="togglePastAppointments()" class="w-full flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#202327] hover:bg-surface-container rounded-2xl border border-outline-variant/30 transition-all">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
+                  <span class="font-headline font-bold text-sm text-primary dark:text-white">Past Appointments</span>
+                  <span id="past-appointments-count" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant">0</span>
+                </div>
+                <span id="past-appointments-chevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
               </button>
+
+              <div id="admin-past-appointments-feed" class="hidden flex flex-col gap-4">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+          </div>
+
+          <!-- PANEL: Meeting Types (Mockup Screen 4) -->
+          <div id="admin-dash-panel-types" class="hidden flex flex-col gap-5">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h2 class="font-headline font-bold text-2xl text-primary dark:text-white">Meeting Types</h2>
+                <p class="text-xs text-on-surface-variant dark:text-outline-variant">Create and customize appointment options for members.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="openCreateMeetingTypeModal()" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 active:scale-95 transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-[18px]">add</span>
+                  <span>New Meeting Type</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Meeting Types List Container -->
+            <div id="admin-meeting-types-list" class="flex flex-col gap-3">
+              <!-- Dynamically populated -->
             </div>
           </div>
 
-          <!-- Meeting Types List Container -->
-          <div id="admin-meeting-types-list" class="flex flex-col gap-3">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
+          <!-- PANEL: Availability & Overrides (Mockup Screens 2 & 3) -->
+          <div id="admin-dash-panel-weekly" class="hidden flex flex-col gap-5">
 
-        <!-- ====================================================== -->
-        <!-- SUB-VIEW 3: AVAILABILITY & OVERRIDES (Mockup Screens 2 & 3) -->
-        <!-- ====================================================== -->
-        <div id="admin-subview-weekly" class="hidden flex flex-col gap-5">
-          
           <!-- Top Navigation Header with Hours / Overrides Mini Pill Switch -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
-              <button onclick="switchAdminSubTab('dashboard')" class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container transition-all">
-                <span class="material-symbols-outlined text-[22px]">arrow_back</span>
-              </button>
               <div>
                 <h2 id="avail-header-title" class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">Edit Weekly Availability</h2>
                 <span id="avail-header-subtitle" class="text-xs font-mono text-on-surface-variant">Set recurring open hours</span>
@@ -1208,7 +1194,7 @@
 
               <!-- Actions Footer -->
               <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-variant/40">
-                <button onclick="switchAdminSubTab('dashboard')" class="px-5 py-2.5 rounded-xl border border-outline-variant text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all">
+                <button onclick="switchDashboardPanel('appointments')" class="px-5 py-2.5 rounded-xl border border-outline-variant text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all">
                   Cancel
                 </button>
                 <button onclick="handleSaveWeeklyAvailability()" class="px-6 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container text-xs font-mono font-bold active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
@@ -1319,6 +1305,8 @@
                 <!-- Dynamically populated -->
               </div>
             </div>
+
+          </div>
 
           </div>
 
