@@ -328,7 +328,7 @@ function checkAdminAuth() {
     applyRoleBasedVisibility();
     // Silently (re-)ensure the push subscription is registered on reload —
     // won't prompt if permission was never granted. full_access only (see
-    // api/push-subscribe.js).
+    // api/push-subscription.js).
     if (SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.role === 'full_access') {
       initAdminPushNotifications();
     }
@@ -514,8 +514,8 @@ async function handleAdminLogout() {
 /**
  * ------------------------------------------------------------
  * Admin Push Notifications (new-appointment alerts)
- * Only ever set up for a browser that just proved it knows the admin PIN
- * (see api/push-subscribe.js, which requires a valid session token).
+ * Only ever set up for a signed-in full_access admin (see
+ * api/push-subscription.js, which requires a valid session).
  * ------------------------------------------------------------
  */
 function urlBase64ToUint8Array(base64String) {
@@ -548,10 +548,10 @@ async function initAdminPushNotifications({ permission } = {}) {
     }
 
     const token = sessionStorage.getItem('ward_admin_session');
-    await fetch('/api/push-subscribe', {
+    await fetch('/api/push-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, subscription: subscription.toJSON() }),
+      body: JSON.stringify({ token, action: 'subscribe', subscription: subscription.toJSON() }),
     });
   } catch (err) {
     console.warn('Push notification setup failed:', err);
@@ -567,10 +567,10 @@ async function unsubscribeAdminPushNotifications() {
     if (!subscription) return;
 
     const token = sessionStorage.getItem('ward_admin_session');
-    await fetch('/api/push-unsubscribe', {
+    await fetch('/api/push-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, endpoint: subscription.endpoint }),
+      body: JSON.stringify({ token, action: 'unsubscribe', endpoint: subscription.endpoint }),
     });
     await subscription.unsubscribe();
   } catch (err) {
@@ -709,8 +709,9 @@ async function loadAllSchedulingData() {
   }
 
   // 5. Appointments — full records (with attendee PII) are full_access-only
-  // and come from the authenticated api/appointments-admin-feed.js, not a
-  // direct anon-key Supabase read (anon can only read non-PII columns; see
+  // and come from the authenticated api/admin-data.js (resource:'appointments',
+  // action:'admin_feed'), not a direct anon-key Supabase read (anon can only
+  // read non-PII columns; see
   // schema.sql's column-level GRANT on appointments).
   try {
     // This function runs on every page load (public visitors included, via
@@ -718,7 +719,7 @@ async function loadAllSchedulingData() {
     // confirmed full_access session should ever request the full-PII feed.
     const isFullAccessAdmin = SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.role === 'full_access';
     if (sb && isFullAccessAdmin) {
-      const result = await adminApiFetch('/api/appointments-admin-feed');
+      const result = await adminApiFetch('/api/admin-data', { resource: 'appointments', action: 'admin_feed' });
       const data = result && result.success ? result.appointments : null;
       if (data) {
         SCHEDULING_STATE.appointments = data.map(a => ({
@@ -906,7 +907,7 @@ async function handleToggleAcceptingAppointments(e) {
 
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb && SCHEDULING_STATE.settings.id) {
-    await adminApiFetch('/api/admin-settings', { id: SCHEDULING_STATE.settings.id, accepting_appointments: isAccepting });
+    await adminApiFetch('/api/admin-data', { resource: 'settings', id: SCHEDULING_STATE.settings.id, accepting_appointments: isAccepting });
   }
 
   showToast(isAccepting ? 'Ward is accepting appointments' : 'Appointments paused', isAccepting ? 'check_circle' : 'pause_circle');
@@ -1248,7 +1249,7 @@ async function handleCancelAppointmentAdmin(aptId) {
   if (sb) {
     const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     if (isUUID(aptId)) {
-      const result = await adminApiFetch('/api/admin-cancel-appointment', { id: aptId });
+      const result = await adminApiFetch('/api/admin-data', { resource: 'appointments', action: 'cancel', id: aptId });
       if (result && result.success) {
         console.log('Successfully deleted appointment from Supabase:', aptId);
       }
@@ -1458,7 +1459,7 @@ async function handleSaveMeetingTypeForm(event) {
       SCHEDULING_STATE.meetingTypes[idx] = { ...SCHEDULING_STATE.meetingTypes[idx], ...typePayload };
     }
     if (sb) {
-      await adminApiFetch('/api/admin-meeting-types', { action: 'update', id, ...typePayload });
+      await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'update', id, ...typePayload });
     }
     showToast('Meeting type updated!', 'check_circle');
   } else {
@@ -1468,7 +1469,7 @@ async function handleSaveMeetingTypeForm(event) {
     SCHEDULING_STATE.meetingTypes.push(newRecord);
 
     if (sb) {
-      const result = await adminApiFetch('/api/admin-meeting-types', { action: 'create', ...typePayload });
+      const result = await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'create', ...typePayload });
       if (result && result.success && result.meeting_type) {
         newRecord.id = result.meeting_type.id;
       }
@@ -1493,7 +1494,7 @@ async function handleToggleMeetingTypeActive(typeId, isActive) {
 
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb) {
-    await adminApiFetch('/api/admin-meeting-types', { action: 'toggle_active', id: typeId, is_active: isActive });
+    await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'toggle_active', id: typeId, is_active: isActive });
   }
 
   showToast(isActive ? 'Meeting type enabled' : 'Meeting type disabled', 'check');
@@ -1506,7 +1507,7 @@ async function handleDeleteMeetingType(typeId) {
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb) {
     if (isUUID(typeId)) {
-      const result = await adminApiFetch('/api/admin-meeting-types', { action: 'delete', id: typeId });
+      const result = await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'delete', id: typeId });
       if (!result || !result.success) return;
       console.log('Successfully deleted meeting type from Supabase:', typeId);
     }
@@ -1541,7 +1542,7 @@ async function renderAdminUsersList() {
 
   container.innerHTML = `<div class="p-6 text-center text-sm text-on-surface-variant">Loading admins…</div>`;
 
-  const result = await adminApiFetch('/api/admin-users-list');
+  const result = await adminApiFetch('/api/admin-users', { action: 'list' });
   const admins = result && result.success ? result.admins : [];
 
   if (!admins || admins.length === 0) {
@@ -1592,7 +1593,7 @@ async function handleSaveAdminUserForm(event) {
 
   if (!email || !password || !role) return;
 
-  const result = await adminApiFetch('/api/admin-users-create', { email, password, role });
+  const result = await adminApiFetch('/api/admin-users', { action: 'create', email, password, role });
   if (result && result.success) {
     showToast('Admin created!', 'add_circle');
     closeModal('admin-user-modal');
@@ -1611,7 +1612,7 @@ function openDeleteAdminModal(adminId, email) {
 
 async function executeConfirmedAdminDeletion() {
   if (!pendingDeleteAdminId) return;
-  const result = await adminApiFetch('/api/admin-users-delete', { id: pendingDeleteAdminId });
+  const result = await adminApiFetch('/api/admin-users', { action: 'delete', id: pendingDeleteAdminId });
   closeModal('delete-admin-modal');
   if (result && result.success) {
     showToast('Admin removed', 'delete');
@@ -1711,7 +1712,7 @@ async function toggleWeeklyDayChip(dayNum) {
 
     const sb = SCHEDULING_STATE.supabaseClient;
     if (sb) {
-      await adminApiFetch('/api/admin-weekly-availability', { action: 'delete_day', day_of_week: dayNum });
+      await adminApiFetch('/api/admin-data', { resource: 'weekly_availability', action: 'delete_day', day_of_week: dayNum });
     }
   }
   renderWeeklyAvailabilityEditor();
@@ -1859,9 +1860,9 @@ async function removeWeeklySlot(slotId) {
   if (sb && slot) {
     const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
     if (isUUID(slot.id)) {
-      await adminApiFetch('/api/admin-weekly-availability', { action: 'delete_slot', id: slot.id });
+      await adminApiFetch('/api/admin-data', { resource: 'weekly_availability', action: 'delete_slot', id: slot.id });
     } else {
-      await adminApiFetch('/api/admin-weekly-availability', { action: 'delete_slot', day_of_week: slot.day_of_week, start_time: slot.start_time });
+      await adminApiFetch('/api/admin-data', { resource: 'weekly_availability', action: 'delete_slot', day_of_week: slot.day_of_week, start_time: slot.start_time });
     }
   }
 
@@ -2086,7 +2087,7 @@ async function handleSaveWeeklyAvailability() {
       start_time: s.start_time,
       end_time: s.end_time
     }));
-    await adminApiFetch('/api/admin-weekly-availability', { action: 'replace_all', slots });
+    await adminApiFetch('/api/admin-data', { resource: 'weekly_availability', action: 'replace_all', slots });
   }
 
   showToast('Weekly recurring availability saved to database!', 'check_circle');
@@ -2255,7 +2256,7 @@ async function handleSaveDateOverrideForm(event) {
 
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb) {
-    await adminApiFetch('/api/admin-date-overrides', { action: 'save', override_date: dateStr, ...payload });
+    await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'save', override_date: dateStr, ...payload });
   }
 
   showToast(`Saved override for ${SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'check_circle');
@@ -2314,7 +2315,8 @@ async function handleDeleteDateOverride(overrideId) {
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb && ov) {
     const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    await adminApiFetch('/api/admin-date-overrides', {
+    await adminApiFetch('/api/admin-data', {
+      resource: 'date_overrides',
       action: 'delete',
       id: isUUID(ov.id) ? ov.id : undefined,
       override_date: ov.override_date,
@@ -2751,7 +2753,7 @@ async function selectBookingDate(dateStr) {
 // Public booking-wizard read — only the non-PII columns anon is granted
 // (id, meeting_type_id, start_time, end_time, status) are needed to compute
 // slot availability. Full attendee records are admin-only; see
-// api/appointments-admin-feed.js and loadAllSchedulingData().
+// api/admin-data.js and loadAllSchedulingData().
 async function refreshAppointmentsFromSupabase() {
   const sb = SCHEDULING_STATE.supabaseClient;
   if (!sb) return;
