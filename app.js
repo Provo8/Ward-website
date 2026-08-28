@@ -89,7 +89,7 @@ function navigateTab(tabId, updateHash = true) {
   // Check authentication if attempting to access admin scheduling
   const isAuth = typeof hasValidAdminSession === 'function'
     ? hasValidAdminSession()
-    : sessionStorage.getItem('ward_admin_authenticated') === 'true';
+    : localStorage.getItem('ward_admin_authenticated') === 'true';
   if (tabId === 'admin-scheduling' && !isAuth) {
     if (typeof openAdminLoginModal === 'function') {
       openAdminLoginModal();
