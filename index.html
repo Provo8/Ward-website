@@ -740,7 +740,16 @@
 
       <!-- Wizard Card Outer Shell -->
       <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-3xl p-5 sm:p-8 border border-surface-blue-tint dark:border-white/5 relative overflow-hidden transition-all duration-300">
-        
+
+        <!-- Admin "Book for Someone Else" Banner (shown only when an admin started this flow from the Dashboard) -->
+        <div id="admin-booking-banner" class="hidden mb-4 flex items-center justify-between gap-3 bg-secondary-container/60 text-on-secondary-container rounded-2xl px-4 py-2.5 border border-secondary-fixed/40">
+          <div class="flex items-center gap-2 text-xs font-mono font-bold">
+            <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+            <span>Booking for someone else</span>
+          </div>
+          <button type="button" onclick="cancelAdminBooking()" class="text-xs font-mono font-bold underline hover:no-underline">Cancel</button>
+        </div>
+
         <!-- Back Navigation (no step counter / progress bar, per ward request) -->
         <div class="w-full mb-4">
           <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
@@ -867,7 +876,7 @@
             <h2 class="font-headline font-extrabold text-2xl sm:text-3xl text-primary dark:text-white tracking-tight">
               Confirm Event
             </h2>
-            <p class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
+            <p id="booking-step4-subtitle" class="text-xs sm:text-sm text-on-surface-variant dark:text-outline-variant">
               Please review details and provide your contact information.
             </p>
           </div>
@@ -1060,11 +1069,18 @@
                 <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Upcoming Appointments</h3>
               </div>
 
-              <!-- Filter chips -->
-              <div class="flex items-center gap-1.5">
-                <button id="filter-apt-all" onclick="filterAppointments('all')" class="px-3 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-sm transition-all">All</button>
-                <button id="filter-apt-today" onclick="filterAppointments('today')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Today</button>
-                <button id="filter-apt-upcoming" onclick="filterAppointments('upcoming')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Upcoming</button>
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Filter chips -->
+                <div class="flex items-center gap-1.5">
+                  <button id="filter-apt-all" onclick="filterAppointments('all')" class="px-3 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-sm transition-all">All</button>
+                  <button id="filter-apt-today" onclick="filterAppointments('today')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Today</button>
+                  <button id="filter-apt-upcoming" onclick="filterAppointments('upcoming')" class="px-3 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface-variant transition-all">Upcoming</button>
+                </div>
+
+                <button onclick="handleAdminBookForSomeone()" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold py-1.5 px-3.5 rounded-full flex items-center gap-1.5 active:scale-95 transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-[16px]">add</span>
+                  <span>Book for Someone</span>
+                </button>
               </div>
             </div>
 
