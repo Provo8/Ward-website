@@ -6,7 +6,7 @@
 
 const { google } = require("googleapis");
 
-const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID || "primary";
+const CALENDAR_ID = (process.env.GOOGLE_CALENDAR_ID || "primary").trim();
 const TIMEZONE = "America/Denver";
 
 function isConfigured() {
