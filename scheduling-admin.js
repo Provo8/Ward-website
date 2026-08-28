@@ -73,7 +73,7 @@ async function syncAppointmentToGoogleCalendar(action, appointment) {
 // failure.
 async function adminApiFetch(path, body = {}) {
   try {
-    const token = sessionStorage.getItem('ward_admin_session');
+    const token = localStorage.getItem('ward_admin_session');
     const res = await fetch(path, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -263,12 +263,12 @@ function openAdminLoginModal() {
 /**
  * Reads the signed session token from a successful /api/admin-login call and
  * checks whether it has expired. The signature itself isn't re-verified
- * client-side (the browser already trusts its own sessionStorage) — this
+ * client-side (the browser already trusts its own localStorage) — this
  * just auto-expires stale sessions after the server-issued TTL.
  */
 function hasValidAdminSession() {
-  const token = sessionStorage.getItem('ward_admin_session');
-  if (!token || sessionStorage.getItem('ward_admin_authenticated') !== 'true') return false;
+  const token = localStorage.getItem('ward_admin_session');
+  if (!token || localStorage.getItem('ward_admin_authenticated') !== 'true') return false;
 
   const [payloadB64] = token.split('.');
   try {
@@ -280,10 +280,10 @@ function hasValidAdminSession() {
 }
 
 // Restores { id, email, role } into SCHEDULING_STATE.currentAdmin from
-// sessionStorage so identity/role survive a page reload without re-login.
+// localStorage so identity/role survive a page reload without re-login.
 function restoreCurrentAdminFromSession() {
   try {
-    const raw = sessionStorage.getItem('ward_admin_identity');
+    const raw = localStorage.getItem('ward_admin_identity');
     SCHEDULING_STATE.currentAdmin = raw ? JSON.parse(raw) : null;
   } catch (e) {
     SCHEDULING_STATE.currentAdmin = null;
@@ -296,9 +296,9 @@ function restoreCurrentAdminFromSession() {
 function checkAdminAuth() {
   const isAuth = hasValidAdminSession();
   if (!isAuth) {
-    sessionStorage.removeItem('ward_admin_authenticated');
-    sessionStorage.removeItem('ward_admin_session');
-    sessionStorage.removeItem('ward_admin_identity');
+    localStorage.removeItem('ward_admin_authenticated');
+    localStorage.removeItem('ward_admin_session');
+    localStorage.removeItem('ward_admin_identity');
     SCHEDULING_STATE.currentAdmin = null;
   } else {
     restoreCurrentAdminFromSession();
@@ -495,9 +495,9 @@ async function processAdminLogin(email, password, inputElement) {
     const data = await res.json();
 
     if (res.ok && data.success && data.token) {
-      sessionStorage.setItem('ward_admin_session', data.token);
-      sessionStorage.setItem('ward_admin_authenticated', 'true');
-      sessionStorage.setItem('ward_admin_identity', JSON.stringify(data.admin));
+      localStorage.setItem('ward_admin_session', data.token);
+      localStorage.setItem('ward_admin_authenticated', 'true');
+      localStorage.setItem('ward_admin_identity', JSON.stringify(data.admin));
       SCHEDULING_STATE.authenticated = true;
       SCHEDULING_STATE.currentAdmin = data.admin;
       if (inputElement) inputElement.value = '';
@@ -526,9 +526,9 @@ async function processAdminLogin(email, password, inputElement) {
 
 async function handleAdminLogout() {
   await unsubscribeAdminPushNotifications();
-  sessionStorage.removeItem('ward_admin_authenticated');
-  sessionStorage.removeItem('ward_admin_session');
-  sessionStorage.removeItem('ward_admin_identity');
+  localStorage.removeItem('ward_admin_authenticated');
+  localStorage.removeItem('ward_admin_session');
+  localStorage.removeItem('ward_admin_identity');
   SCHEDULING_STATE.authenticated = false;
   SCHEDULING_STATE.currentAdmin = null;
   showToast('Logged out of Admin Portal', 'lock');
@@ -572,7 +572,7 @@ async function initAdminPushNotifications({ permission } = {}) {
       });
     }
 
-    const token = sessionStorage.getItem('ward_admin_session');
+    const token = localStorage.getItem('ward_admin_session');
     await fetch('/api/push-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -591,7 +591,7 @@ async function unsubscribeAdminPushNotifications() {
     const subscription = await registration.pushManager.getSubscription();
     if (!subscription) return;
 
-    const token = sessionStorage.getItem('ward_admin_session');
+    const token = localStorage.getItem('ward_admin_session');
     await fetch('/api/push-subscription', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -627,7 +627,7 @@ async function handleSendBroadcast(event) {
     const res = await fetch('/api/admin-broadcast', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: sessionStorage.getItem('ward_admin_session'), title, body }),
+      body: JSON.stringify({ token: localStorage.getItem('ward_admin_session'), title, body }),
     });
     const data = await res.json();
 
