@@ -3288,7 +3288,11 @@ async function handlePublicBookingSubmit(event) {
             saveResult = { data: [resData.appointment] };
           }
         } else {
-          saveResult = await sb.from('appointments').insert([recordPayload]).select();
+          // Only select 'id' back — anon only holds column-level SELECT grants
+          // on non-PII columns (schema.sql), so an unqualified .select() (which
+          // requests every column) gets rejected with a 401 permission-denied
+          // even though the INSERT itself succeeded.
+          saveResult = await sb.from('appointments').insert([recordPayload]).select('id');
         }
       } catch (err) {
         console.error('Error saving appointment to Supabase:', err);
