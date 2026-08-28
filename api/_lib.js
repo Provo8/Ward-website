@@ -7,6 +7,7 @@ require("dotenv").config({ path: require("path").join(__dirname, "..", ".env.loc
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
+const webpush = require("web-push");
 
 const SUPABASE_URL = "https://dvsuzohrgbrwkgzsylbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2c3V6b2hyZ2Jyd2tnenN5bGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAwOTUsImV4cCI6MjEwMzI2NjA5NX0.qXRW92s1BaiAT3uPGWBxe-UnMEPLYJamYs-JtyCJNR8";
@@ -85,7 +86,8 @@ function verifyAdminToken(token) {
 
 // Verifies the token, then confirms (fresh DB lookup, service-role key)
 // that the account still exists and — if `role` is given — that its
-// CURRENT role satisfies the requirement. Every admin-mutating endpoint
+// CURRENT role satisfies the requirement. `role` may be a single role
+// string or an array of allowed roles. Every admin-mutating endpoint
 // should gate on this rather than verifyAdminToken() alone.
 async function requireAdmin(req, { role } = {}) {
   const token = req.body && req.body.token;
@@ -99,11 +101,63 @@ async function requireAdmin(req, { role } = {}) {
   const admin = Array.isArray(rows) ? rows[0] : null;
   if (!admin) return { ok: false, status: 401, error: "Session no longer valid." };
 
-  if (role && admin.role !== role) {
-    return { ok: false, status: 403, error: "Forbidden" };
+  if (role) {
+    const allowedRoles = Array.isArray(role) ? role : [role];
+    if (!allowedRoles.includes(admin.role)) {
+      return { ok: false, status: 403, error: "Forbidden" };
+    }
   }
 
   return { ok: true, admin };
+}
+
+// Shared role → label mapping, used server-side for invite emails and
+// client-side (scheduling-admin.js keeps its own copy in the browser).
+const ADMIN_ROLE_LABELS = {
+  full_access: "Full Access",
+  scheduling_access: "Scheduling",
+  announcements_only: "Announcements Only",
+};
+
+// ── Admin push notifications ───────────────────────────────────────
+// Shared by api/notify-admins.js (new bookings) and any other endpoint
+// that needs to alert every subscribed admin device (e.g. cancellations).
+async function sendAdminPush({ title, body, url }) {
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.error("sendAdminPush: missing VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY env vars");
+    return { sent: 0, total: 0 };
+  }
+
+  webpush.setVapidDetails(
+    "mailto:bpickard38@gmail.com",
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+
+  const subsRes = await supabaseServiceFetch("admin_push_subscriptions?select=*");
+  if (!subsRes.ok) throw new Error(`Failed to load subscriptions: ${subsRes.status}`);
+  const subs = await subsRes.json();
+
+  const payload = JSON.stringify({ title, body, url: url || "/#admin-scheduling" });
+
+  const results = await Promise.allSettled(
+    subs.map((sub) =>
+      webpush
+        .sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, payload)
+        .catch((err) => {
+          // 404/410 means the browser unsubscribed or the endpoint expired
+          if (err.statusCode === 404 || err.statusCode === 410) {
+            return supabaseServiceFetch(`admin_push_subscriptions?endpoint=eq.${encodeURIComponent(sub.endpoint)}`, {
+              method: "DELETE",
+            });
+          }
+          throw err;
+        })
+    )
+  );
+
+  const sent = results.filter((r) => r.status === "fulfilled").length;
+  return { sent, total: subs.length };
 }
 
 function renderConfirmationHtml({ name, title, formattedDate, formattedTime, location, notes, gcalUrl, cancelUrl, rescheduleUrl }) {
@@ -229,6 +283,64 @@ function renderCancellationHtml({ name, title, formattedDate, formattedTime, res
   </div></body></html>`;
 }
 
+function renderAdminInviteHtml({ role, inviteUrl }) {
+  const roleLabel = ADMIN_ROLE_LABELS[role] || role;
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f6f8fb;margin:0;padding:24px}
+  .card{max-width:480px;margin:0 auto;background:#fff;border-radius:20px;padding:32px;text-align:center;box-shadow:0 8px 30px rgba(0,27,53,.06)}
+  .badge{display:inline-block;background:#fed000;color:#231b00;font-size:11px;font-weight:800;padding:4px 12px;border-radius:9999px;text-transform:uppercase}
+  </style></head><body><div class="card">
+  <span class="badge">Admin Invite</span>
+  <h1 style="font-size:22px;font-weight:800;color:#001b35;margin:12px 0 4px">You've been added as an admin</h1>
+  <p style="color:#73777f;font-size:14px;line-height:1.6">You've been invited to the Provo YSA 8th Ward leadership portal with <strong>${roleLabel}</strong> access. Set your password to finish setting up your account.</p>
+  <a href="${inviteUrl}" style="display:inline-block;background:#fed000;color:#231b00;font-weight:700;font-size:14px;padding:12px 28px;border-radius:12px;text-decoration:none;margin-top:16px">Set Your Password</a>
+  <p style="color:#9a9ea6;font-size:12px;margin-top:20px">This link expires in 7 days. If you weren't expecting this, you can ignore this email.</p>
+  </div></body></html>`;
+}
+
+function renderMessagePage(heading, message, origin, { linkUrl, linkText } = {}) {
+  const href = linkUrl || (origin ? `${origin}/#schedule` : null);
+  const text = linkText || "Go to Scheduling Page";
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f6f8fb;margin:0;padding:24px;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .card{max-width:440px;width:100%;background:#fff;border-radius:20px;padding:36px 28px;text-align:center;box-shadow:0 8px 30px rgba(0,27,53,.08);border:1px solid #ebf2f8}
+    h1{font-size:20px;font-weight:800;color:#001b35;margin:0 0 10px}
+    p{color:#73777f;font-size:14px;line-height:1.6;margin:0}
+    a.btn{display:inline-block;margin-top:20px;background:#fed000;color:#231b00;font-weight:700;font-size:14px;padding:12px 24px;border-radius:12px;text-decoration:none}
+  </style></head><body><div class="card">
+  <h1>${heading}</h1>
+  <p>${message}</p>
+  ${href ? `<a class="btn" href="${href}">${text}</a>` : ""}
+  </div></body></html>`;
+}
+
+function renderSetPasswordFormPage({ email, inviteToken, error }) {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f6f8fb;margin:0;padding:24px;display:flex;min-height:100vh;align-items:center;justify-content:center}
+    .card{max-width:400px;width:100%;background:#fff;border-radius:20px;padding:32px 28px;box-shadow:0 8px 30px rgba(0,27,53,.08);border:1px solid #ebf2f8}
+    h1{font-size:20px;font-weight:800;color:#001b35;margin:0 0 6px;text-align:center}
+    p.sub{color:#73777f;font-size:13px;margin:0 0 20px;text-align:center}
+    label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#8b8f98;margin-bottom:6px}
+    input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;border:1px solid #dfe4ea;font-size:14px;margin-bottom:16px}
+    button{width:100%;background:#fed000;color:#231b00;font-weight:700;font-size:14px;padding:13px;border-radius:12px;border:none;cursor:pointer}
+    .error{background:#fdecea;color:#ba1a1a;font-size:13px;padding:10px 14px;border-radius:10px;margin-bottom:16px}
+  </style></head><body><div class="card">
+  <h1>Set Your Password</h1>
+  <p class="sub">${email}</p>
+  ${error ? `<div class="error">${error}</div>` : ""}
+  <form method="POST">
+    <input type="hidden" name="invite_token" value="${inviteToken}">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" minlength="8" required autofocus>
+    <label for="confirm_password">Confirm Password</label>
+    <input id="confirm_password" name="confirm_password" type="password" minlength="8" required>
+    <button type="submit">Set Password &amp; Activate Account</button>
+  </form>
+  </div></body></html>`;
+}
+
 module.exports = {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -238,9 +350,14 @@ module.exports = {
   renderConfirmationHtml,
   renderReminderHtml,
   renderCancellationHtml,
+  renderAdminInviteHtml,
+  renderMessagePage,
+  renderSetPasswordFormPage,
   hashPassword,
   verifyPassword,
   signAdminPayload,
   verifyAdminToken,
   requireAdmin,
+  sendAdminPush,
+  ADMIN_ROLE_LABELS,
 };

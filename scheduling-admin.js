@@ -327,9 +327,9 @@ function checkAdminAuth() {
     loadAllSchedulingData();
     applyRoleBasedVisibility();
     // Silently (re-)ensure the push subscription is registered on reload —
-    // won't prompt if permission was never granted. full_access only (see
-    // api/push-subscription.js).
-    if (SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.role === 'full_access') {
+    // won't prompt if permission was never granted. full_access/
+    // scheduling_access only (see api/push-subscription.js).
+    if (SCHEDULING_STATE.currentAdmin && adminCanSchedule(SCHEDULING_STATE.currentAdmin.role)) {
       initAdminPushNotifications();
     }
   } else {
@@ -348,6 +348,22 @@ function checkAdminAuth() {
   }
 }
 
+// Role → label, shared by the header identity chip and the Admins list.
+const ADMIN_ROLE_LABELS = {
+  full_access: 'Full Access',
+  scheduling_access: 'Scheduling',
+  announcements_only: 'Announcements Only',
+};
+function adminRoleLabel(role) {
+  return ADMIN_ROLE_LABELS[role] || role;
+}
+// full_access and scheduling_access can both see the scheduling dashboard
+// (meeting types, weekly availability, appointments); only full_access can
+// also manage other admin accounts.
+function adminCanSchedule(role) {
+  return role === 'full_access' || role === 'scheduling_access';
+}
+
 // Shows "Signed in as {email}" + role badge in the header dropdown, since
 // there's no per-admin identity display in the plain-PIN model this replaces.
 function renderHeaderAdminIdentity() {
@@ -359,27 +375,34 @@ function renderHeaderAdminIdentity() {
     el.classList.add('hidden');
     return;
   }
-  const roleLabel = admin.role === 'full_access' ? 'Full Access' : 'Announcements Only';
-  el.textContent = `${admin.email} · ${roleLabel}`;
+  el.textContent = `${admin.email} · ${adminRoleLabel(admin.role)}`;
   el.classList.remove('hidden');
 }
 
-// Hides dashboard/types/weekly/admins tabs for announcements_only admins —
-// UX only; the real authorization boundary is each admin-*.js endpoint's
-// server-side requireAdmin({role:'full_access'}) check.
+// Hides dashboard/types/weekly tabs for announcements_only admins, and the
+// admins tab for anyone but full_access — UX only; the real authorization
+// boundary is each admin-*.js endpoint's server-side requireAdmin() check.
 function applyRoleBasedVisibility() {
   const admin = SCHEDULING_STATE.currentAdmin;
-  const isFullAccess = !admin || admin.role === 'full_access';
-  const restrictedTabs = ['dashboard', 'types', 'weekly', 'admins'];
+  const role = admin ? admin.role : 'full_access';
+  const canSchedule = adminCanSchedule(role);
+  const isFullAccess = role === 'full_access';
 
-  restrictedTabs.forEach((tab) => {
+  ['dashboard', 'types', 'weekly'].forEach((tab) => {
     const desktopBtn = document.getElementById(`subtab-btn-${tab}`);
     const mobileBtn = document.getElementById(`admin-mob-tab-${tab}`);
-    if (desktopBtn) desktopBtn.classList.toggle('hidden', !isFullAccess);
-    if (mobileBtn) mobileBtn.classList.toggle('hidden', !isFullAccess);
+    if (desktopBtn) desktopBtn.classList.toggle('hidden', !canSchedule);
+    if (mobileBtn) mobileBtn.classList.toggle('hidden', !canSchedule);
   });
 
-  if (!isFullAccess && SCHEDULING_STATE.activeSubTab !== 'announce') {
+  const adminsDesktopBtn = document.getElementById('subtab-btn-admins');
+  const adminsMobileBtn = document.getElementById('admin-mob-tab-admins');
+  if (adminsDesktopBtn) adminsDesktopBtn.classList.toggle('hidden', !isFullAccess);
+  if (adminsMobileBtn) adminsMobileBtn.classList.toggle('hidden', !isFullAccess);
+
+  if (!canSchedule && SCHEDULING_STATE.activeSubTab !== 'announce') {
+    switchAdminSubTab('announce');
+  } else if (!isFullAccess && SCHEDULING_STATE.activeSubTab === 'admins') {
     switchAdminSubTab('announce');
   }
 }
@@ -479,7 +502,7 @@ async function processAdminLogin(email, password, inputElement) {
       showToast(`Signed in as ${data.admin.email}`, 'verified_user');
       checkAdminAuth();
       const permission = await permissionPromise;
-      if (data.admin.role === 'full_access') {
+      if (adminCanSchedule(data.admin.role)) {
         initAdminPushNotifications({ permission });
       }
       return true;
@@ -708,17 +731,18 @@ async function loadAllSchedulingData() {
     SCHEDULING_STATE.dateOverrides = DEFAULT_DATE_OVERRIDES;
   }
 
-  // 5. Appointments — full records (with attendee PII) are full_access-only
-  // and come from the authenticated api/admin-data.js (resource:'appointments',
-  // action:'admin_feed'), not a direct anon-key Supabase read (anon can only
-  // read non-PII columns; see
-  // schema.sql's column-level GRANT on appointments).
+  // 5. Appointments — full records (with attendee PII) require full_access
+  // or scheduling_access and come from the authenticated api/admin-data.js
+  // (resource:'appointments', action:'admin_feed'), not a direct anon-key
+  // Supabase read (anon can only read non-PII columns; see schema.sql's
+  // column-level GRANT on appointments).
   try {
     // This function runs on every page load (public visitors included, via
     // the DOMContentLoaded handler) as well as after admin login — only a
-    // confirmed full_access session should ever request the full-PII feed.
-    const isFullAccessAdmin = SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.role === 'full_access';
-    if (sb && isFullAccessAdmin) {
+    // confirmed full_access/scheduling_access session should ever request
+    // the full-PII feed.
+    const canViewFullAppointments = SCHEDULING_STATE.currentAdmin && adminCanSchedule(SCHEDULING_STATE.currentAdmin.role);
+    if (sb && canViewFullAppointments) {
       const result = await adminApiFetch('/api/admin-data', { resource: 'appointments', action: 'admin_feed' });
       const data = result && result.success ? result.appointments : null;
       if (data) {
@@ -780,11 +804,14 @@ function renderAllAdminViews() {
  * Switch Sub-Tab inside Scheduling Admin (Dashboard, Types, Weekly, Overrides)
  */
 function switchAdminSubTab(subTabId) {
-  // announcements_only admins may only ever land on 'announce' — defensive
-  // client-side guard; the real boundary is each endpoint's server-side
-  // requireAdmin({role:'full_access'}) check.
+  // announcements_only admins may only ever land on 'announce', and only
+  // full_access may land on 'admins' — defensive client-side guards; the
+  // real boundary is each endpoint's server-side requireAdmin() check.
   const admin = SCHEDULING_STATE.currentAdmin;
-  if (admin && admin.role !== 'full_access' && subTabId !== 'announce') {
+  const role = admin ? admin.role : 'full_access';
+  if (!adminCanSchedule(role) && subTabId !== 'announce') {
+    subTabId = 'announce';
+  } else if (role !== 'full_access' && subTabId === 'admins') {
     subTabId = 'announce';
   }
 
@@ -1552,8 +1579,14 @@ async function renderAdminUsersList() {
 
   const currentId = SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.id;
 
+  const roleBadgeClasses = {
+    full_access: 'bg-emerald-100 text-emerald-800',
+    scheduling_access: 'bg-blue-100 text-blue-800',
+    announcements_only: 'bg-secondary-container text-on-secondary-container',
+  };
+
   container.innerHTML = admins.map(admin => {
-    const roleLabel = admin.role === 'full_access' ? 'Full Access' : 'Announcements Only';
+    const roleLabel = adminRoleLabel(admin.role);
     const created = admin.created_at ? new Date(admin.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
     const isSelf = admin.id === currentId;
 
@@ -1565,39 +1598,93 @@ async function renderAdminUsersList() {
           </div>
           <div class="flex flex-col min-w-0">
             <span class="font-headline font-bold text-sm text-primary truncate">${escapeHtml(admin.email)}${isSelf ? ' <span class="text-on-surface-variant font-normal">(you)</span>' : ''}</span>
-            <div class="mt-0.5 flex items-center gap-2">
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${admin.role === 'full_access' ? 'bg-emerald-100 text-emerald-800' : 'bg-secondary-container text-on-secondary-container'}">${roleLabel}</span>
+            <div class="mt-0.5 flex items-center gap-2 flex-wrap">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${roleBadgeClasses[admin.role] || 'bg-secondary-container text-on-secondary-container'}">${roleLabel}</span>
+              ${admin.status === 'pending' ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-800">Pending Invite</span>` : ''}
               ${created ? `<span class="text-xs text-on-surface-variant">Added ${created}</span>` : ''}
             </div>
           </div>
         </div>
-        <button onclick="openDeleteAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all shrink-0" title="Remove admin">
-          <span class="material-symbols-outlined text-[20px]">delete</span>
-        </button>
+        <div class="flex items-center gap-1 shrink-0">
+          <button onclick="openEditAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}', '${escapeHtml(admin.role)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-blue-tint transition-all" title="Edit permission level">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </button>
+          <button onclick="openDeleteAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove admin">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+          </button>
+        </div>
       </div>
     `;
   }).join('');
 }
 
+// Tracks whether the shared admin-user-modal is creating a new invite or
+// editing an existing admin's permission level — null means "create".
+let editingAdminId = null;
+
 function openCreateAdminModal() {
+  editingAdminId = null;
   const form = document.getElementById('admin-user-form');
   if (form) form.reset();
+
+  const emailInput = document.getElementById('admin-user-modal-email');
+  if (emailInput) emailInput.disabled = false;
+
+  document.getElementById('admin-user-modal-title').textContent = 'Invite Admin';
+  document.getElementById('admin-user-modal-subtitle').textContent = "They'll get an email with a link to set their own password.";
+  document.getElementById('admin-user-modal-submit').textContent = 'Send Invite';
+
+  openModal('admin-user-modal');
+}
+
+function openEditAdminModal(adminId, email, role) {
+  editingAdminId = adminId;
+  const form = document.getElementById('admin-user-form');
+  if (form) form.reset();
+
+  const emailInput = document.getElementById('admin-user-modal-email');
+  if (emailInput) {
+    emailInput.value = email;
+    emailInput.disabled = true;
+  }
+  document.getElementById('admin-user-modal-role').value = role;
+
+  document.getElementById('admin-user-modal-title').textContent = 'Edit Admin Access';
+  document.getElementById('admin-user-modal-subtitle').textContent = `Change the permission level for ${email}.`;
+  document.getElementById('admin-user-modal-submit').textContent = 'Save Changes';
+
   openModal('admin-user-modal');
 }
 
 async function handleSaveAdminUserForm(event) {
   event.preventDefault();
-  const email = document.getElementById('admin-user-modal-email').value.trim();
-  const password = document.getElementById('admin-user-modal-password').value;
   const role = document.getElementById('admin-user-modal-role').value;
+  if (!role) return;
 
-  if (!email || !password || !role) return;
+  if (editingAdminId) {
+    const result = await adminApiFetch('/api/admin-users', { action: 'update', id: editingAdminId, role });
+    if (result && result.success) {
+      closeModal('admin-user-modal');
+      showToast('Admin access updated', 'check_circle');
+      renderAdminUsersList();
+    }
+    return;
+  }
 
-  const result = await adminApiFetch('/api/admin-users', { action: 'create', email, password, role });
+  const email = document.getElementById('admin-user-modal-email').value.trim();
+  if (!email) return;
+
+  const result = await adminApiFetch('/api/admin-users', { action: 'create', email, role });
   if (result && result.success) {
-    showToast('Admin created!', 'add_circle');
     closeModal('admin-user-modal');
     renderAdminUsersList();
+    if (result.emailSent) {
+      showToast(`Invite sent to ${email}`, 'mail');
+    } else {
+      // Email sending isn't configured/failed — surface the link directly
+      // so the inviting admin can share it manually instead of losing it.
+      window.alert(`Couldn't send the invite email. Share this link with ${email} manually:\n\n${result.inviteUrl}`);
+    }
   }
 }
 

@@ -1,13 +1,14 @@
 // api/admin-data.js
-// Vercel Serverless Function — full_access-only admin mutations/reads for
-// meeting types, weekly availability, date overrides, ward settings, and
-// the full-PII appointments feed/cancel action. Combined into one route
+// Vercel Serverless Function — full_access/scheduling_access admin
+// mutations/reads for meeting types, weekly availability, date overrides,
+// ward settings, and the full-PII appointments feed/cancel action.
+// announcements_only admins may not reach this endpoint. Combined into one route
 // (dispatched by `resource`) to stay under Vercel's per-deployment
 // serverless function limit on the Hobby plan — each of these used to be
 // its own file; the request/response shapes are unchanged, just routed
 // through one endpoint instead of several.
 
-const { supabaseServiceFetch, requireAdmin } = require("./_lib");
+const { supabaseServiceFetch, requireAdmin, sendAdminPush } = require("./_lib");
 
 async function handleMeetingTypes(req, res) {
   const { action, id } = req.body;
@@ -167,8 +168,34 @@ async function handleAppointments(req, res) {
 
   if (action === "cancel") {
     if (!id) return res.status(400).json({ error: "Missing appointment id." });
+
+    const lookupRes = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}&select=attendee_name,start_time,meeting_types(title)`);
+    const lookupRows = lookupRes.ok ? await lookupRes.json() : [];
+    const cancelled = Array.isArray(lookupRows) ? lookupRows[0] : null;
+
     const deleteRes = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
     if (!deleteRes.ok) throw new Error(await deleteRes.text());
+
+    if (cancelled) {
+      try {
+        const title = (cancelled.meeting_types && cancelled.meeting_types.title) || "Bishopric Interview";
+        const startDate = cancelled.start_time ? new Date(cancelled.start_time) : null;
+        const timeText = startDate
+          ? startDate.toLocaleString("en-US", {
+              weekday: "short", month: "short", day: "numeric",
+              hour: "numeric", minute: "2-digit", timeZone: "America/Denver",
+            })
+          : "";
+        await sendAdminPush({
+          title: "Appointment Cancelled",
+          body: `${cancelled.attendee_name} — ${title}${timeText ? ` on ${timeText}` : ""}`,
+          url: "/#admin-scheduling",
+        });
+      } catch (pushErr) {
+        console.warn("admin-data (appointments/cancel): failed to push-notify admins", pushErr);
+      }
+    }
+
     return res.status(200).json({ success: true });
   }
 
@@ -191,7 +218,7 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const auth = await requireAdmin(req, { role: "full_access" });
+  const auth = await requireAdmin(req, { role: ["full_access", "scheduling_access"] });
   if (!auth.ok) return res.status(auth.status).json({ error: auth.error });
 
   const { resource } = req.body || {};

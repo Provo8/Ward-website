@@ -16,7 +16,7 @@ require("dotenv").config({ path: require("path").join(__dirname, "..", ".env.loc
 
 const { hashPassword, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = require("../api/_lib");
 
-const VALID_ROLES = ["full_access", "announcements_only"];
+const VALID_ROLES = ["full_access", "scheduling_access", "announcements_only"];
 
 function parseArgs() {
   const args = {};

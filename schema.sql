@@ -191,16 +191,34 @@ DROP POLICY IF EXISTS "Public delete attendee_push_subscriptions" ON attendee_pu
 -- 5d. Admin User Accounts
 --     Real per-person leadership logins, replacing the old shared PIN.
 --     `role` gates dashboard access: 'full_access' can do everything
---     including managing other admins; 'announcements_only' can only
---     send broadcast notifications (see api/admin-broadcast.js).
+--     including managing other admins; 'scheduling_access' can manage
+--     appointments/availability and send broadcasts, but not other admins;
+--     'announcements_only' can only send broadcast notifications (see
+--     api/admin-broadcast.js).
 -- ============================================================
 CREATE TABLE IF NOT EXISTS admin_users (
   id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   email         TEXT        NOT NULL UNIQUE,
-  password_hash TEXT        NOT NULL,
-  role          TEXT        NOT NULL CHECK (role IN ('full_access', 'announcements_only')),
+  password_hash TEXT,
+  role          TEXT        NOT NULL CHECK (role IN ('full_access', 'scheduling_access', 'announcements_only')),
   created_at    TIMESTAMPTZ DEFAULT now()
 );
+
+-- Re-run-safe widening of the role CHECK for deployments created before
+-- 'scheduling_access' existed (CREATE TABLE IF NOT EXISTS above is a no-op
+-- once the table already exists, so the constraint needs updating here too).
+ALTER TABLE admin_users DROP CONSTRAINT IF EXISTS admin_users_role_check;
+ALTER TABLE admin_users ADD CONSTRAINT admin_users_role_check CHECK (role IN ('full_access', 'scheduling_access', 'announcements_only'));
+
+-- Rows created before an invite flow existed require a password up front;
+-- an invited-but-not-yet-activated admin has password_hash = NULL until
+-- they set their own password via the emailed link.
+ALTER TABLE admin_users ALTER COLUMN password_hash DROP NOT NULL;
+
+-- Invite link fields — set when an admin is created, cleared once the
+-- invited person sets their password (see api/admin-login.js).
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS invite_token UUID UNIQUE;
+ALTER TABLE admin_users ADD COLUMN IF NOT EXISTS invite_expires_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users (lower(email));
 
@@ -273,6 +291,7 @@ DROP POLICY IF EXISTS "Public modify settings" ON ward_scheduling_settings;
 DROP POLICY IF EXISTS "Public insert appointments" ON appointments;
 CREATE POLICY "Public insert appointments" ON appointments FOR INSERT TO anon, authenticated WITH CHECK (true);
 DROP POLICY IF EXISTS "Public select appointments" ON appointments;
+DROP POLICY IF EXISTS "Public select appointment slots (non-PII columns only)" ON appointments;
 CREATE POLICY "Public select appointment slots (non-PII columns only)" ON appointments FOR SELECT TO anon, authenticated USING (true);
 DROP POLICY IF EXISTS "Public update appointments" ON appointments;
 DROP POLICY IF EXISTS "Public delete appointments" ON appointments;
