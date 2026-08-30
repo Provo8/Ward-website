@@ -756,38 +756,8 @@ async function handleClassCheckIn(organization) {
   };
 
   const config = mapping[organization];
-  const statusEl = document.getElementById(config.statusId);
-  const checkIconEl = document.getElementById(config.checkIconId);
-
-  // Set loading state
-  if (statusEl) statusEl.textContent = "Logging...";
-  if (checkIconEl) {
-    checkIconEl.textContent = "sync";
-    checkIconEl.className = "material-symbols-outlined text-[16px] text-primary animate-spin select-none";
-  }
 
   try {
-    const webhookUrl = localStorage.getItem('ward_webhook_url') || DEFAULT_WEBHOOK_URL;
-
-    // If webhook is configured, send HTTP POST to Google Apps Script
-    if (webhookUrl) {
-      try {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          mode: 'no-cors', // Standard for Google Apps Script Web App execution
-          headers: {
-            'Content-Type': 'text/plain;charset=utf-8'
-          },
-          body: JSON.stringify({
-            organization: organization,
-            name: savedName.trim()
-          })
-        });
-      } catch (err) {
-        console.warn("Webhook logging error:", err);
-      }
-    }
-
     // Record in localStorage for this Sunday
     const currentChecked = JSON.parse(localStorage.getItem(`ward_checkin_${sundayKey}`) || '[]');
     if (!currentChecked.includes(organization)) {
@@ -795,11 +765,29 @@ async function handleClassCheckIn(organization) {
       localStorage.setItem(`ward_checkin_${sundayKey}`, JSON.stringify(currentChecked));
     }
 
-    // Update button UI
+    // Update button UI immediately — don't make the user wait on the webhook
     applyCheckInButtonState(config, true);
 
     // Show confirmation Toast
     showToast(`Checked in to ${organization}!`, "check_circle");
+
+    // Fire-and-forget webhook logging to Google Apps Script in the background.
+    // Apps Script web apps can take several seconds to respond; awaiting it
+    // here made the button spin on "Logging..." the whole time.
+    const webhookUrl = localStorage.getItem('ward_webhook_url') || DEFAULT_WEBHOOK_URL;
+    if (webhookUrl) {
+      fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors', // Standard for Google Apps Script Web App execution
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          organization: organization,
+          name: savedName.trim()
+        })
+      }).catch(err => console.warn("Webhook logging error:", err));
+    }
   } finally {
     inFlightCheckIns.delete(organization);
   }
