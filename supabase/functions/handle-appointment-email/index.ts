@@ -148,7 +148,7 @@ serve(async (req) => {
       const formattedDate = formatReadableDate(startDate);
       const formattedTime = `${formatTime12h(startDate)} – ${formatTime12h(endDate)} (MST)`;
       const title    = meeting_type_title || "Bishopric Interview";
-      const location = "Bishop's Office (LSB 2nd Floor) / Provo YSA 8th Ward";
+      const location = "Bishop's Office (Manavu Chapel, up the stairs) / Provo YSA 8th Ward";
 
       // Send confirmation
       const confirmHtml = renderConfirmationEmailHtml({
