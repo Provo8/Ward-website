@@ -8,7 +8,7 @@
 const { supabaseServiceFetch } = require("./_lib");
 const { isConfigured, upsertCalendarEvent, deleteCalendarEvent } = require("./_googleCalendar");
 
-const LOCATION = "Bishop's Office (LSB 2nd Floor) / Provo YSA 8th Ward";
+const LOCATION = "Bishop's Office (Manavu Chapel, up the stairs) / Provo YSA 8th Ward";
 
 async function patchGoogleEventId(id, googleEventId) {
   await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}`, {

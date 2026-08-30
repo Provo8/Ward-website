@@ -3234,7 +3234,7 @@ function renderPublicBookingSummary() {
   if (locationEl) {
     locationEl.textContent = selectedType.assigned_to === 'Executive Secretary' 
       ? 'Bishopric Office / Phone / Google Meet'
-      : "Bishop's Office (LSB 2nd Floor) / In Person";
+      : "Bishop's Office (Manavu Chapel, up the stairs) / In Person";
   }
 
   if (iconEl) {
@@ -3516,7 +3516,7 @@ async function handlePublicBookingSubmit(event) {
  */
 function generateICSContent(appointment, meetingType) {
   const title = `${meetingType.title || 'Ward Interview'} - Provo YSA 8th Ward`;
-  const location = "Bishop's Office (LSB 2nd Floor), Provo YSA 8th Ward";
+  const location = "Bishop's Office (Manavu Chapel, up the stairs), Provo YSA 8th Ward";
   const description = `Provo YSA 8th Ward Appointment\\nMeeting Type: ${meetingType.title}\\nAttendee: ${appointment.attendee_name}\\nEmail: ${appointment.attendee_email}\\nNotes: ${appointment.notes || 'None'}\\n\\nTo cancel or reschedule, please contact the Executive Secretary.`;
 
   // Format UTC dates for ICS DTSTART/DTEND (e.g. 20261024T200000Z)
@@ -3610,7 +3610,7 @@ function setupCloudCalendarLinks(appointment, meetingType) {
 
   const title = encodeURIComponent(`${meetingType.title || 'Ward Interview'} - Provo YSA 8th Ward`);
   const details = encodeURIComponent(`Provo YSA 8th Ward Appointment\nMeeting: ${meetingType.title}\nAttendee: ${appointment.attendee_name}\nNotes: ${appointment.notes || 'None'}`);
-  const location = encodeURIComponent("Bishop's Office (LSB 2nd Floor), Provo YSA 8th Ward");
+  const location = encodeURIComponent("Bishop's Office (Manavu Chapel, up the stairs), Provo YSA 8th Ward");
   
   const gcalDates = `${formatGCalDate(startDate)}/${formatGCalDate(endDate)}`;
   const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${gcalDates}&details=${details}&location=${location}`;

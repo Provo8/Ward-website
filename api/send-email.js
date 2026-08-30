@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
     const startDate = new Date(start_time);
     const endDate   = new Date(end_time);
     const title     = meeting_type_title || "Bishopric Interview";
-    const location  = "Bishop's Office (LSB 2nd Floor) / Provo YSA 8th Ward";
+    const location  = "Bishop's Office (Manavu Chapel, up the stairs) / Provo YSA 8th Ward";
     const origin    = `https://${req.headers.host}`;
     const rescheduleUrl = `${origin}/#schedule`;
 

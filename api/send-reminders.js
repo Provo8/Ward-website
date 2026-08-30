@@ -109,7 +109,7 @@ module.exports = async function handler(req, res) {
   }
 
   const origin = process.env.SITE_URL || `https://${req.headers.host}`;
-  const location = "Bishop's Office (LSB 2nd Floor) / Provo YSA 8th Ward";
+  const location = "Bishop's Office (Manavu Chapel, up the stairs) / Provo YSA 8th Ward";
   const results = { sent24h: 0, sent30m: 0, errors: [] };
 
   try {
