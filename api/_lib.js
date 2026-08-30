@@ -9,6 +9,8 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const webpush = require("web-push");
 
+const MAP_URL = "https://maps.app.goo.gl/3o6eNeNcZVWrcdbU9";
+
 const SUPABASE_URL = "https://dvsuzohrgbrwkgzsylbp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2c3V6b2hyZ2Jyd2tnenN5bGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2OTAwOTUsImV4cCI6MjEwMzI2NjA5NX0.qXRW92s1BaiAT3uPGWBxe-UnMEPLYJamYs-JtyCJNR8";
 
@@ -166,6 +168,7 @@ function renderConfirmationHtml({ name, title, formattedDate, formattedTime, loc
       <td style="padding:12px 0;border-bottom:1px solid #ebf2f8;font-size:11px;font-weight:700;color:#8b8f98;text-transform:uppercase;letter-spacing:.4px;vertical-align:top;width:92px">${label}</td>
       <td style="padding:12px 0;border-bottom:1px solid #ebf2f8;font-size:14px;font-weight:600;color:#001b35;vertical-align:top">${value}</td>
     </tr>`;
+  const locationHtml = `<a href="${MAP_URL}" target="_blank" style="color:#001b35;text-decoration:underline">${location}</a>`;
 
   const buttons = (cancelUrl || rescheduleUrl) ? `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px">
@@ -195,7 +198,7 @@ function renderConfirmationHtml({ name, title, formattedDate, formattedTime, loc
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 ${detailRow("Date", formattedDate)}
                 ${detailRow("Time", formattedTime)}
-                ${detailRow("Location", location)}
+                ${detailRow("Location", locationHtml)}
                 ${notes ? detailRow("Notes", notes).replace('border-bottom:1px solid #ebf2f8;', '') : ""}
               </table>
             </td></tr>
@@ -222,6 +225,7 @@ function renderReminderHtml({ name, title, formattedDate, formattedTime, locatio
       <td style="padding:12px 0;border-bottom:1px solid #ebf2f8;font-size:11px;font-weight:700;color:#8b8f98;text-transform:uppercase;letter-spacing:.4px;vertical-align:top;width:92px">${labelText}</td>
       <td style="padding:12px 0;border-bottom:1px solid #ebf2f8;font-size:14px;font-weight:600;color:#001b35;vertical-align:top">${value}</td>
     </tr>`;
+  const locationHtml = `<a href="${MAP_URL}" target="_blank" style="color:#001b35;text-decoration:underline">${location}</a>`;
 
   const buttons = (cancelUrl || rescheduleUrl) ? `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px">
@@ -251,7 +255,7 @@ function renderReminderHtml({ name, title, formattedDate, formattedTime, locatio
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 ${detailRow("Date", formattedDate)}
                 ${detailRow("Time", formattedTime)}
-                ${detailRow("Location", location)}
+                ${detailRow("Location", locationHtml)}
                 ${notes ? detailRow("Notes", notes).replace('border-bottom:1px solid #ebf2f8;', '') : ""}
               </table>
             </td></tr>

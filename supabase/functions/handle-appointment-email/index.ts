@@ -259,7 +259,7 @@ function renderConfirmationEmailHtml(p: {
   <div class="box">
     <div class="row"><div class="lbl">Date</div><div class="val">${p.formattedDate}</div></div>
     <div class="row"><div class="lbl">Time</div><div class="val">${p.formattedTime}</div></div>
-    <div class="row"><div class="lbl">Location</div><div class="val">${p.location}</div></div>
+    <div class="row"><div class="lbl">Location</div><div class="val"><a href="https://maps.app.goo.gl/3o6eNeNcZVWrcdbU9" target="_blank" style="color:#001b35;text-decoration:underline">${p.location}</a></div></div>
     ${p.notes ? `<div class="row"><div class="lbl">Notes</div><div class="val">${p.notes}</div></div>` : ""}
   </div>
   <a href="${gcalUrl}" class="btn-y" target="_blank">📅 Add to Google Calendar</a>

@@ -3232,9 +3232,11 @@ function renderPublicBookingSummary() {
   if (timeEl) timeEl.textContent = `${start12h} – ${end12h} (MST)`;
   
   if (locationEl) {
-    locationEl.textContent = selectedType.assigned_to === 'Executive Secretary' 
-      ? 'Bishopric Office / Phone / Google Meet'
-      : "Bishop's Office (Manavu Chapel, up the stairs) / In Person";
+    if (selectedType.assigned_to === 'Executive Secretary') {
+      locationEl.textContent = 'Bishopric Office / Phone / Google Meet';
+    } else {
+      locationEl.innerHTML = '<a href="https://maps.app.goo.gl/3o6eNeNcZVWrcdbU9" target="_blank" rel="noopener" class="underline hover:text-secondary-fixed">Bishop\'s Office (Manavu Chapel, up the stairs)</a> / In Person';
+    }
   }
 
   if (iconEl) {
