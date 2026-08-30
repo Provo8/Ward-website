@@ -26,7 +26,7 @@ const {
   renderSetPasswordFormPage,
 } = require("./_lib");
 
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const MIN_PASSWORD_LENGTH = 8;
 
 async function handleInviteForm(req, res) {
