@@ -15,7 +15,7 @@ A full-stack Progressive Web App built for a real congregation: a public ward we
 - Installable as a PWA (works offline for the app shell, add-to-home-screen, push notifications for reminders)
 
 **For leadership (admin portal)**
-- PIN + email/password authentication with role-based access (`full_access`, `scheduling_access`, `announcements_only`)
+- Email/password authentication with role-based access (`full_access`, `scheduling_access`, `announcements_only`)
 - Manage meeting types, weekly availability windows, and one-off date overrides
 - Dashboard of upcoming/past appointments with attendee contact info, reschedule/cancel controls
 - Push broadcast announcements to subscribed devices
