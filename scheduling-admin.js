@@ -1136,6 +1136,7 @@ function renderAppointmentCard(apt) {
               ${timeFormatted}
             </span>
             ${apt.attendee_email ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">mail</span>${escapeHtml(apt.attendee_email)}</span>` : ''}
+            ${apt.attendee_phone ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">call</span>${escapeHtml(apt.attendee_phone)}</span>` : ''}
             ${apt.notes ? `<span class="text-[11px] italic bg-surface-container px-2 py-0.5 rounded-md truncate max-w-xs">&ldquo;${escapeHtml(apt.notes)}&rdquo;</span>` : ''}
           </div>
         </div>
@@ -1169,6 +1170,12 @@ function openAppointmentDetailsModal(aptId) {
         <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Email Address</span>
         <a href="mailto:${escapeHtml(apt.attendee_email)}" class="font-semibold text-primary underline text-sm">${escapeHtml(apt.attendee_email)}</a>
       </div>
+      ${apt.attendee_phone ? `
+      <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 text-xs">
+        <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Phone Number</span>
+        <a href="tel:${escapeHtml(apt.attendee_phone)}" class="font-semibold text-primary underline text-sm">${escapeHtml(apt.attendee_phone)}</a>
+      </div>
+      ` : ''}
       <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 text-xs">
         <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Scheduled Time</span>
         <span class="font-semibold text-on-surface text-xs sm:text-sm">${start.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} – ${end.toLocaleTimeString('en-US', { timeStyle: 'short' })}</span>
@@ -2548,6 +2555,13 @@ function initPublicBookingUI() {
     emailInput.value = savedEmail;
   }
 
+  // Pre-fill phone if saved
+  const savedPhone = localStorage.getItem('ward_member_phone');
+  const phoneInput = document.getElementById('booking-input-phone');
+  if (savedPhone && phoneInput && !phoneInput.value) {
+    phoneInput.value = savedPhone;
+  }
+
   // Ensure default meeting type is set
   const types = (SCHEDULING_STATE.meetingTypes && SCHEDULING_STATE.meetingTypes.length > 0)
     ? SCHEDULING_STATE.meetingTypes
@@ -3270,11 +3284,11 @@ async function handlePublicBookingSubmit(event) {
 
   const name = document.getElementById('booking-input-name').value.trim();
   const email = document.getElementById('booking-input-email').value.trim();
-  const phone = document.getElementById('booking-input-phone') ? document.getElementById('booking-input-phone').value.trim() : null;
+  const phone = document.getElementById('booking-input-phone') ? document.getElementById('booking-input-phone').value.trim() : '';
   const notes = document.getElementById('booking-input-notes') ? document.getElementById('booking-input-notes').value.trim() : '';
 
-  if (!name || !email) {
-    showToast('Please provide your name and email address.', 'warning');
+  if (!name || !email || !phone) {
+    showToast('Please provide your name, email address, and phone number.', 'warning');
     return;
   }
 
@@ -3284,6 +3298,7 @@ async function handlePublicBookingSubmit(event) {
   if (!PUBLIC_BOOKING_STATE.adminBookingMode) {
     localStorage.setItem('ward_member_name', name);
     localStorage.setItem('ward_member_email', email);
+    localStorage.setItem('ward_member_phone', phone);
   }
 
   const submitBtn = document.getElementById('btn-booking-submit');
