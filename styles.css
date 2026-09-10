@@ -144,6 +144,12 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
   background-color: #f0edef;
 }
 
+@media (prefers-color-scheme: dark) {
+  .booking-calendar-day:hover:not(.day-disabled):not(.day-selected) {
+    background-color: #2d3137;
+  }
+}
+
 .booking-calendar-day.day-selected {
   background-color: #fed000 !important;
   color: #231b00 !important;
@@ -196,8 +202,10 @@ input[type="time"]::-webkit-calendar-picker-indicator:hover {
   box-shadow: none !important;
 }
 
-.dark .slot-btn-booked {
-  background-color: rgba(39, 42, 48, 0.85) !important;
-  color: #6b7280 !important;
-  border-color: rgba(55, 65, 81, 0.8) !important;
+@media (prefers-color-scheme: dark) {
+  .slot-btn-booked {
+    background-color: rgba(39, 42, 48, 0.85) !important;
+    color: #6b7280 !important;
+    border-color: rgba(55, 65, 81, 0.8) !important;
+  }
 }

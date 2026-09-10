@@ -841,7 +841,7 @@ function switchAdminSubTab(subTabId) {
       if (tab === subTabId) {
         btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all bg-secondary-container text-on-secondary-container shadow-sm flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       } else {
-        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       }
     }
   });
@@ -853,7 +853,7 @@ function switchAdminSubTab(subTabId) {
       if (tab === subTabId) {
         mBtn.className = "flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-2xl py-1.5 px-3 font-bold transition-all shadow-sm";
       } else {
-        mBtn.className = "flex flex-col items-center justify-center text-on-surface-variant hover:text-primary py-1.5 px-3 transition-all";
+        mBtn.className = "flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary py-1.5 px-3 transition-all";
       }
     }
   });
@@ -901,7 +901,7 @@ function switchDashboardPanel(panelId) {
       if (panel === panelId) {
         btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       } else {
-        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
+        btn.className = "flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5";
       }
     }
   });
@@ -933,7 +933,7 @@ function switchAvailabilityMiniTab(mode) {
     }
     if (overridesSection) overridesSection.classList.add('hidden');
     if (hoursBtn) hoursBtn.className = "px-3.5 py-1 rounded-full font-bold bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm transition-all";
-    if (overridesBtn) overridesBtn.className = "px-3.5 py-1 rounded-full font-medium text-on-surface-variant hover:text-primary transition-all";
+    if (overridesBtn) overridesBtn.className = "px-3.5 py-1 rounded-full font-medium text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all";
     if (title) title.textContent = "Edit Weekly Availability";
     if (subtitle) subtitle.textContent = "Set recurring open hours";
     renderWeeklyAvailabilityEditor();
@@ -943,7 +943,7 @@ function switchAvailabilityMiniTab(mode) {
       overridesSection.classList.remove('hidden');
       overridesSection.classList.add('animate-fade-in');
     }
-    if (hoursBtn) hoursBtn.className = "px-3.5 py-1 rounded-full font-medium text-on-surface-variant hover:text-primary transition-all";
+    if (hoursBtn) hoursBtn.className = "px-3.5 py-1 rounded-full font-medium text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all";
     if (overridesBtn) overridesBtn.className = "px-3.5 py-1 rounded-full font-bold bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm transition-all";
     if (title) title.textContent = "Date Overrides";
     if (subtitle) subtitle.textContent = "Block dates or set special hours for specific calendar days";
@@ -989,9 +989,9 @@ function renderAppointmentsFeed() {
   const apts = SCHEDULING_STATE.appointments || [];
   if (apts.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30 flex flex-col items-center gap-2">
-        <span class="material-symbols-outlined text-4xl text-on-surface-variant/40">event_available</span>
-        <p class="text-sm font-medium text-on-surface-variant">No appointments booked yet.</p>
+      <div class="p-8 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col items-center gap-2">
+        <span class="material-symbols-outlined text-4xl text-on-surface-variant/40 dark:text-outline-variant/40">event_available</span>
+        <p class="text-sm font-medium text-on-surface-variant dark:text-outline-variant">No appointments booked yet.</p>
       </div>
     `;
     return;
@@ -1027,8 +1027,8 @@ function renderAppointmentsFeed() {
 
   if (Object.keys(grouped).length === 0) {
     container.innerHTML = `
-      <div class="p-6 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-        <p class="text-sm text-on-surface-variant">No upcoming appointments.</p>
+      <div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl border border-outline-variant/30 dark:border-white/10">
+        <p class="text-sm text-on-surface-variant dark:text-outline-variant">No upcoming appointments.</p>
       </div>
     `;
   } else {
@@ -1036,7 +1036,7 @@ function renderAppointmentsFeed() {
     for (const [dateLabel, list] of Object.entries(grouped)) {
       html += `
         <div class="flex flex-col gap-2.5">
-          <span class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant px-1">${escapeHtml(dateLabel)}</span>
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant dark:text-outline-variant px-1">${escapeHtml(dateLabel)}</span>
           <div class="flex flex-col gap-2.5">
             ${list.map(apt => renderAppointmentCard(apt)).join('')}
           </div>
@@ -1074,8 +1074,8 @@ function renderPastAppointmentsFeed() {
 
   if (apts.length === 0) {
     container.innerHTML = `
-      <div class="p-6 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30">
-        <p class="text-sm text-on-surface-variant">No past appointments yet.</p>
+      <div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl border border-outline-variant/30 dark:border-white/10">
+        <p class="text-sm text-on-surface-variant dark:text-outline-variant">No past appointments yet.</p>
       </div>
     `;
     return;
@@ -1092,7 +1092,7 @@ function renderPastAppointmentsFeed() {
   for (const [dateLabel, list] of Object.entries(grouped)) {
     html += `
       <div class="flex flex-col gap-2.5">
-        <span class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant px-1">${escapeHtml(dateLabel)}</span>
+        <span class="text-xs font-mono font-bold uppercase tracking-wider text-on-surface-variant dark:text-outline-variant px-1">${escapeHtml(dateLabel)}</span>
         <div class="flex flex-col gap-2.5">
           ${list.map(apt => renderAppointmentCard(apt)).join('')}
         </div>
@@ -1122,27 +1122,27 @@ function renderAppointmentCard(apt) {
   const timeFormatted = startDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
   return `
-    <div onclick="openAppointmentDetailsModal('${escapeHtml(apt.id)}')" class="bg-surface-container-lowest card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint flex items-center justify-between gap-3 hover:border-primary/50 hover:bg-surface-blue-tint/20 transition-all cursor-pointer group active:scale-[0.99]">
+    <div onclick="openAppointmentDetailsModal('${escapeHtml(apt.id)}')" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/10 flex items-center justify-between gap-3 hover:border-primary/50 hover:bg-surface-blue-tint/20 dark:hover:bg-[#1c2a38]/20 transition-all cursor-pointer group active:scale-[0.99]">
       <div class="flex items-start gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-surface-blue-tint text-primary flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
+        <div class="w-10 h-10 rounded-xl bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 transition-transform">
           <span class="material-symbols-outlined text-2xl">person</span>
         </div>
         <div class="flex flex-col">
-          <span class="font-headline font-bold text-base text-primary">${escapeHtml(apt.attendee_name)}</span>
-          <span class="text-xs font-medium text-on-surface-variant">${escapeHtml(apt.meeting_type_title || 'Meeting')}</span>
-          <div class="flex items-center gap-3 mt-1.5 text-xs font-mono text-on-surface-variant flex-wrap">
-            <span class="flex items-center gap-1 text-primary font-semibold">
+          <span class="font-headline font-bold text-base text-primary dark:text-white">${escapeHtml(apt.attendee_name)}</span>
+          <span class="text-xs font-medium text-on-surface-variant dark:text-outline-variant">${escapeHtml(apt.meeting_type_title || 'Meeting')}</span>
+          <div class="flex items-center gap-3 mt-1.5 text-xs font-mono text-on-surface-variant dark:text-outline-variant flex-wrap">
+            <span class="flex items-center gap-1 text-primary dark:text-white font-semibold">
               <span class="material-symbols-outlined text-[15px]">schedule</span>
               ${timeFormatted}
             </span>
             ${apt.attendee_email ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">mail</span>${escapeHtml(apt.attendee_email)}</span>` : ''}
             ${apt.attendee_phone ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">call</span>${escapeHtml(apt.attendee_phone)}</span>` : ''}
-            ${apt.notes ? `<span class="text-[11px] italic bg-surface-container px-2 py-0.5 rounded-md truncate max-w-xs">&ldquo;${escapeHtml(apt.notes)}&rdquo;</span>` : ''}
+            ${apt.notes ? `<span class="text-[11px] italic bg-surface-container dark:bg-tertiary-container px-2 py-0.5 rounded-md truncate max-w-xs">&ldquo;${escapeHtml(apt.notes)}&rdquo;</span>` : ''}
             ${apt.admin_notes ? `<span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400" title="Has internal admin note"><span class="material-symbols-outlined text-[13px]">lock</span>Admin note</span>` : ''}
           </div>
         </div>
       </div>
-      <div class="flex items-center gap-1 shrink-0 text-on-surface-variant group-hover:text-primary transition-colors">
+      <div class="flex items-center gap-1 shrink-0 text-on-surface-variant dark:text-outline-variant group-hover:text-primary transition-colors">
         <span class="material-symbols-outlined text-[24px] group-hover:translate-x-1 transition-transform">chevron_right</span>
       </div>
     </div>
@@ -1163,35 +1163,35 @@ function openAppointmentDetailsModal(aptId) {
 
   modalBody.innerHTML = `
     <div class="flex flex-col gap-3.5 text-sm">
-      <div class="p-4 bg-surface-blue-tint rounded-2xl border border-surface-blue-tint flex flex-col gap-1">
-        <span class="font-headline font-bold text-lg text-primary">${escapeHtml(apt.attendee_name)}</span>
-        <span class="font-mono text-xs text-primary/80">${escapeHtml(apt.meeting_type_title || 'Appointment')}</span>
+      <div class="p-4 bg-surface-blue-tint dark:bg-[#1c2a38] rounded-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-1">
+        <span class="font-headline font-bold text-lg text-primary dark:text-primary-fixed">${escapeHtml(apt.attendee_name)}</span>
+        <span class="font-mono text-xs text-primary/80 dark:text-primary-fixed/80">${escapeHtml(apt.meeting_type_title || 'Appointment')}</span>
       </div>
-      <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 text-xs">
-        <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Email Address</span>
-        <a href="mailto:${escapeHtml(apt.attendee_email)}" class="font-semibold text-primary underline text-sm">${escapeHtml(apt.attendee_email)}</a>
+      <div class="p-3 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/30 dark:border-white/10 text-xs">
+        <span class="font-mono text-on-surface-variant dark:text-outline-variant block uppercase text-[10px] mb-0.5">Email Address</span>
+        <a href="mailto:${escapeHtml(apt.attendee_email)}" class="font-semibold text-primary dark:text-white underline text-sm">${escapeHtml(apt.attendee_email)}</a>
       </div>
       ${apt.attendee_phone ? `
-      <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 text-xs">
-        <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Phone Number</span>
-        <a href="tel:${escapeHtml(apt.attendee_phone)}" class="font-semibold text-primary underline text-sm">${escapeHtml(apt.attendee_phone)}</a>
+      <div class="p-3 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/30 dark:border-white/10 text-xs">
+        <span class="font-mono text-on-surface-variant dark:text-outline-variant block uppercase text-[10px] mb-0.5">Phone Number</span>
+        <a href="tel:${escapeHtml(apt.attendee_phone)}" class="font-semibold text-primary dark:text-white underline text-sm">${escapeHtml(apt.attendee_phone)}</a>
       </div>
       ` : ''}
-      <div class="p-3 bg-surface-container-low rounded-xl border border-outline-variant/30 text-xs">
-        <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Scheduled Time</span>
-        <span class="font-semibold text-on-surface text-xs sm:text-sm">${start.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} – ${end.toLocaleTimeString('en-US', { timeStyle: 'short' })}</span>
+      <div class="p-3 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/30 dark:border-white/10 text-xs">
+        <span class="font-mono text-on-surface-variant dark:text-outline-variant block uppercase text-[10px] mb-0.5">Scheduled Time</span>
+        <span class="font-semibold text-on-surface dark:text-[#E2E2E7] text-xs sm:text-sm">${start.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} – ${end.toLocaleTimeString('en-US', { timeStyle: 'short' })}</span>
       </div>
-      <div class="p-3 bg-surface-container rounded-xl text-xs flex flex-col gap-1.5">
-        <label for="apt-modal-notes" class="font-mono font-bold text-on-surface-variant block text-[10px] uppercase">Meeting Notes</label>
-        <textarea id="apt-modal-notes" rows="2" placeholder="No notes provided." class="w-full bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all">${escapeHtml(apt.notes || '')}</textarea>
+      <div class="p-3 bg-surface-container dark:bg-tertiary-container rounded-xl text-xs flex flex-col gap-1.5">
+        <label for="apt-modal-notes" class="font-mono font-bold text-on-surface-variant dark:text-outline-variant block text-[10px] uppercase">Meeting Notes</label>
+        <textarea id="apt-modal-notes" rows="2" placeholder="No notes provided." class="w-full bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-lg px-3 py-2 text-xs text-on-surface dark:text-[#E2E2E7] focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all">${escapeHtml(apt.notes || '')}</textarea>
       </div>
       <div class="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-xs flex flex-col gap-1.5">
         <label for="apt-modal-admin-notes" class="font-mono font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 text-[10px] uppercase">
           <span class="material-symbols-outlined text-[13px]">lock</span>Admin Notes <span class="font-normal normal-case text-amber-700/70 dark:text-amber-400/70">(internal only)</span>
         </label>
-        <textarea id="apt-modal-admin-notes" rows="2" placeholder="Private context for leadership — never emailed or shown to the attendee." class="w-full bg-white dark:bg-[#2d3137] border border-amber-500/30 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none transition-all">${escapeHtml(apt.admin_notes || '')}</textarea>
+        <textarea id="apt-modal-admin-notes" rows="2" placeholder="Private context for leadership — never emailed or shown to the attendee." class="w-full bg-white dark:bg-[#2d3137] border border-amber-500/30 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-on-surface dark:text-[#E2E2E7] focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none transition-all">${escapeHtml(apt.admin_notes || '')}</textarea>
       </div>
-      <button type="button" onclick="handleSaveAppointmentNotes()" id="btn-save-appointment-notes" class="self-start px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all active:scale-95">
+      <button type="button" onclick="handleSaveAppointmentNotes()" id="btn-save-appointment-notes" class="self-start px-3.5 py-2 rounded-xl bg-primary/10 dark:bg-primary-container/40 hover:bg-primary/20 dark:hover:bg-primary-container/60 text-primary dark:text-primary-fixed text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all active:scale-95">
         <span class="material-symbols-outlined text-[15px]">save</span>Save Notes
       </button>
     </div>
@@ -1268,9 +1268,9 @@ async function handleCancelSelectedMeetingAdmin() {
 
     detailsEl.innerHTML = `
       <div class="font-bold text-primary dark:text-white text-sm">${escapeHtml(apt.attendee_name)}</div>
-      <div class="text-on-surface-variant font-mono font-semibold text-xs">${escapeHtml(apt.meeting_type_title || 'Appointment')}</div>
-      <div class="text-on-surface-variant font-mono text-[11px]">${escapeHtml(dateFormatted)}</div>
-      <div class="text-primary underline text-[11px] truncate">${escapeHtml(apt.attendee_email)}</div>
+      <div class="text-on-surface-variant dark:text-outline-variant font-mono font-semibold text-xs">${escapeHtml(apt.meeting_type_title || 'Appointment')}</div>
+      <div class="text-on-surface-variant dark:text-outline-variant font-mono text-[11px]">${escapeHtml(dateFormatted)}</div>
+      <div class="text-primary dark:text-white underline text-[11px] truncate">${escapeHtml(apt.attendee_email)}</div>
     `;
   }
 
@@ -1461,20 +1461,20 @@ function renderMeetingTypesList() {
   const types = SCHEDULING_STATE.meetingTypes || [];
 
   const renderItem = (type) => `
-    <div class="bg-surface-container-lowest card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-primary/40 transition-all">
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-primary/40 transition-all">
       <div class="flex items-start gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-primary-container text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
           <span class="material-symbols-outlined text-2xl">calendar_add_on</span>
         </div>
         <div class="flex flex-col gap-1 max-w-xl">
           <div class="flex items-center gap-2 flex-wrap">
-            <h4 class="font-headline font-bold text-base text-primary">${escapeHtml(type.title)}</h4>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant">
+            <h4 class="font-headline font-bold text-base text-primary dark:text-white">${escapeHtml(type.title)}</h4>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container dark:bg-tertiary-container text-on-surface-variant dark:text-outline-variant">
               ${type.duration_minutes} mins
             </span>
-            ${type.buffer_minutes ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-surface-blue-tint text-primary">+${type.buffer_minutes}m buffer</span>` : ''}
+            ${type.buffer_minutes ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed">+${type.buffer_minutes}m buffer</span>` : ''}
           </div>
-          ${type.description ? `<p class="text-xs text-on-surface-variant whitespace-pre-line leading-relaxed">${formatMeetingDescription(type.description)}</p>` : ''}
+          ${type.description ? `<p class="text-xs text-on-surface-variant dark:text-outline-variant whitespace-pre-line leading-relaxed">${formatMeetingDescription(type.description)}</p>` : ''}
         </div>
       </div>
       <div class="flex items-center gap-2 self-end sm:self-center">
@@ -1483,10 +1483,10 @@ function renderMeetingTypesList() {
           <input type="checkbox" ${type.is_active !== false ? 'checked' : ''} onchange="handleToggleMeetingTypeActive('${escapeHtml(type.id)}', this.checked)" class="sr-only peer">
           <div class="w-9 h-5 bg-outline-variant/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary-container"></div>
         </label>
-        <button onclick="openEditMeetingTypeModal('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all" title="Edit">
+        <button onclick="openEditMeetingTypeModal('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container dark:hover:bg-tertiary-container transition-all" title="Edit">
           <span class="material-symbols-outlined text-[20px]">edit</span>
         </button>
-        <button onclick="openDeleteMeetingTypeModal('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all" title="Delete">
+        <button onclick="openDeleteMeetingTypeModal('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all" title="Delete">
           <span class="material-symbols-outlined text-[20px]">delete</span>
         </button>
       </div>
@@ -1495,7 +1495,7 @@ function renderMeetingTypesList() {
 
   if (container) {
     if (types.length === 0) {
-      container.innerHTML = `<div class="p-8 text-center bg-surface-container-low rounded-2xl"><p class="text-sm text-on-surface-variant">No meeting types yet. Create your first one!</p></div>`;
+      container.innerHTML = `<div class="p-8 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No meeting types yet. Create your first one!</p></div>`;
     } else {
       container.innerHTML = types.map(renderItem).join('');
     }
@@ -1503,10 +1503,10 @@ function renderMeetingTypesList() {
 
   if (previewContainer) {
     previewContainer.innerHTML = types.slice(0, 4).map(t => `
-      <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl border border-outline-variant/20">
+      <div class="flex items-center justify-between p-3 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/20 dark:border-white/10">
         <div class="flex flex-col">
-          <span class="font-headline font-bold text-xs text-primary">${escapeHtml(t.title)}</span>
-          <span class="font-mono text-[10px] text-on-surface-variant">${t.duration_minutes}m</span>
+          <span class="font-headline font-bold text-xs text-primary dark:text-white">${escapeHtml(t.title)}</span>
+          <span class="font-mono text-[10px] text-on-surface-variant dark:text-outline-variant">${t.duration_minutes}m</span>
         </div>
         <span class="w-2.5 h-2.5 rounded-full ${t.is_active !== false ? 'bg-success-green' : 'bg-outline-variant'}"></span>
       </div>
@@ -1562,8 +1562,8 @@ function openDeleteMeetingTypeModal(typeId) {
   if (detailsEl) {
     detailsEl.innerHTML = `
       <div class="font-bold text-primary dark:text-white text-sm">${escapeHtml(type.title)}</div>
-      <div class="text-on-surface-variant font-mono text-[11px]">${type.duration_minutes} minutes duration ${type.buffer_minutes ? `(+${type.buffer_minutes}m buffer)` : ''}</div>
-      ${type.description ? `<div class="text-on-surface-variant text-[11px] line-clamp-2">${escapeHtml(type.description)}</div>` : ''}
+      <div class="text-on-surface-variant dark:text-outline-variant font-mono text-[11px]">${type.duration_minutes} minutes duration ${type.buffer_minutes ? `(+${type.buffer_minutes}m buffer)` : ''}</div>
+      ${type.description ? `<div class="text-on-surface-variant dark:text-outline-variant text-[11px] line-clamp-2">${escapeHtml(type.description)}</div>` : ''}
     `;
   }
 
@@ -1705,21 +1705,21 @@ async function renderAdminUsersList() {
   const container = document.getElementById('admin-users-list');
   if (!container) return;
 
-  container.innerHTML = `<div class="p-6 text-center text-sm text-on-surface-variant">Loading admins…</div>`;
+  container.innerHTML = `<div class="p-6 text-center text-sm text-on-surface-variant dark:text-outline-variant">Loading admins…</div>`;
 
   const result = await adminApiFetch('/api/admin-users', { action: 'list' });
   const admins = result && result.success ? result.admins : [];
 
   if (!admins || admins.length === 0) {
-    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low rounded-2xl"><p class="text-sm text-on-surface-variant">No admins found.</p></div>`;
+    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No admins found.</p></div>`;
     return;
   }
 
   const currentId = SCHEDULING_STATE.currentAdmin && SCHEDULING_STATE.currentAdmin.id;
 
   const roleBadgeClasses = {
-    full_access: 'bg-emerald-100 text-emerald-800',
-    scheduling_access: 'bg-blue-100 text-blue-800',
+    full_access: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300',
+    scheduling_access: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
     announcements_only: 'bg-secondary-container text-on-secondary-container',
   };
 
@@ -1729,25 +1729,25 @@ async function renderAdminUsersList() {
     const isSelf = admin.id === currentId;
 
     return `
-      <div class="bg-surface-container-lowest card-shadow rounded-2xl p-4 border border-surface-blue-tint flex items-center justify-between gap-3">
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 border border-surface-blue-tint dark:border-white/10 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-surface-blue-tint text-primary flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-[20px]">person</span>
           </div>
           <div class="flex flex-col min-w-0">
-            <span class="font-headline font-bold text-sm text-primary truncate">${escapeHtml(admin.email)}${isSelf ? ' <span class="text-on-surface-variant font-normal">(you)</span>' : ''}</span>
+            <span class="font-headline font-bold text-sm text-primary dark:text-white truncate">${escapeHtml(admin.email)}${isSelf ? ' <span class="text-on-surface-variant dark:text-outline-variant font-normal">(you)</span>' : ''}</span>
             <div class="mt-0.5 flex items-center gap-2 flex-wrap">
               <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${roleBadgeClasses[admin.role] || 'bg-secondary-container text-on-secondary-container'}">${roleLabel}</span>
-              ${admin.status === 'pending' ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-800">Pending Invite</span>` : ''}
-              ${created ? `<span class="text-xs text-on-surface-variant">Added ${created}</span>` : ''}
+              ${admin.status === 'pending' ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">Pending Invite</span>` : ''}
+              ${created ? `<span class="text-xs text-on-surface-variant dark:text-outline-variant">Added ${created}</span>` : ''}
             </div>
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
-          <button onclick="openEditAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}', '${escapeHtml(admin.role)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-blue-tint transition-all" title="Edit permission level">
+          <button onclick="openEditAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}', '${escapeHtml(admin.role)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-blue-tint dark:hover:bg-[#1c2a38] transition-all" title="Edit permission level">
             <span class="material-symbols-outlined text-[20px]">edit</span>
           </button>
-          <button onclick="openDeleteAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove admin">
+          <button onclick="openDeleteAdminModal('${escapeHtml(admin.id)}', '${escapeHtml(admin.email)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove admin">
             <span class="material-symbols-outlined text-[20px]">delete</span>
           </button>
         </div>
@@ -1978,7 +1978,7 @@ function renderWeeklyAvailabilityEditor() {
       <button onclick="toggleWeeklyDayChip(${d.day})" class="w-11 h-11 rounded-full font-mono text-xs font-bold transition-all flex items-center justify-center ${
         isSelected
           ? 'bg-[#003057] text-white shadow-md ring-2 ring-primary/40 active:scale-95'
-          : 'bg-surface-container-high/60 dark:bg-surface-container-high/30 text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/30 active:scale-95'
+          : 'bg-surface-container-high/60 dark:bg-surface-container-high/30 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high dark:hover:bg-[#3a3d43] border border-outline-variant/30 dark:border-white/10 active:scale-95'
       }">
         ${d.label}
       </button>
@@ -1987,9 +1987,9 @@ function renderWeeklyAvailabilityEditor() {
 
   if (SCHEDULING_STATE.activeDaysSelected.length === 0) {
     container.innerHTML = `
-      <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-outline-variant/30 flex flex-col items-center gap-2">
-        <span class="material-symbols-outlined text-3xl text-on-surface-variant/40">event_busy</span>
-        <p class="text-sm font-medium text-on-surface-variant">No active days selected. Tap a day circle above to set recurring hours.</p>
+      <div class="p-8 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col items-center gap-2">
+        <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 dark:text-outline-variant/40">event_busy</span>
+        <p class="text-sm font-medium text-on-surface-variant dark:text-outline-variant">No active days selected. Tap a day circle above to set recurring hours.</p>
       </div>
     `;
     return;
@@ -2002,27 +2002,27 @@ function renderWeeklyAvailabilityEditor() {
     const daySlots = SCHEDULING_STATE.weeklyAvailability.filter(s => s.day_of_week === dayNum);
 
     return `
-      <div class="bg-surface-container-lowest card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint flex flex-col gap-3">
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/10 flex flex-col gap-3">
         <div class="flex items-center justify-between">
           <span class="font-headline font-bold text-base text-primary dark:text-white">${dayConfig.full}</span>
-          <button onclick="addWeeklySlotForDay(${dayNum})" class="text-xs font-mono font-bold text-primary dark:text-primary-fixed bg-surface-blue-tint hover:bg-primary-fixed/50 px-3 py-1 rounded-xl flex items-center gap-1 transition-all active:scale-95">
+          <button onclick="addWeeklySlotForDay(${dayNum})" class="text-xs font-mono font-bold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-[#1c2a38] hover:bg-primary-fixed/50 px-3 py-1 rounded-xl flex items-center gap-1 transition-all active:scale-95">
             <span class="material-symbols-outlined text-[15px]">add</span>
             <span>Add Window</span>
           </button>
         </div>
 
         <div class="flex flex-col gap-2.5">
-          ${daySlots.length === 0 ? `<p class="text-xs text-on-surface-variant italic py-1">No hours set for this day.</p>` : ''}
+          ${daySlots.length === 0 ? `<p class="text-xs text-on-surface-variant dark:text-outline-variant italic py-1">No hours set for this day.</p>` : ''}
           ${daySlots.map(slot => {
             const startStr = formatTime12h(slot.start_time);
             const endStr = formatTime12h(slot.end_time);
 
             return `
-              <div class="flex items-center justify-between gap-3 p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30">
+              <div class="flex items-center justify-between gap-3 p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30 dark:border-white/10">
                 
                 <!-- MOBILE VIEW ONLY: Single Clickable Pill (Opens Mobile Bottom Sheet Wheel Picker) -->
                 <div class="md:hidden flex items-center">
-                  <button onclick="openMobileTimePicker('${escapeHtml(slot.id)}', ${dayNum})" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 hover:border-primary text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
+                  <button onclick="openMobileTimePicker('${escapeHtml(slot.id)}', ${dayNum})" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 dark:border-white/10 hover:border-primary text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
                     <span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
                     <span>${startStr} – ${endStr}</span>
                   </button>
@@ -2031,20 +2031,20 @@ function renderWeeklyAvailabilityEditor() {
                 <!-- DESKTOP VIEW ONLY: Clean Dropdowns (Start Time to End Time) -->
                 <div class="hidden md:flex items-center gap-2 text-xs font-mono">
                   <div class="relative flex items-center">
-                    <select onchange="handleWeeklySlotTimeChange('${escapeHtml(slot.id)}', 'start_time', this.value)" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                    <select onchange="handleWeeklySlotTimeChange('${escapeHtml(slot.id)}', 'start_time', this.value)" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
                       ${generateTimeSelectOptions(slot.start_time)}
                     </select>
                   </div>
-                  <span class="text-on-surface-variant font-bold px-1">to</span>
+                  <span class="text-on-surface-variant dark:text-outline-variant font-bold px-1">to</span>
                   <div class="relative flex items-center">
-                    <select onchange="handleWeeklySlotTimeChange('${escapeHtml(slot.id)}', 'end_time', this.value)" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                    <select onchange="handleWeeklySlotTimeChange('${escapeHtml(slot.id)}', 'end_time', this.value)" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
                       ${generateTimeSelectOptions(slot.end_time)}
                     </select>
                   </div>
                 </div>
 
                 <!-- Delete trash button -->
-                <button onclick="removeWeeklySlot('${escapeHtml(slot.id)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all active:scale-90" title="Delete slot">
+                <button onclick="removeWeeklySlot('${escapeHtml(slot.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all active:scale-90" title="Delete slot">
                   <span class="material-symbols-outlined text-[20px]">delete</span>
                 </button>
 
@@ -2164,7 +2164,7 @@ function renderWheelColumns() {
       <div onclick="setWheelHour(${h})" class="wheel-item py-1.5 cursor-pointer transition-all ${
         isSelected
           ? 'text-xl font-headline font-extrabold text-primary dark:text-white scale-110'
-          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant'
+          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant dark:hover:text-outline-variant'
       }">
         ${h}
       </div>
@@ -2179,7 +2179,7 @@ function renderWheelColumns() {
       <div onclick="setWheelMinute(${m})" class="wheel-item py-1.5 cursor-pointer transition-all ${
         isSelected
           ? 'text-xl font-headline font-extrabold text-primary dark:text-white scale-110'
-          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant'
+          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant dark:hover:text-outline-variant'
       }">
         ${String(m).padStart(2, '0')}
       </div>
@@ -2194,7 +2194,7 @@ function renderWheelColumns() {
       <div onclick="setWheelPeriod('${p}')" class="wheel-item py-2 cursor-pointer transition-all ${
         isSelected
           ? 'text-xl font-headline font-extrabold text-primary dark:text-white scale-110'
-          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant'
+          : 'text-sm font-medium text-on-surface-variant/40 dark:text-outline-variant/40 hover:text-on-surface-variant dark:hover:text-outline-variant'
       }">
         ${p}
       </div>
@@ -2372,7 +2372,7 @@ function renderDateOverridesCalendar() {
       <button onclick="handleSelectCalendarDate('${dateStr}')" class="h-9 w-9 mx-auto rounded-xl flex flex-col items-center justify-center font-mono text-xs font-semibold relative transition-all ${
         isSelected
           ? 'bg-primary text-white font-bold shadow-md scale-105'
-          : 'hover:bg-surface-blue-tint text-on-surface'
+          : 'hover:bg-surface-blue-tint dark:hover:bg-[#1c2a38] text-on-surface dark:text-[#E2E2E7]'
       }" ${hasAppointments ? `title="Has existing appointment(s)"` : ''}>
         <span>${day}</span>
         <span class="flex items-center gap-0.5 absolute bottom-1">
@@ -2506,7 +2506,7 @@ function updateOverrideConflictWarning() {
       <button type="button" onclick="openAppointmentDetailsModal('${escapeHtml(apt.id)}')" class="flex items-center justify-between gap-2 p-2.5 bg-white dark:bg-[#2d3137] rounded-lg border border-error/20 hover:border-error/50 text-left transition-all active:scale-[0.98]">
         <div class="flex flex-col min-w-0">
           <span class="text-xs font-bold text-primary dark:text-white truncate">${escapeHtml(apt.attendee_name)}</span>
-          <span class="text-[10px] font-mono text-on-surface-variant">${timeFormatted} &bull; ${escapeHtml(apt.meeting_type_title || 'Meeting')}</span>
+          <span class="text-[10px] font-mono text-on-surface-variant dark:text-outline-variant">${timeFormatted} &bull; ${escapeHtml(apt.meeting_type_title || 'Meeting')}</span>
         </div>
         <span class="material-symbols-outlined text-[16px] text-error shrink-0">chevron_right</span>
       </button>
@@ -2599,7 +2599,7 @@ function renderUpcomingOverridesList() {
 
   const overrides = SCHEDULING_STATE.dateOverrides || [];
   if (overrides.length === 0) {
-    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low rounded-2xl"><p class="text-sm text-on-surface-variant">No date overrides configured.</p></div>`;
+    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No date overrides configured.</p></div>`;
     return;
   }
 
@@ -2614,21 +2614,21 @@ function renderUpcomingOverridesList() {
     } else {
       const start = ov.start_time ? formatTimeString(ov.start_time) : '9:00 AM';
       const end = ov.end_time ? formatTimeString(ov.end_time) : '5:00 PM';
-      statusText = `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-800">Available: ${start} – ${end}</span>`;
+      statusText = `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">Available: ${start} – ${end}</span>`;
     }
 
     return `
-      <div class="bg-surface-container-lowest card-shadow rounded-2xl p-4 border border-surface-blue-tint flex items-center justify-between gap-3">
+      <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 border border-surface-blue-tint dark:border-white/10 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-surface-blue-tint text-primary flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-[20px]">event</span>
           </div>
           <div class="flex flex-col">
-            <span class="font-headline font-bold text-sm text-primary">${dateFormatted}</span>
+            <span class="font-headline font-bold text-sm text-primary dark:text-white">${dateFormatted}</span>
             <div class="mt-0.5">${statusText}</div>
           </div>
         </div>
-        <button onclick="handleDeleteDateOverride('${escapeHtml(ov.id)}')" class="p-2 rounded-xl text-on-surface-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove override">
+        <button onclick="handleDeleteDateOverride('${escapeHtml(ov.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove override">
           <span class="material-symbols-outlined text-[20px]">delete</span>
         </button>
       </div>
@@ -2780,7 +2780,7 @@ function renderMyAppointmentsSection() {
     const timeText = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'America/Denver' });
 
     return `
-      <div onclick="openMyAppointmentManageModal('${escapeHtml(a.id)}')" class="flex items-center gap-3.5 bg-surface-container/60 dark:bg-surface-container-high/20 hover:bg-surface-blue-tint/40 rounded-2xl p-3.5 border border-outline-variant/30 hover:border-primary/40 cursor-pointer transition-all active:scale-[0.99] group">
+      <div onclick="openMyAppointmentManageModal('${escapeHtml(a.id)}')" class="flex items-center gap-3.5 bg-surface-container/60 dark:bg-surface-container-high/20 hover:bg-surface-blue-tint/40 dark:hover:bg-[#1c2a38]/40 rounded-2xl p-3.5 border border-outline-variant/30 dark:border-white/10 hover:border-primary/40 cursor-pointer transition-all active:scale-[0.99] group">
         <div class="w-11 h-11 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 shadow-xs">
           <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">event</span>
         </div>
@@ -2788,7 +2788,7 @@ function renderMyAppointmentsSection() {
           <span class="font-headline font-bold text-sm text-primary dark:text-white truncate">${escapeHtml(a.meeting_type_title || 'Appointment')}</span>
           <span class="text-xs text-on-surface-variant dark:text-outline-variant font-medium">${dateText} &bull; ${timeText}</span>
         </div>
-        <span class="material-symbols-outlined text-[20px] text-on-surface-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0">chevron_right</span>
+        <span class="material-symbols-outlined text-[20px] text-on-surface-variant/60 dark:text-outline-variant/60 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0">chevron_right</span>
       </div>
     `;
   }).join('');
@@ -2830,7 +2830,7 @@ function renderPublicMeetingTypes() {
 
     return `
       <div onclick="selectBookingMeetingType('${escapeHtml(type.id)}')"
-           class="group bg-surface-container-lowest dark:bg-[#202227] hover:bg-surface-blue-tint/50 dark:hover:bg-primary-container/20 border ${isSelected ? 'border-primary bg-surface-blue-tint/50 shadow-md ring-2 ring-primary/30' : 'border-outline-variant/30 dark:border-white/5'} rounded-2xl p-3 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 cursor-pointer transition-all duration-200 active:scale-[0.99] shadow-sm hover:shadow-md">
+           class="group bg-surface-container-lowest dark:bg-[#202227] hover:bg-surface-blue-tint/50 dark:hover:bg-primary-container/20 border ${isSelected ? 'border-primary bg-surface-blue-tint/50 dark:bg-[#1c2a38]/50 shadow-md ring-2 ring-primary/30' : 'border-outline-variant/30 dark:border-white/5'} rounded-2xl p-3 sm:p-5 flex items-center justify-between gap-3 sm:gap-4 cursor-pointer transition-all duration-200 active:scale-[0.99] shadow-sm hover:shadow-md">
 
         <div class="flex items-start gap-2.5 sm:gap-4 min-w-0">
           <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-secondary-container text-on-secondary-container flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform shadow-xs mt-0.5">
@@ -2845,7 +2845,7 @@ function renderPublicMeetingTypes() {
             </div>
 
             <!-- Duration Badge -->
-            <div class="flex items-center gap-3 text-xs font-mono text-on-surface-variant flex-wrap">
+            <div class="flex items-center gap-3 text-xs font-mono text-on-surface-variant dark:text-outline-variant flex-wrap">
               <span class="flex items-center gap-1 font-bold text-primary dark:text-primary-fixed">
                 <span class="material-symbols-outlined text-[15px]">schedule</span>
                 <span>${type.duration_minutes || 15} min</span>
@@ -2861,7 +2861,7 @@ function renderPublicMeetingTypes() {
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
-          <span class="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary group-hover:translate-x-1 transition-all text-xl sm:text-2xl">
+          <span class="material-symbols-outlined text-on-surface-variant/40 dark:text-outline-variant/40 group-hover:text-primary group-hover:translate-x-1 transition-all text-xl sm:text-2xl">
             chevron_right
           </span>
         </div>
@@ -3064,7 +3064,7 @@ function renderPublicBookingCalendar() {
     } else if (isAvailable) {
       classes.push('day-has-slots text-primary dark:text-white font-semibold hover:bg-secondary-container/30');
     } else {
-      classes.push('text-on-surface-variant/50 hover:bg-surface-container');
+      classes.push('text-on-surface-variant/50 dark:text-outline-variant/50 hover:bg-surface-container dark:hover:bg-tertiary-container');
     }
 
     if (isToday) {
@@ -3368,7 +3368,7 @@ function renderPublicTimeSlots() {
               class="py-3 px-3 rounded-2xl font-mono text-xs sm:text-sm font-bold border transition-all duration-200 active:scale-95 text-center flex items-center justify-center gap-1.5 shadow-sm ${
                 isSelected
                   ? 'slot-btn-selected bg-secondary-container text-on-secondary-container border-secondary-fixed shadow-md'
-                  : 'bg-white dark:bg-[#202227] hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 text-primary dark:text-white border-outline-variant/30 hover:border-primary'
+                  : 'bg-white dark:bg-[#202227] hover:bg-surface-blue-tint dark:hover:bg-primary-container/20 text-primary dark:text-white border-outline-variant/30 dark:border-white/10 hover:border-primary'
               }">
         <span class="material-symbols-outlined text-[15px] opacity-70">schedule</span>
         <span>${formatted12h}</span>

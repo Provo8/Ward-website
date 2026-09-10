@@ -142,15 +142,15 @@
           <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">home</span>
           <span>Home</span>
         </button>
-        <button onclick="navigateTab('ward')" id="nav-btn-ward" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+        <button onclick="navigateTab('ward')" id="nav-btn-ward" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[18px]">groups</span>
           <span>Leaders</span>
         </button>
-        <button onclick="navigateTab('schedule')" id="nav-btn-schedule" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+        <button onclick="navigateTab('schedule')" id="nav-btn-schedule" class="nav-desktop-item px-5 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[18px]">event</span>
           <span>Schedule</span>
         </button>
-        <button onclick="navigateTab('admin-scheduling')" id="nav-btn-admin-scheduling" class="hidden nav-desktop-item px-4 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
+        <button onclick="navigateTab('admin-scheduling')" id="nav-btn-admin-scheduling" class="hidden nav-desktop-item px-4 py-1.5 rounded-full text-sm font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-all duration-200 flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
           <span>Dashboard</span>
         </button>
@@ -158,14 +158,14 @@
 
       <!-- Right Header Actions (Quick Info) -->
       <div class="flex items-center gap-2 relative">
-        <button id="header-admin-btn" onclick="handleHeaderAdminClick(event)" title="Leadership Scheduling Portal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-semibold bg-surface-container hover:bg-surface-container-high text-primary border border-outline-variant/30 transition-all active:scale-95">
+        <button id="header-admin-btn" onclick="handleHeaderAdminClick(event)" title="Leadership Scheduling Portal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-semibold bg-surface-container dark:bg-tertiary-container hover:bg-surface-container-high dark:hover:bg-[#3a3d43] text-primary dark:text-white border border-outline-variant/30 dark:border-white/10 transition-all active:scale-95">
           <span class="material-symbols-outlined text-[16px] text-secondary" id="header-admin-icon">lock</span>
           <span class="hidden sm:inline" id="header-admin-text">Admin</span>
         </button>
 
         <!-- Admin Quick Menu / Sign Out Dropdown -->
         <div id="header-admin-dropdown" class="hidden absolute right-0 top-11 w-56 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-1.5 border border-surface-blue-tint dark:border-white/10 shadow-xl z-50 animate-scale-up flex flex-col text-xs">
-          <div id="header-admin-identity" class="hidden px-3 py-2 text-on-surface-variant font-mono break-all border-b border-surface-variant/40 mb-1"></div>
+          <div id="header-admin-identity" class="hidden px-3 py-2 text-on-surface-variant dark:text-outline-variant font-mono break-all border-b border-surface-variant/40 mb-1"></div>
           <button onclick="handleAdminLogout(); closeHeaderAdminDropdown();" class="w-full px-3 py-2 rounded-xl text-left hover:bg-error-container/20 flex items-center gap-2 text-error font-semibold transition-all">
             <span class="material-symbols-outlined text-[18px]">logout</span>
             <span>Sign Out</span>
@@ -201,10 +201,10 @@
       <!-- Welcome Hero Section -->
       <div class="flex flex-col gap-2 pt-2">
         <div class="flex items-center gap-2">
-          <span class="px-3 py-1 bg-surface-blue-tint dark:bg-primary-container/40 text-primary dark:text-primary-fixed font-mono text-xs font-semibold rounded-full border border-outline-variant/30">
+          <span class="px-3 py-1 bg-surface-blue-tint dark:bg-primary-container/40 text-primary dark:text-primary-fixed font-mono text-xs font-semibold rounded-full border border-outline-variant/30 dark:border-white/10">
             Welcome to the 8th Ward
           </span>
-          <span class="text-xs text-on-surface-variant font-mono">Updated weekly</span>
+          <span class="text-xs text-on-surface-variant dark:text-outline-variant font-mono">Updated weekly</span>
         </div>
         <h1 class="font-headline font-extrabold text-3xl sm:text-4xl md:text-5xl text-primary dark:text-white tracking-tight">
           Provo YSA 8th Ward
@@ -267,7 +267,7 @@
                     <span class="material-symbols-outlined text-primary dark:text-primary-fixed text-[18px]">location_on</span>
                     <span><strong>BYU Life Science Building (LSB)</strong> - Room 2102</span>
                   </div>
-                  <a href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank" class="h-8 bg-surface-container-high dark:bg-tertiary-container hover:bg-surface-dim dark:hover:bg-tertiary text-on-surface dark:text-white font-mono text-[11px] uppercase tracking-wider font-semibold rounded-lg px-3 flex items-center gap-1.5 active:scale-95 transition-all border border-outline-variant/30">
+                  <a href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank" class="h-8 bg-surface-container-high dark:bg-tertiary-container hover:bg-surface-dim dark:hover:bg-tertiary text-on-surface dark:text-white font-mono text-[11px] uppercase tracking-wider font-semibold rounded-lg px-3 flex items-center gap-1.5 active:scale-95 transition-all border border-outline-variant/30 dark:border-white/10">
                     <span class="material-symbols-outlined text-[14px]">map</span>
                     <span>Map</span>
                   </a>
@@ -341,7 +341,7 @@
 
             <!-- User Name Pill -->
             <div class="flex items-center gap-2">
-              <button id="btn-member-name-pill" onclick="openNamePromptModal()" title="Set your name for Sunday attendance" class="text-xs text-on-surface-variant hover:text-primary dark:text-outline-variant dark:hover:text-white flex items-center gap-1.5 bg-surface-container/60 dark:bg-tertiary-container/40 hover:bg-surface-container px-3 py-1 rounded-full transition-all border border-outline-variant/30 active:scale-95 shadow-sm">
+              <button id="btn-member-name-pill" onclick="openNamePromptModal()" title="Set your name for Sunday attendance" class="text-xs text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white flex items-center gap-1.5 bg-surface-container/60 dark:bg-tertiary-container/40 hover:bg-surface-container dark:hover:bg-tertiary-container px-3 py-1 rounded-full transition-all border border-outline-variant/30 dark:border-white/10 active:scale-95 shadow-sm">
                 <span id="display-member-name-icon" class="material-symbols-outlined text-[15px] text-amber-600">person_add</span>
                 <span id="display-member-name" class="font-medium">Set Name</span>
                 <span class="material-symbols-outlined text-[12px] opacity-60">edit</span>
@@ -354,10 +354,10 @@
             
             <!-- Sunday School -->
             <button id="btn-checkin-ss" onclick="handleClassCheckIn('Sunday School')" 
-              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 dark:border-white/10 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
               <div class="flex items-center gap-3">
                 <!-- Simple circular checkmark from the image -->
-                <div id="circle-checkin-ss" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                <div id="circle-checkin-ss" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 dark:border-white/10 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
                   <span id="check-icon-ss" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
                 </div>
                 <div class="flex flex-col">
@@ -369,10 +369,10 @@
 
             <!-- Elders Quorum -->
             <button id="btn-checkin-eq" onclick="handleClassCheckIn('Elders Quorum')" 
-              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 dark:border-white/10 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
               <div class="flex items-center gap-3">
                 <!-- Simple circular checkmark from the image -->
-                <div id="circle-checkin-eq" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                <div id="circle-checkin-eq" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 dark:border-white/10 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
                   <span id="check-icon-eq" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
                 </div>
                 <div class="flex flex-col">
@@ -384,10 +384,10 @@
 
             <!-- Relief Society -->
             <button id="btn-checkin-rs" onclick="handleClassCheckIn('Relief Society')" 
-              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
+              class="checkin-row flex items-center justify-between p-3 rounded-xl bg-surface-container-low/60 dark:bg-[#15171a] border border-outline-variant/30 dark:border-white/10 hover:border-primary/50 transition-all active:scale-[0.98] text-left group">
               <div class="flex items-center gap-3">
                 <!-- Simple circular checkmark from the image -->
-                <div id="circle-checkin-rs" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
+                <div id="circle-checkin-rs" class="w-7 h-7 rounded-full border-2 border-outline-variant/60 dark:border-white/10 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0">
                   <span id="check-icon-rs" class="material-symbols-outlined text-[16px] text-transparent select-none transition-all">check</span>
                 </div>
                 <div class="flex flex-col">
@@ -402,7 +402,7 @@
 
         <!-- Upcoming Activities Card (Span 12 on Home Page) -->
         <section class="col-span-1 md:col-span-12 bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl card-shadow overflow-hidden relative border border-surface-blue-tint dark:border-white/5">
-          <div class="h-2 w-full bg-surface-tint absolute top-0 left-0"></div>
+          <div class="h-2 w-full bg-surface-tint dark:bg-primary-fixed-dim absolute top-0 left-0"></div>
           
           <div class="p-container-padding flex flex-col h-full gap-stack-md">
             <div class="flex items-center justify-between">
@@ -420,10 +420,10 @@
             <div id="upcoming-activities-list" class="flex flex-col gap-2.5">
               <!-- Loading Skeleton -->
               <div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low/50 dark:bg-surface-container/20 animate-pulse">
-                <div class="w-12 h-14 bg-surface-variant/40 rounded-xl"></div>
+                <div class="w-12 h-14 bg-surface-variant/40 dark:bg-tertiary-container/40 rounded-xl"></div>
                 <div class="flex-1 space-y-2">
-                  <div class="h-4 bg-surface-variant/40 rounded w-3/4"></div>
-                  <div class="h-3 bg-surface-variant/40 rounded w-1/2"></div>
+                  <div class="h-4 bg-surface-variant/40 dark:bg-tertiary-container/40 rounded w-3/4"></div>
+                  <div class="h-3 bg-surface-variant/40 dark:bg-tertiary-container/40 rounded w-1/2"></div>
                 </div>
               </div>
             </div>
@@ -516,7 +516,7 @@
           <!-- Bishop Card -->
           <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
             <div class="absolute top-0 left-0 w-full h-2 bg-primary-container"></div>
-            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
               <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Bishop" src="pictures/Leader Name.png">
             </div>
             <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Bishop</h3>
@@ -526,7 +526,7 @@
                 <span class="material-symbols-outlined text-[16px]">event</span>
                 <span>Schedule</span>
               </button>
-              <a class="border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-[11px] sm:text-xs uppercase tracking-wider font-bold py-3 px-1.5 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30 whitespace-nowrap" href="tel:5555550100">
+              <a class="border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-[11px] sm:text-xs uppercase tracking-wider font-bold py-3 px-1.5 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30 whitespace-nowrap" href="tel:5555550100">
                 <span class="material-symbols-outlined text-[16px]">call</span>
                 <span>555-555-0100</span>
               </a>
@@ -536,12 +536,12 @@
 <!-- 1st Counselor -->
 <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
   <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
   </div>
   <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
   <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">1st Counselor</p>
-  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+  <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
     <span class="material-symbols-outlined text-[18px]">call</span>
     <span>555-555-0100</span>
   </a>
@@ -550,12 +550,12 @@
 <!-- 2nd Counselor -->
 <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
   <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
   </div>
   <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
   <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">2nd Counselor</p>
-  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+  <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
     <span class="material-symbols-outlined text-[18px]">call</span>
     <span>555-555-0100</span>
   </a>
@@ -564,12 +564,12 @@
 <!-- Ward Clerk -->
 <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
   <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
   </div>
   <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
   <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Ward Clerk</p>
-  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+  <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
     <span class="material-symbols-outlined text-[18px]">call</span>
     <span>555-555-0100</span>
   </a>
@@ -578,12 +578,12 @@
 <!-- Executive Secretary -->
 <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
   <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+  <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
     <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
   </div>
   <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
   <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Executive Secretary</p>
-  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+  <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
     <span class="material-symbols-outlined text-[18px]">call</span>
     <span>555-555-0100</span>
   </a>
@@ -593,7 +593,7 @@
   <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
   <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
   <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Assistant Stake Executive Secretary</p>
-  <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+  <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
     <span class="material-symbols-outlined text-[18px]">call</span>
     <span>555-555-0100</span>
   </a>
@@ -617,12 +617,12 @@
           <!-- Elders Quorum President -->
           <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
             <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
               <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
             </div>
             <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
             <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Elder's Quorum President</p>
-            <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+            <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
               <span class="material-symbols-outlined text-[18px]">call</span>
               <span>555-555-0100</span>
             </a>
@@ -631,12 +631,12 @@
           <!-- Relief Society President -->
           <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
             <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
               <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
             </div>
             <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
             <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Relief Society President</p>
-            <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+            <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
               <span class="material-symbols-outlined text-[18px]">call</span>
               <span>555-555-0100</span>
             </a>
@@ -645,12 +645,12 @@
           <!-- Sunday School President -->
           <div class="bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300">
             <div class="absolute top-0 left-0 w-full h-2 bg-primary-container/60"></div>
-            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container shadow-inner">
+            <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
               <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Leader Name" src="pictures/Leader Name.jpg" />
             </div>
             <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">Leader Name</h3>
             <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">Sunday School President</p>
-            <a class="w-full border border-outline-variant hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
+            <a class="w-full border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono text-xs uppercase tracking-wider font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30" href="tel:5555550100">
               <span class="material-symbols-outlined text-[18px]">call</span>
               <span>555-555-0100</span>
             </a>
@@ -694,7 +694,7 @@
               required
               rows="4"
               placeholder="Share any questions or feedback for ward council..."
-              class="w-full p-4 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm resize-none"></textarea>
+              class="w-full p-4 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white placeholder:text-on-surface-variant/50 dark:placeholder:text-outline-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm resize-none"></textarea>
           </div>
 
           <div class="flex justify-end">
@@ -790,7 +790,7 @@
 
         <!-- Back Navigation (no step counter / progress bar, per ward request) -->
         <div class="w-full mb-4">
-          <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
+          <button id="booking-nav-back-btn" onclick="handleBookingBackStep()" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:text-primary flex items-center gap-1 transition-all active:scale-95 invisible">
             <span class="material-symbols-outlined text-[16px]">arrow_back</span>
             <span>Back</span>
           </button>
@@ -819,7 +819,7 @@
           <div class="text-center flex flex-col gap-1.5">
             <!-- Selected Type Pill -->
             <div class="flex justify-center">
-              <span id="booking-step2-type-pill" class="text-xs font-mono font-bold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-primary-container/30 px-3.5 py-1 rounded-full border border-outline-variant/30 flex items-center gap-1.5 shadow-sm">
+              <span id="booking-step2-type-pill" class="text-xs font-mono font-bold text-primary dark:text-primary-fixed bg-surface-blue-tint dark:bg-primary-container/30 px-3.5 py-1 rounded-full border border-outline-variant/30 dark:border-white/10 flex items-center gap-1.5 shadow-sm">
                 <span class="material-symbols-outlined text-[15px]">event_note</span>
                 <span id="booking-step2-type-name">Meeting</span>
               </span>
@@ -834,23 +834,23 @@
           </div>
 
           <!-- Month Calendar Picker Widget -->
-          <div class="bg-surface-container/50 dark:bg-surface-container-high/10 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 flex flex-col gap-4">
+          <div class="bg-surface-container/50 dark:bg-surface-container-high/10 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 dark:border-white/10 flex flex-col gap-4">
             
             <!-- Calendar Navigation Header -->
             <div class="flex items-center justify-between">
-              <button onclick="changeBookingMonth(-1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-90 text-primary dark:text-white transition-all">
+              <button onclick="changeBookingMonth(-1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container dark:hover:bg-tertiary-container active:scale-90 text-primary dark:text-white transition-all">
                 <span class="material-symbols-outlined text-[20px]">chevron_left</span>
               </button>
               <h3 id="booking-calendar-month-year" class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white">
                 October 2026
               </h3>
-              <button onclick="changeBookingMonth(1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container active:scale-90 text-primary dark:text-white transition-all">
+              <button onclick="changeBookingMonth(1)" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-container dark:hover:bg-tertiary-container active:scale-90 text-primary dark:text-white transition-all">
                 <span class="material-symbols-outlined text-[20px]">chevron_right</span>
               </button>
             </div>
 
             <!-- Day of Week Headers -->
-            <div class="grid grid-cols-7 text-center font-mono text-[11px] font-bold text-on-surface-variant/80 uppercase">
+            <div class="grid grid-cols-7 text-center font-mono text-[11px] font-bold text-on-surface-variant/80 dark:text-outline-variant/80 uppercase">
               <span>SU</span>
               <span>MO</span>
               <span>TU</span>
@@ -866,7 +866,7 @@
             </div>
 
             <!-- Calendar Legend -->
-            <div class="flex items-center justify-center gap-6 pt-2 border-t border-outline-variant/20 text-[11px] font-mono text-on-surface-variant">
+            <div class="flex items-center justify-center gap-6 pt-2 border-t border-outline-variant/20 dark:border-white/10 text-[11px] font-mono text-on-surface-variant dark:text-outline-variant">
               <div class="flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
                 <span>Available</span>
@@ -898,10 +898,10 @@
             <div id="booking-time-slots-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 max-h-none overflow-visible sm:max-h-72 sm:overflow-y-auto p-1">
               <!-- Rendered dynamically by JS -->
             </div>
-            <div id="booking-no-slots-msg" class="hidden p-6 text-center bg-surface-container rounded-2xl border border-outline-variant/30 flex flex-col items-center gap-2">
-              <span class="material-symbols-outlined text-3xl text-on-surface-variant/60">schedule</span>
-              <p class="text-sm font-medium text-on-surface-variant">No available appointment slots on this date.</p>
-              <button onclick="goToBookingStep(2)" class="mt-2 text-xs font-mono font-bold text-primary underline">Pick another day</button>
+            <div id="booking-no-slots-msg" class="hidden p-6 text-center bg-surface-container dark:bg-tertiary-container rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col items-center gap-2">
+              <span class="material-symbols-outlined text-3xl text-on-surface-variant/60 dark:text-outline-variant/60">schedule</span>
+              <p class="text-sm font-medium text-on-surface-variant dark:text-outline-variant">No available appointment slots on this date.</p>
+              <button onclick="goToBookingStep(2)" class="mt-2 text-xs font-mono font-bold text-primary dark:text-white underline">Pick another day</button>
             </div>
           </div>
         </div>
@@ -920,10 +920,10 @@
           </div>
 
           <!-- Event Summary Card -->
-          <div class="bg-surface-container/60 dark:bg-surface-container-high/20 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 flex flex-col gap-3">
-            <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+          <div class="bg-surface-container/60 dark:bg-surface-container-high/20 rounded-2xl p-4 sm:p-5 border border-outline-variant/30 dark:border-white/10 flex flex-col gap-3">
+            <div class="flex items-center justify-between border-b border-outline-variant/20 dark:border-white/10 pb-3">
               <div class="flex flex-col">
-                <span class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant font-bold">EVENT TYPE</span>
+                <span class="text-[10px] font-mono uppercase tracking-wider text-on-surface-variant dark:text-outline-variant font-bold">EVENT TYPE</span>
                 <span id="booking-summary-title" class="font-headline font-extrabold text-lg text-primary dark:text-white">Bishop's Interview</span>
               </div>
               <div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-sm">
@@ -950,40 +950,40 @@
           <!-- Contact Details Form -->
           <form id="booking-contact-form" onsubmit="handlePublicBookingSubmit(event)" class="flex flex-col gap-3.5">
             <div class="flex flex-col gap-1">
-              <label for="booking-input-name" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+              <label for="booking-input-name" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant uppercase tracking-wider">
                 Full Name <span class="text-error">*</span>
               </label>
-              <input type="text" id="booking-input-name" required placeholder="e.g. Jane Doe" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
+              <input type="text" id="booking-input-name" required placeholder="e.g. Jane Doe" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
             </div>
 
             <div class="flex flex-col gap-1">
-              <label for="booking-input-email" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+              <label for="booking-input-email" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant uppercase tracking-wider">
                 Email Address <span class="text-error">*</span>
               </label>
-              <input type="email" id="booking-input-email" required placeholder="jane@example.com" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
+              <input type="email" id="booking-input-email" required placeholder="jane@example.com" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
             </div>
 
             <div class="flex flex-col gap-1">
-              <label for="booking-input-phone" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
+              <label for="booking-input-phone" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant uppercase tracking-wider">
                 Phone Number <span class="text-error">*</span>
               </label>
-              <input type="tel" id="booking-input-phone" required placeholder="(801) 555-0123" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
+              <input type="tel" id="booking-input-phone" required placeholder="(801) 555-0123" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all" />
             </div>
 
             <div class="flex flex-col gap-1">
-              <label for="booking-input-notes" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider">
-                Meeting Reason / Notes <span class="text-[10px] font-normal text-on-surface-variant/70">(Optional)</span>
+              <label for="booking-input-notes" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant uppercase tracking-wider">
+                Meeting Reason / Notes <span class="text-[10px] font-normal text-on-surface-variant/70 dark:text-outline-variant/70">(Optional)</span>
               </label>
-              <textarea id="booking-input-notes" rows="2" placeholder="e.g. Endorsement renewal for BYU, general counsel..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
+              <textarea id="booking-input-notes" rows="2" placeholder="e.g. Endorsement renewal for BYU, general counsel..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
             </div>
 
             <!-- Admin Notes (shown only when an admin is booking on behalf of someone else) -->
             <div id="booking-admin-notes-wrap" class="hidden flex-col gap-1">
-              <label for="booking-input-admin-notes" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+              <label for="booking-input-admin-notes" class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant uppercase tracking-wider flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">lock</span>
-                Admin Notes <span class="text-[10px] font-normal text-on-surface-variant/70">(Internal only — never emailed or shown to attendee)</span>
+                Admin Notes <span class="text-[10px] font-normal text-on-surface-variant/70 dark:text-outline-variant/70">(Internal only — never emailed or shown to attendee)</span>
               </label>
-              <textarea id="booking-input-admin-notes" rows="2" placeholder="Private context for leadership only..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
+              <textarea id="booking-input-admin-notes" rows="2" placeholder="Private context for leadership only..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
             </div>
 
             <!-- Submit CTA -->
@@ -992,7 +992,7 @@
               <span class="material-symbols-outlined text-[20px]">calendar_today</span>
             </button>
             
-            <p class="text-[11px] text-center text-on-surface-variant/70 mt-1">
+            <p class="text-[11px] text-center text-on-surface-variant/70 dark:text-outline-variant/70 mt-1">
               By confirming, you agree to receive appointment reminders and calendar invites.
             </p>
           </form>
@@ -1032,8 +1032,8 @@
                 placeholder="you@example.com"
                 required
                 autocomplete="username"
-                class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-              <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">mail</span>
+                class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+              <span class="material-symbols-outlined text-[20px] text-on-surface-variant dark:text-outline-variant absolute left-3.5 top-1/2 -translate-y-1/2">mail</span>
             </div>
           </div>
           <div class="flex flex-col gap-1.5 text-left">
@@ -1047,8 +1047,8 @@
                 placeholder="Enter password"
                 required
                 autocomplete="current-password"
-                class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-              <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
+                class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+              <span class="material-symbols-outlined text-[20px] text-on-surface-variant dark:text-outline-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
             </div>
           </div>
 
@@ -1083,11 +1083,11 @@
             <span class="material-symbols-outlined text-[18px]">space_dashboard</span>
             <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Dashboard</span>
           </button>
-          <button id="subtab-btn-announce" onclick="switchAdminSubTab('announce')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
+          <button id="subtab-btn-announce" onclick="switchAdminSubTab('announce')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
             <span class="material-symbols-outlined text-[18px]">campaign</span>
             <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Announcement</span>
           </button>
-          <button id="subtab-btn-admins" onclick="switchAdminSubTab('admins')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
+          <button id="subtab-btn-admins" onclick="switchAdminSubTab('admins')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
             <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
             <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Admins</span>
           </button>
@@ -1099,16 +1099,16 @@
         <div id="admin-subview-dashboard" class="flex flex-col gap-6">
 
           <!-- Dashboard Inner Tabs: Appointments / Meeting Types / Availability -->
-          <div class="flex items-center gap-1 sm:gap-1.5 p-1.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/20">
+          <div class="flex items-center gap-1 sm:gap-1.5 p-1.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/20 dark:border-white/10">
             <button id="dashtab-btn-appointments" onclick="switchDashboardPanel('appointments')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
               <span class="material-symbols-outlined text-[18px]">calendar_today</span>
               <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Appointments</span>
             </button>
-            <button id="dashtab-btn-types" onclick="switchDashboardPanel('types')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
+            <button id="dashtab-btn-types" onclick="switchDashboardPanel('types')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
               <span class="material-symbols-outlined text-[18px]">style</span>
               <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Meeting Types</span>
             </button>
-            <button id="dashtab-btn-weekly" onclick="switchDashboardPanel('weekly')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
+            <button id="dashtab-btn-weekly" onclick="switchDashboardPanel('weekly')" class="flex-1 min-w-0 px-1 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-semibold text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5">
               <span class="material-symbols-outlined text-[18px]">schedule</span>
               <span class="text-[10px] sm:text-xs leading-tight truncate max-w-full">Availability</span>
             </button>
@@ -1121,7 +1121,7 @@
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-primary text-[22px]">calendar_today</span>
+                  <span class="material-symbols-outlined text-primary dark:text-white text-[22px]">calendar_today</span>
                   <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">Upcoming Appointments</h3>
                 </div>
 
@@ -1139,13 +1139,13 @@
 
             <!-- Section 2: Past Appointments (Collapsible) -->
             <div id="admin-past-appointments-section" class="hidden flex flex-col gap-3">
-              <button onclick="togglePastAppointments()" class="w-full flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#202327] hover:bg-surface-container rounded-2xl border border-outline-variant/30 transition-all">
+              <button onclick="togglePastAppointments()" class="w-full flex items-center justify-between p-4 bg-surface-container-low dark:bg-[#202327] hover:bg-surface-container dark:hover:bg-tertiary-container rounded-2xl border border-outline-variant/30 dark:border-white/10 transition-all">
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-on-surface-variant text-[20px]">history</span>
+                  <span class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant text-[20px]">history</span>
                   <span class="font-headline font-bold text-sm text-primary dark:text-white">Past Appointments</span>
-                  <span id="past-appointments-count" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant">0</span>
+                  <span id="past-appointments-count" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-surface-container dark:bg-tertiary-container text-on-surface-variant dark:text-outline-variant">0</span>
                 </div>
-                <span id="past-appointments-chevron" class="material-symbols-outlined text-on-surface-variant transition-transform duration-200">expand_more</span>
+                <span id="past-appointments-chevron" class="material-symbols-outlined text-on-surface-variant dark:text-outline-variant transition-transform duration-200">expand_more</span>
               </button>
 
               <div id="admin-past-appointments-feed" class="hidden flex flex-col gap-4">
@@ -1184,16 +1184,16 @@
             <div class="flex items-center gap-2.5">
               <div>
                 <h2 id="avail-header-title" class="font-headline font-bold text-xl sm:text-2xl text-primary dark:text-white">Edit Weekly Availability</h2>
-                <span id="avail-header-subtitle" class="text-xs font-mono text-on-surface-variant">Set recurring open hours</span>
+                <span id="avail-header-subtitle" class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Set recurring open hours</span>
               </div>
             </div>
 
             <!-- Hours vs Overrides Segmented Mini Pill Toggle -->
-            <div class="flex items-center p-1 bg-surface-container dark:bg-[#202327] rounded-full border border-outline-variant/30 text-xs font-mono">
+            <div class="flex items-center p-1 bg-surface-container dark:bg-[#202327] rounded-full border border-outline-variant/30 dark:border-white/10 text-xs font-mono">
               <button id="avail-mini-tab-hours" onclick="switchAvailabilityMiniTab('hours')" class="px-3.5 py-1 rounded-full font-bold bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm transition-all">
                 Hours
               </button>
-              <button id="avail-mini-tab-overrides" onclick="switchAvailabilityMiniTab('overrides')" class="px-3.5 py-1 rounded-full font-medium text-on-surface-variant hover:text-primary transition-all">
+              <button id="avail-mini-tab-overrides" onclick="switchAvailabilityMiniTab('overrides')" class="px-3.5 py-1 rounded-full font-medium text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all">
                 Overrides
               </button>
             </div>
@@ -1206,7 +1206,7 @@
             <div class="p-4 bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl border border-surface-blue-tint dark:border-white/5 flex items-center justify-between">
               <div class="flex flex-col">
                 <span class="font-headline font-bold text-sm sm:text-base text-primary dark:text-white">Accepting Appointments</span>
-                <span class="text-xs text-on-surface-variant">Master switch to open or pause public bookings</span>
+                <span class="text-xs text-on-surface-variant dark:text-outline-variant">Master switch to open or pause public bookings</span>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" id="toggle-accepting-appointments" onchange="handleToggleAcceptingAppointments(event)" class="sr-only peer" checked>
@@ -1225,7 +1225,7 @@
               </div>
 
               <!-- "Use same hours for all days" Switch Row -->
-              <div class="py-2.5 px-3 bg-surface-container-low dark:bg-[#202327] rounded-xl flex items-center justify-between border border-outline-variant/20">
+              <div class="py-2.5 px-3 bg-surface-container-low dark:bg-[#202327] rounded-xl flex items-center justify-between border border-outline-variant/20 dark:border-white/10">
                 <span class="text-xs sm:text-sm font-medium text-on-surface dark:text-white">Use same hours for all days</span>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="toggle-same-hours" onchange="handleToggleSameHours(event)" class="sr-only peer">
@@ -1248,7 +1248,7 @@
 
               <!-- Actions Footer -->
               <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-variant/40">
-                <button onclick="switchDashboardPanel('appointments')" class="px-5 py-2.5 rounded-xl border border-outline-variant text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container active:scale-95 transition-all">
+                <button onclick="switchDashboardPanel('appointments')" class="px-5 py-2.5 rounded-xl border border-outline-variant dark:border-white/10 text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container active:scale-95 transition-all">
                   Cancel
                 </button>
                 <button onclick="handleSaveWeeklyAvailability()" class="px-6 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container text-xs font-mono font-bold active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
@@ -1270,17 +1270,17 @@
               <div class="flex items-center justify-between border-b border-surface-variant/40 pb-3">
                 <h3 id="override-calendar-month" class="font-headline font-bold text-lg text-primary dark:text-white">October 2026</h3>
                 <div class="flex items-center gap-1">
-                  <button onclick="handleCalendarPrevMonth()" class="p-1.5 rounded-lg hover:bg-surface-container text-primary transition-all">
+                  <button onclick="handleCalendarPrevMonth()" class="p-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-tertiary-container text-primary dark:text-white transition-all">
                     <span class="material-symbols-outlined text-[20px]">chevron_left</span>
                   </button>
-                  <button onclick="handleCalendarNextMonth()" class="p-1.5 rounded-lg hover:bg-surface-container text-primary transition-all">
+                  <button onclick="handleCalendarNextMonth()" class="p-1.5 rounded-lg hover:bg-surface-container dark:hover:bg-tertiary-container text-primary dark:text-white transition-all">
                     <span class="material-symbols-outlined text-[20px]">chevron_right</span>
                   </button>
                 </div>
               </div>
 
               <!-- Calendar Days Header (S M T W T F S) -->
-              <div class="grid grid-cols-7 gap-1 text-center font-mono text-[11px] font-bold text-on-surface-variant/80">
+              <div class="grid grid-cols-7 gap-1 text-center font-mono text-[11px] font-bold text-on-surface-variant/80 dark:text-outline-variant/80">
                 <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
               </div>
 
@@ -1294,7 +1294,7 @@
             <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
               <div class="flex items-center justify-between border-b border-surface-variant/40 pb-2.5">
                 <div class="flex items-center gap-2">
-                  <span class="material-symbols-outlined text-primary text-[20px]">event_note</span>
+                  <span class="material-symbols-outlined text-primary dark:text-white text-[20px]">event_note</span>
                   <h3 class="font-headline font-bold text-base text-primary dark:text-white">
                     Add Override for <span id="override-selected-date-display" class="text-secondary">Today</span>
                   </h3>
@@ -1302,13 +1302,13 @@
               </div>
 
               <!-- Segmented Selection: Available vs Unavailable -->
-              <div class="grid grid-cols-2 gap-2 p-1 bg-surface-container-low rounded-xl border border-outline-variant/30">
-                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-primary has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant">
+              <div class="grid grid-cols-2 gap-2 p-1 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/30 dark:border-white/10">
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-[#2d3137] has-[:checked]:text-primary dark:has-[:checked]:text-white has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant dark:text-outline-variant">
                   <input type="radio" name="override-status-toggle" id="override-type-available" onchange="handleOverrideTypeChange(false)" checked class="sr-only">
                   <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
                   <span>Available</span>
                 </label>
-                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white has-[:checked]:text-error has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant">
+                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-[#2d3137] has-[:checked]:text-error has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant dark:text-outline-variant">
                   <input type="radio" name="override-status-toggle" id="override-type-unavailable" onchange="handleOverrideTypeChange(true)" class="sr-only">
                   <span class="material-symbols-outlined text-[16px] text-error">block</span>
                   <span>Unavailable</span>
@@ -1317,11 +1317,11 @@
 
               <!-- Custom Hours Window (Hidden if marked Unavailable) -->
               <div id="override-timeslot-fields" class="flex flex-col gap-3">
-                <span class="text-xs font-mono text-on-surface-variant">Specify available hours for this date:</span>
-                <div class="flex items-center justify-between p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30">
+                <span class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Specify available hours for this date:</span>
+                <div class="flex items-center justify-between p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30 dark:border-white/10">
                   <!-- Mobile Trigger -->
                   <div class="md:hidden flex items-center">
-                    <button type="button" onclick="openOverrideMobileTimePicker()" id="override-mobile-time-pill" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
+                    <button type="button" onclick="openOverrideMobileTimePicker()" id="override-mobile-time-pill" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 dark:border-white/10 text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
                       <span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
                       <span id="override-time-pill-text">9:00 AM – 12:00 PM</span>
                     </button>
@@ -1329,11 +1329,11 @@
 
                   <!-- Desktop Clean Selects -->
                   <div class="hidden md:flex items-center gap-2 text-xs font-mono">
-                    <select id="override-start-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                    <select id="override-start-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
                       <!-- Options populated via JS -->
                     </select>
-                    <span class="text-on-surface-variant font-bold px-1">to</span>
-                    <select id="override-end-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
+                    <span class="text-on-surface-variant dark:text-outline-variant font-bold px-1">to</span>
+                    <select id="override-end-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
                       <!-- Options populated via JS -->
                     </select>
                   </div>
@@ -1388,7 +1388,7 @@
 
           <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
             <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-[22px]">campaign</span>
+              <span class="material-symbols-outlined text-primary dark:text-white text-[22px]">campaign</span>
               <h3 class="font-headline font-bold text-lg sm:text-xl text-primary dark:text-white">New Announcement</h3>
             </div>
             <form onsubmit="handleSendBroadcast(event)" class="flex flex-col gap-3">
@@ -1398,14 +1398,14 @@
                 maxlength="60"
                 required
                 placeholder="Title (e.g. Ward Activity Tonight!)"
-                class="w-full p-3 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                class="w-full p-3 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
               <textarea
                 id="broadcast-body"
                 rows="3"
                 maxlength="180"
                 required
                 placeholder="Message..."
-                class="w-full p-3 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
+                class="w-full p-3 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
               <button
                 type="submit"
                 id="btn-send-broadcast"
@@ -1454,7 +1454,7 @@
           <span class="material-symbols-outlined text-secondary-container">auto_stories</span>
           <h3 class="font-headline font-bold text-xl">Come, Follow Me Guide</h3>
         </div>
-        <button onclick="closeModal('cfm-guide-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('cfm-guide-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1484,7 +1484,7 @@
           <span class="material-symbols-outlined text-primary dark:text-primary-fixed">forum</span>
           <h3 class="font-headline font-bold text-xl">Ward Discussion Board</h3>
         </div>
-        <button onclick="closeModal('cfm-discussion-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('cfm-discussion-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1494,11 +1494,11 @@
       
       <!-- Existing Comments -->
       <div id="discussion-list" class="max-h-48 overflow-y-auto space-y-2 pr-1 text-xs">
-        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30">
+        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30 dark:border-white/10">
           <span class="font-bold text-primary dark:text-primary-fixed">Emma S.</span>
           <p class="text-on-surface-variant dark:text-outline-variant mt-0.5">&ldquo;I love how Christ welcomed the children and blessed them one by one. It shows how personal His love is.&rdquo;</p>
         </div>
-        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30">
+        <div class="p-3 bg-surface-container-low dark:bg-tertiary-container/40 rounded-xl border border-outline-variant/30 dark:border-white/10">
           <span class="font-bold text-primary dark:text-primary-fixed">Jake W.</span>
           <p class="text-on-surface-variant dark:text-outline-variant mt-0.5">&ldquo;The small still voice in 3 Nephi 11:3 is such a great reminder to tune out distractions.&rdquo;</p>
         </div>
@@ -1520,7 +1520,7 @@
           <span class="material-symbols-outlined text-secondary-container">lightbulb</span>
           <h3 class="font-headline font-bold text-xl">Suggest a Ward Activity</h3>
         </div>
-        <button onclick="closeModal('activity-idea-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('activity-idea-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1558,7 +1558,7 @@
           <span class="material-symbols-outlined text-secondary-container">photo_library</span>
           <h3 class="font-headline font-bold text-xl">Ward Photo Drop</h3>
         </div>
-        <button onclick="closeModal('photos-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('photos-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1566,15 +1566,15 @@
         Upload your photos directly to our shared ward Google Photos album or Slack #photos channel!
       </p>
       <div class="grid grid-cols-2 gap-3">
-        <a href="https://photos.google.com" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
+        <a href="https://photos.google.com" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint dark:border-white/10 flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
           <span class="material-symbols-outlined text-3xl text-primary dark:text-primary-fixed">add_photo_alternate</span>
           <span class="font-bold text-xs">Google Photos Album</span>
-          <span class="text-[10px] text-on-surface-variant">Click to view & add photos</span>
+          <span class="text-[10px] text-on-surface-variant dark:text-outline-variant">Click to view & add photos</span>
         </a>
-        <a href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
+        <a href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank" class="p-4 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint dark:border-white/10 flex flex-col items-center gap-2 text-center hover:scale-[1.02] transition-transform">
           <span class="material-symbols-outlined text-3xl text-primary dark:text-primary-fixed">forum</span>
           <span class="font-bold text-xs">Slack #photos</span>
-          <span class="text-[10px] text-on-surface-variant">Post directly into chat</span>
+          <span class="text-[10px] text-on-surface-variant dark:text-outline-variant">Post directly into chat</span>
         </a>
       </div>
       <button onclick="closeModal('photos-modal')" class="w-full py-2.5 bg-surface-container-high dark:bg-tertiary-container rounded-xl text-xs font-mono font-bold">Done</button>
@@ -1589,22 +1589,22 @@
           <span class="material-symbols-outlined text-primary dark:text-primary-fixed">contact_phone</span>
           <h3 class="font-headline font-bold text-xl">Quick Ward Directory</h3>
         </div>
-        <button onclick="closeModal('quick-contact-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('quick-contact-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <div class="space-y-3 text-xs">
-        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint dark:border-white/10">
           <strong class="text-primary dark:text-primary-fixed block text-sm">Bishop</strong>
-          <span class="text-on-surface-variant">Appointments: <a href="https://calendly.com/example" target="_blank" class="underline text-primary dark:text-primary-fixed">Calendly Link</a></span>
+          <span class="text-on-surface-variant dark:text-outline-variant">Appointments: <a href="https://calendly.com/example" target="_blank" class="underline text-primary dark:text-primary-fixed">Calendly Link</a></span>
         </div>
-        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint dark:border-white/10">
           <strong class="text-primary dark:text-primary-fixed block text-sm">Brother Smith (1st Counselor)</strong>
-          <span class="text-on-surface-variant">Phone: (555) 0123</span>
+          <span class="text-on-surface-variant dark:text-outline-variant">Phone: (555) 0123</span>
         </div>
-        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint">
+        <div class="p-3 bg-surface-blue-tint/50 dark:bg-primary-container/20 rounded-xl border border-surface-blue-tint dark:border-white/10">
           <strong class="text-primary dark:text-primary-fixed block text-sm">Brother Johnson (2nd Counselor)</strong>
-          <span class="text-on-surface-variant">Phone: (555) 0124</span>
+          <span class="text-on-surface-variant dark:text-outline-variant">Phone: (555) 0124</span>
         </div>
       </div>
       <button onclick="navigateTab('ward'); closeModal('quick-contact-modal');" class="w-full bg-primary text-white py-2.5 rounded-xl font-mono text-xs uppercase font-bold">Go to Leadership Page</button>
@@ -1619,7 +1619,7 @@
           <span class="material-symbols-outlined text-primary dark:text-primary-fixed">person</span>
           <h3 class="font-headline font-bold text-xl">Set Member Name</h3>
         </div>
-        <button onclick="closeModal('name-prompt-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('name-prompt-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1628,12 +1628,12 @@
       </p>
       <form onsubmit="handleSaveNameModal(event)" class="flex flex-col gap-3">
         <div>
-          <label class="block text-xs font-bold font-mono text-on-surface-variant uppercase tracking-wider mb-1">Your Full Name</label>
+          <label class="block text-xs font-bold font-mono text-on-surface-variant dark:text-outline-variant uppercase tracking-wider mb-1">Your Full Name</label>
           <input type="text" id="modal-member-name-input" name="name" autocomplete="name" required placeholder="e.g., Alex Johnson" 
-            class="w-full bg-surface-container-low dark:bg-surface-container border border-outline-variant/50 rounded-xl px-3.5 py-2.5 text-sm text-on-surface dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+            class="w-full bg-surface-container-low dark:bg-surface-container border border-outline-variant/50 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-on-surface dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
         </div>
         <div class="flex gap-2 justify-end mt-2">
-          <button type="button" onclick="closeModal('name-prompt-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
+          <button type="button" onclick="closeModal('name-prompt-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">Cancel</button>
           <button type="submit" class="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-primary text-white hover:bg-primary-container active:scale-95 transition-all shadow-sm">Save &amp; Continue</button>
         </div>
       </form>
@@ -1648,7 +1648,7 @@
           <span class="material-symbols-outlined text-secondary text-2xl">style</span>
           <h3 id="mt-modal-title-header" class="font-headline font-bold text-xl">New Meeting Type</h3>
         </div>
-        <button onclick="closeModal('meeting-type-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('meeting-type-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1678,8 +1678,8 @@
         </div>
 
         <div class="flex items-center gap-2 pt-1">
-          <input type="checkbox" id="mt-modal-active" checked class="rounded border-outline-variant text-primary focus:ring-primary">
-          <label for="mt-modal-active" class="text-xs text-on-surface font-medium">Active (Available for member booking)</label>
+          <input type="checkbox" id="mt-modal-active" checked class="rounded border-outline-variant dark:border-white/10 text-primary focus:ring-primary">
+          <label for="mt-modal-active" class="text-xs text-on-surface dark:text-[#E2E2E7] font-medium">Active (Available for member booking)</label>
         </div>
 
         <div class="flex justify-between items-center pt-3 border-t border-surface-variant/40">
@@ -1688,7 +1688,7 @@
             <span>Delete</span>
           </button>
           <div class="flex gap-2 ml-auto">
-            <button type="button" onclick="closeModal('meeting-type-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
+            <button type="button" onclick="closeModal('meeting-type-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">Cancel</button>
             <button type="submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm">Save Type</button>
           </div>
         </div>
@@ -1701,10 +1701,10 @@
     <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-scale-up">
       <div class="flex justify-between items-start">
         <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary text-2xl">event</span>
+          <span class="material-symbols-outlined text-primary dark:text-white text-2xl">event</span>
           <h3 class="font-headline font-bold text-xl">Appointment Details</h3>
         </div>
-        <button onclick="closeModal('appointment-details-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('appointment-details-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1724,7 +1724,7 @@
             <span>Cancel</span>
           </button>
         </div>
-        <button onclick="closeModal('appointment-details-modal')" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary dark:text-white text-xs font-mono font-bold transition-all">
+        <button onclick="closeModal('appointment-details-modal')" class="px-4 py-2.5 rounded-xl bg-surface-container dark:bg-tertiary-container hover:bg-surface-container-high dark:hover:bg-[#3a3d43] text-primary dark:text-white text-xs font-mono font-bold transition-all">
           Close
         </button>
       </div>
@@ -1739,7 +1739,7 @@
           <span class="material-symbols-outlined text-secondary text-2xl">event_upcoming</span>
           <h3 class="font-headline font-bold text-xl">Manage Meeting</h3>
         </div>
-        <button onclick="closeModal('manage-meeting-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('manage-meeting-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1750,17 +1750,17 @@
 
       <div class="flex flex-col gap-2.5">
         <!-- Reschedule Option Button -->
-        <button onclick="handleRescheduleMeetingAdmin()" class="w-full p-3.5 rounded-2xl bg-surface-container-low hover:bg-surface-blue-tint/50 border border-outline-variant/30 flex items-center justify-between text-left transition-all active:scale-[0.98] group">
+        <button onclick="handleRescheduleMeetingAdmin()" class="w-full p-3.5 rounded-2xl bg-surface-container-low dark:bg-[#1c1f24] hover:bg-surface-blue-tint/50 dark:hover:bg-[#1c2a38]/50 border border-outline-variant/30 dark:border-white/10 flex items-center justify-between text-left transition-all active:scale-[0.98] group">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-surface-blue-tint text-primary flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[20px]">edit_calendar</span>
             </div>
             <div class="flex flex-col">
               <span class="font-bold text-xs text-primary dark:text-white">Reschedule Meeting</span>
-              <span class="text-[10px] text-on-surface-variant font-mono">Change date or time window</span>
+              <span class="text-[10px] text-on-surface-variant dark:text-outline-variant font-mono">Change date or time window</span>
             </div>
           </div>
-          <span class="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+          <span class="material-symbols-outlined text-[18px] text-on-surface-variant dark:text-outline-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
         </button>
 
         <!-- Cancel Option Button -->
@@ -1771,7 +1771,7 @@
             </div>
             <div class="flex flex-col">
               <span class="font-bold text-xs text-error">Cancel Meeting</span>
-              <span class="text-[10px] text-on-surface-variant font-mono">Remove appointment slot</span>
+              <span class="text-[10px] text-on-surface-variant dark:text-outline-variant font-mono">Remove appointment slot</span>
             </div>
           </div>
           <span class="material-symbols-outlined text-[18px] text-error group-hover:translate-x-1 transition-transform">chevron_right</span>
@@ -1779,7 +1779,7 @@
       </div>
 
       <div class="flex justify-end pt-2 border-t border-surface-variant/40">
-        <button onclick="closeModal('manage-meeting-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">
+        <button onclick="closeModal('manage-meeting-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">
           Back
         </button>
       </div>
@@ -1795,11 +1795,11 @@
         </div>
         <div class="flex flex-col">
           <h3 class="font-headline font-bold text-lg text-error">Cancel Appointment</h3>
-          <span class="text-[11px] text-on-surface-variant font-mono">Confirm cancellation</span>
+          <span class="text-[11px] text-on-surface-variant dark:text-outline-variant font-mono">Confirm cancellation</span>
         </div>
       </div>
 
-      <div id="cancel-appointment-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 flex flex-col gap-1 text-xs">
+      <div id="cancel-appointment-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col gap-1 text-xs">
         <!-- Dynamically populated attendee & time details -->
       </div>
 
@@ -1808,7 +1808,7 @@
       </p>
 
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
-        <button type="button" onclick="closeModal('cancel-appointment-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+        <button type="button" onclick="closeModal('cancel-appointment-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-all">
           Keep Meeting
         </button>
         <button type="button" id="btn-confirm-cancel-appointment" onclick="executeConfirmedAppointmentCancellation()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error hover:bg-error/90 text-white shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
@@ -1828,11 +1828,11 @@
         </div>
         <div class="flex flex-col">
           <h3 class="font-headline font-bold text-lg text-error">Delete Meeting Type</h3>
-          <span class="text-[11px] text-on-surface-variant font-mono">Permanent removal</span>
+          <span class="text-[11px] text-on-surface-variant dark:text-outline-variant font-mono">Permanent removal</span>
         </div>
       </div>
 
-      <div id="delete-meeting-type-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 flex flex-col gap-1 text-xs">
+      <div id="delete-meeting-type-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col gap-1 text-xs">
         <!-- Dynamically populated meeting type details -->
       </div>
 
@@ -1841,7 +1841,7 @@
       </p>
 
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
-        <button type="button" onclick="closeModal('delete-meeting-type-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+        <button type="button" onclick="closeModal('delete-meeting-type-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-all">
           Keep Type
         </button>
         <button type="button" id="btn-confirm-delete-meeting-type" onclick="executeConfirmedMeetingTypeDeletion()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error hover:bg-error/90 text-white shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
@@ -1860,7 +1860,7 @@
           <span class="material-symbols-outlined text-secondary text-2xl">admin_panel_settings</span>
           <h3 id="admin-user-modal-title" class="font-headline font-bold text-xl">Invite Admin</h3>
         </div>
-        <button onclick="closeModal('admin-user-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('admin-user-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -1885,7 +1885,7 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-surface-variant/40">
-          <button type="button" onclick="closeModal('admin-user-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">Cancel</button>
+          <button type="button" onclick="closeModal('admin-user-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">Cancel</button>
           <button type="submit" id="admin-user-modal-submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm">Send Invite</button>
         </div>
       </form>
@@ -1901,11 +1901,11 @@
         </div>
         <div class="flex flex-col">
           <h3 class="font-headline font-bold text-lg text-error">Remove Admin</h3>
-          <span class="text-[11px] text-on-surface-variant font-mono">Immediately revokes access</span>
+          <span class="text-[11px] text-on-surface-variant dark:text-outline-variant font-mono">Immediately revokes access</span>
         </div>
       </div>
 
-      <div id="delete-admin-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 flex flex-col gap-1 text-xs">
+      <div id="delete-admin-modal-details" class="p-3.5 bg-surface-container-low dark:bg-[#202327] rounded-2xl border border-outline-variant/30 dark:border-white/10 flex flex-col gap-1 text-xs">
         <!-- Dynamically populated -->
       </div>
 
@@ -1914,7 +1914,7 @@
       </p>
 
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
-        <button type="button" onclick="closeModal('delete-admin-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container transition-all">
+        <button type="button" onclick="closeModal('delete-admin-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container transition-all">
           Cancel
         </button>
         <button type="button" onclick="executeConfirmedAdminDeletion()" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-error hover:bg-error/90 text-white shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
@@ -1930,7 +1930,7 @@
     <div class="bg-surface-container-lowest dark:bg-[#1a1c20] text-on-surface dark:text-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-6 shadow-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col gap-4 animate-slide-up sm:animate-scale-up">
       
       <!-- Top Time Toggle Tabs (Start Time vs End Time) -->
-      <div class="grid grid-cols-2 gap-2 bg-surface-container-low dark:bg-[#22252a] p-1.5 rounded-2xl border border-outline-variant/30">
+      <div class="grid grid-cols-2 gap-2 bg-surface-container-low dark:bg-[#22252a] p-1.5 rounded-2xl border border-outline-variant/30 dark:border-white/10">
         <button id="picker-tab-start" onclick="switchPickerMode(true)" class="p-3 rounded-xl flex flex-col items-center bg-white dark:bg-[#2d3137] card-shadow text-primary dark:text-white transition-all">
           <span class="text-[11px] font-mono text-on-surface-variant dark:text-outline-variant font-medium">Start time</span>
           <span id="picker-display-start" class="font-headline font-bold text-base sm:text-lg text-primary dark:text-white">10:00 AM</span>
@@ -1973,7 +1973,7 @@
         <button onclick="applyMobileTimePicker()" class="w-full py-3.5 rounded-2xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2">
           <span>Use these times</span>
         </button>
-        <button onclick="closeModal('mobile-time-picker-modal')" class="w-full py-2 text-on-surface-variant hover:text-primary dark:hover:text-white font-mono text-sm font-semibold text-center transition-colors">
+        <button onclick="closeModal('mobile-time-picker-modal')" class="w-full py-2 text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white font-mono text-sm font-semibold text-center transition-colors">
           Cancel
         </button>
       </div>
@@ -1994,7 +1994,7 @@
             <h3 class="font-headline font-bold text-xl text-primary dark:text-white">Sign In as Admin</h3>
           </div>
         </div>
-        <button onclick="closeModal('admin-login-modal')" class="text-on-surface-variant hover:text-primary dark:hover:text-white">
+        <button onclick="closeModal('admin-login-modal')" class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
@@ -2015,8 +2015,8 @@
               placeholder="you@example.com"
               required
               autocomplete="username"
-              class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-            <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">mail</span>
+              class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+            <span class="material-symbols-outlined text-[20px] text-on-surface-variant dark:text-outline-variant absolute left-3.5 top-1/2 -translate-y-1/2">mail</span>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
@@ -2030,13 +2030,13 @@
               placeholder="Enter password"
               required
               autocomplete="current-password"
-              class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 focus:border-primary dark:border-white/10 bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
-            <span class="material-symbols-outlined text-[20px] text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
+              class="w-full p-3.5 pl-11 rounded-xl border border-outline-variant/60 dark:border-white/10 focus:border-primary bg-surface-container-low dark:bg-[#22252a] text-on-surface dark:text-white font-mono text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+            <span class="material-symbols-outlined text-[20px] text-on-surface-variant dark:text-outline-variant absolute left-3.5 top-1/2 -translate-y-1/2">key</span>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-variant/40">
-          <button type="button" onclick="closeModal('admin-login-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant hover:bg-surface-container">
+          <button type="button" onclick="closeModal('admin-login-modal')" class="px-4 py-2.5 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">
             Cancel
           </button>
           <button type="submit" class="px-6 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
@@ -2061,11 +2061,11 @@
         <span class="font-headline font-bold text-primary dark:text-white">Provo YSA 8th Ward</span>
       </div>
       <div class="flex gap-6 text-sm font-medium">
-        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank">Slack</a>
+        <a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-colors" href="https://join.slack.com/t/ysaprovo8thward/shared_invite/zt-3nh344eqo-CENoFT8994wl2wfSmyrbuA" target="_blank">Slack</a>
         
-        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://app.wardbullet.com/channel/1003852" target="_blank">Sacrament Bulletin</a>
-        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://forms.gle/ZPZJLUgpoRkkfZMP8" target="_blank">Move-in Form</a>
-        <a class="text-on-surface-variant hover:text-primary dark:hover:text-white transition-colors" href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank">BYU LSB Map</a>
+        <a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-colors" href="https://app.wardbullet.com/channel/1003852" target="_blank">Sacrament Bulletin</a>
+        <a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-colors" href="https://forms.gle/ZPZJLUgpoRkkfZMP8" target="_blank">Move-in Form</a>
+        <a class="text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white transition-colors" href="https://maps.app.goo.gl/ZicsEVcymvEoqh756" target="_blank">BYU LSB Map</a>
       </div>
     </div>
 <div class="text-xs text-on-surface-variant dark:text-outline-variant text-center mt-4">
@@ -2082,19 +2082,19 @@
     </button>
 
     <!-- Ward Tab -->
-    <button onclick="navigateTab('ward')" id="tab-ward" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+    <button onclick="navigateTab('ward')" id="tab-ward" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container dark:hover:bg-tertiary-container">
       <span class="material-symbols-outlined text-[20px]">groups</span>
       <span class="text-[10px] font-medium mt-0.5">Leaders</span>
     </button>
 
     <!-- Schedule Tab -->
-    <button onclick="navigateTab('schedule')" id="tab-schedule" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+    <button onclick="navigateTab('schedule')" id="tab-schedule" class="nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container dark:hover:bg-tertiary-container">
       <span class="material-symbols-outlined text-[20px]">event</span>
       <span class="text-[10px] font-medium mt-0.5">Schedule</span>
     </button>
 
     <!-- Dashboard Tab (Hidden until signed in) -->
-    <button onclick="navigateTab('admin-scheduling')" id="tab-admin-scheduling" class="hidden nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container">
+    <button onclick="navigateTab('admin-scheduling')" id="tab-admin-scheduling" class="hidden nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-2.5 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container dark:hover:bg-tertiary-container">
       <span class="material-symbols-outlined text-[20px]">space_dashboard</span>
       <span class="text-[10px] font-medium mt-0.5">Dashboard</span>
     </button>

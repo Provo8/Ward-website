@@ -167,7 +167,7 @@ function navigateTab(tabId, updateHash = true) {
         if (id === tabId) {
           mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-container text-on-secondary-container rounded-full px-4 py-1.5 active:scale-90 transition-all duration-200 font-bold";
         } else {
-          mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container";
+          mobileBtn.className = "nav-tab-btn flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant py-1.5 px-3 rounded-full active:scale-90 transition-all duration-200 hover:bg-surface-container dark:hover:bg-tertiary-container";
         }
       }
     }
@@ -285,11 +285,11 @@ function handleCommentSubmit(event) {
   const list = document.getElementById('discussion-list');
   if (list) {
     const item = document.createElement('div');
-    item.className = "p-3 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint animate-fade-in";
+    item.className = "p-3 bg-surface-blue-tint dark:bg-primary-container/30 rounded-xl border border-surface-blue-tint dark:border-white/10 animate-fade-in";
     item.innerHTML = `
       <div class="flex justify-between items-center">
         <span class="font-bold text-primary dark:text-primary-fixed">You</span>
-        <span class="text-[10px] text-on-surface-variant font-mono">Just now</span>
+        <span class="text-[10px] text-on-surface-variant dark:text-outline-variant font-mono">Just now</span>
       </div>
       <p class="text-on-surface-variant dark:text-outline-variant mt-0.5">&ldquo;${escapeHtml(text)}&rdquo;</p>
     `;
@@ -436,7 +436,7 @@ function renderActivitiesUI(activities) {
 
   if (activities.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 px-4 bg-surface-blue-tint/30 dark:bg-primary-container/20 rounded-2xl border border-surface-blue-tint flex flex-col items-center justify-center gap-1.5">
+      <div class="text-center py-6 px-4 bg-surface-blue-tint/30 dark:bg-primary-container/20 rounded-2xl border border-surface-blue-tint dark:border-white/10 flex flex-col items-center justify-center gap-1.5">
         <span class="material-symbols-outlined text-3xl text-primary dark:text-primary-fixed">event_available</span>
         <h4 class="font-headline font-bold text-sm text-primary dark:text-white">No upcoming activities on the calendar</h4>
         <p class="text-xs text-on-surface-variant dark:text-outline-variant">Check back soon or subscribe to the Google Calendar for updates.</p>
@@ -629,7 +629,7 @@ function applyCheckInButtonState(config, isChecked) {
   const isSunday = new Date().getDay() === 0;
 
   if (isChecked) {
-    btn.classList.add('border-primary/40', 'bg-surface-blue-tint/40', 'dark:bg-primary-container/20');
+    btn.classList.add('border-primary/40', 'bg-surface-blue-tint/40', 'dark:bg-[#1c2a38]/40', 'dark:bg-primary-container/20');
     btn.classList.remove('opacity-75');
     if (circle) {
       circle.className = "w-7 h-7 rounded-full border-2 border-primary dark:border-primary-fixed bg-surface-blue-tint dark:bg-primary-container/60 flex items-center justify-center transition-all shrink-0 shadow-sm";
@@ -643,9 +643,9 @@ function applyCheckInButtonState(config, isChecked) {
       status.className = "text-[11px] font-mono font-bold text-primary dark:text-primary-fixed";
     }
   } else {
-    btn.classList.remove('border-primary/40', 'bg-surface-blue-tint/40', 'dark:bg-primary-container/20');
+    btn.classList.remove('border-primary/40', 'bg-surface-blue-tint/40', 'dark:bg-[#1c2a38]/40', 'dark:bg-primary-container/20');
     if (circle) {
-      circle.className = "w-7 h-7 rounded-full border-2 border-outline-variant/60 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0";
+      circle.className = "w-7 h-7 rounded-full border-2 border-outline-variant/60 dark:border-white/10 group-hover:border-primary/70 flex items-center justify-center transition-all bg-transparent shrink-0";
     }
     if (checkIcon) {
       checkIcon.className = "material-symbols-outlined text-[16px] text-transparent select-none transition-all";
