@@ -1340,6 +1340,17 @@
                 </div>
               </div>
 
+              <!-- Conflict Warning: appointments already booked that fall outside the new override -->
+              <div id="override-conflict-warning" class="hidden flex-col gap-2.5 p-3.5 bg-error-container/15 border border-error/30 rounded-xl">
+                <div class="flex items-center gap-1.5 text-error text-xs font-mono font-bold">
+                  <span class="material-symbols-outlined text-[16px]">warning</span>
+                  <span id="override-conflict-count-text">Appointments conflict with this override</span>
+                </div>
+                <div id="override-conflict-list" class="flex flex-col gap-1.5">
+                  <!-- Dynamically populated -->
+                </div>
+              </div>
+
               <div class="flex items-center gap-2">
                 <button type="button" id="btn-delete-date-override" onclick="handleDeleteSelectedDateOverride()" class="hidden w-1/3 bg-error-container/20 hover:bg-error-container/40 text-error font-headline font-bold text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all">
                   <span class="material-symbols-outlined text-[16px]">delete</span>

@@ -2251,6 +2251,7 @@ function applyMobileTimePicker() {
 
     closeModal('mobile-time-picker-modal');
     showToast('Override hours set', 'check_circle');
+    updateOverrideConflictWarning();
     return;
   }
 
@@ -2300,6 +2301,8 @@ function handleOverrideSelectChange() {
   if (startSel && endSel && pillText) {
     pillText.textContent = `${formatTime12h(startSel.value)} – ${formatTime12h(endSel.value)}`;
   }
+
+  updateOverrideConflictWarning();
 }
 
 async function handleSaveWeeklyAvailability() {
@@ -2356,15 +2359,26 @@ function renderDateOverridesCalendar() {
 
     const isSelected = dateStr === selectedDateStr;
     const hasOverride = SCHEDULING_STATE.dateOverrides.some(o => o.override_date === dateStr);
+    // Second dot flags days with existing appointments, so an admin can spot
+    // a potential conflict before even opening the override form for that day.
+    const hasAppointments = (SCHEDULING_STATE.appointments || []).some(apt =>
+      apt && apt.status !== 'cancelled' && apt.start_time && (() => {
+        const aptStart = new Date(apt.start_time);
+        return !isNaN(aptStart.getTime()) && aptStart.getFullYear() === yyyy && (aptStart.getMonth() + 1) === Number(mm) && aptStart.getDate() === Number(dd);
+      })()
+    );
 
     html += `
       <button onclick="handleSelectCalendarDate('${dateStr}')" class="h-9 w-9 mx-auto rounded-xl flex flex-col items-center justify-center font-mono text-xs font-semibold relative transition-all ${
         isSelected
           ? 'bg-primary text-white font-bold shadow-md scale-105'
           : 'hover:bg-surface-blue-tint text-on-surface'
-      }">
+      }" ${hasAppointments ? `title="Has existing appointment(s)"` : ''}>
         <span>${day}</span>
-        ${hasOverride ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-secondary-container' : 'bg-warning-amber'} absolute bottom-1"></span>` : ''}
+        <span class="flex items-center gap-0.5 absolute bottom-1">
+          ${hasOverride ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-secondary-container' : 'bg-warning-amber'}"></span>` : ''}
+          ${hasAppointments ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-primary'}"></span>` : ''}
+        </span>
       </button>
     `;
   }
@@ -2408,6 +2422,96 @@ function renderDateOverridesCalendar() {
     if (availRadio) availRadio.checked = true;
     if (timeSlotFields) timeSlotFields.classList.remove('hidden');
   }
+
+  updateOverrideConflictWarning();
+}
+
+/**
+ * Find confirmed appointments on `dateStr` that would fall outside the
+ * override being configured — a full-day "Unavailable" override conflicts
+ * with every appointment that day; a narrowed "Available" window conflicts
+ * with any appointment that starts or ends outside those hours. These need
+ * to be manually rescheduled or cancelled by the admin — saving an override
+ * does not touch existing appointments.
+ */
+function getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime) {
+  if (!dateStr) return [];
+
+  const [y, m, d] = dateStr.split('-').map(Number);
+
+  const dayAppointments = (SCHEDULING_STATE.appointments || []).filter(apt => {
+    if (!apt || apt.status === 'cancelled' || !apt.start_time) return false;
+    const aptStart = new Date(apt.start_time);
+    if (isNaN(aptStart.getTime())) return false;
+    return aptStart.getFullYear() === y && (aptStart.getMonth() + 1) === m && aptStart.getDate() === d;
+  });
+
+  if (isUnavailable) return dayAppointments;
+
+  const windowStartMins = timeStrToMinutes(startTime);
+  const windowEndMins = timeStrToMinutes(endTime);
+
+  return dayAppointments.filter(apt => {
+    const aptStart = new Date(apt.start_time);
+    const aptEnd = apt.end_time ? new Date(apt.end_time) : new Date(aptStart.getTime() + 15 * 60 * 1000);
+    const aptStartMins = aptStart.getHours() * 60 + aptStart.getMinutes();
+    const aptEndMins = aptEnd.getHours() * 60 + aptEnd.getMinutes();
+    return aptStartMins < windowStartMins || aptEndMins > windowEndMins;
+  });
+}
+
+/**
+ * Re-render the "conflicting appointments" warning under the Add Override
+ * form, reflecting whatever date/availability choice is currently selected.
+ * Called on date select, Available/Unavailable toggle, and hours change.
+ */
+function updateOverrideConflictWarning() {
+  const warningEl = document.getElementById('override-conflict-warning');
+  const countTextEl = document.getElementById('override-conflict-count-text');
+  const listEl = document.getElementById('override-conflict-list');
+  if (!warningEl || !listEl || !SCHEDULING_STATE.selectedDate) return;
+
+  const yyyy = SCHEDULING_STATE.selectedDate.getFullYear();
+  const mm = String(SCHEDULING_STATE.selectedDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(SCHEDULING_STATE.selectedDate.getDate()).padStart(2, '0');
+  const dateStr = `${yyyy}-${mm}-${dd}`;
+
+  const unavailRadio = document.getElementById('override-type-unavailable');
+  const isUnavailable = unavailRadio ? unavailRadio.checked : false;
+  const startSelect = document.getElementById('override-start-select');
+  const endSelect = document.getElementById('override-end-select');
+  const startTime = startSelect ? startSelect.value : '09:00:00';
+  const endTime = endSelect ? endSelect.value : '12:00:00';
+
+  const conflicts = getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime)
+    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+
+  if (conflicts.length === 0) {
+    warningEl.classList.add('hidden');
+    warningEl.classList.remove('flex');
+    listEl.innerHTML = '';
+    return;
+  }
+
+  warningEl.classList.remove('hidden');
+  warningEl.classList.add('flex');
+  if (countTextEl) {
+    countTextEl.textContent = `${conflicts.length} appointment${conflicts.length === 1 ? '' : 's'} ${conflicts.length === 1 ? 'conflicts' : 'conflict'} with this override and will need to be rescheduled or cancelled`;
+  }
+
+  listEl.innerHTML = conflicts.map(apt => {
+    const start = new Date(apt.start_time);
+    const timeFormatted = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    return `
+      <button type="button" onclick="openAppointmentDetailsModal('${escapeHtml(apt.id)}')" class="flex items-center justify-between gap-2 p-2.5 bg-white dark:bg-[#2d3137] rounded-lg border border-error/20 hover:border-error/50 text-left transition-all active:scale-[0.98]">
+        <div class="flex flex-col min-w-0">
+          <span class="text-xs font-bold text-primary dark:text-white truncate">${escapeHtml(apt.attendee_name)}</span>
+          <span class="text-[10px] font-mono text-on-surface-variant">${timeFormatted} &bull; ${escapeHtml(apt.meeting_type_title || 'Meeting')}</span>
+        </div>
+        <span class="material-symbols-outlined text-[16px] text-error shrink-0">chevron_right</span>
+      </button>
+    `;
+  }).join('');
 }
 
 function handleSelectCalendarDate(dateStr) {
