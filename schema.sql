@@ -131,6 +131,13 @@ ALTER TABLE appointments ADD COLUMN IF NOT EXISTS reminder_30m_sent_at TIMESTAMP
 -- synced to the bishop's personal Google Calendar (see api/calendar-sync.js)
 ALTER TABLE appointments ADD COLUMN IF NOT EXISTS google_event_id TEXT;
 
+-- Internal leadership notes — set/edited only from the admin dashboard
+-- (api/admin-data.js, action: 'update'). Never included in confirmation/
+-- reminder emails or calendar invites, and never selectable by the anon
+-- key (see the narrow column-level SELECT grant below), unlike `notes`
+-- which the attendee themselves writes and does see echoed back to them.
+ALTER TABLE appointments ADD COLUMN IF NOT EXISTS admin_notes TEXT;
+
 -- ============================================================
 -- 5b. Admin Push Subscriptions
 --     Web Push endpoints for admins who opted into new-appointment

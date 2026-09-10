@@ -1138,6 +1138,7 @@ function renderAppointmentCard(apt) {
             ${apt.attendee_email ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">mail</span>${escapeHtml(apt.attendee_email)}</span>` : ''}
             ${apt.attendee_phone ? `<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">call</span>${escapeHtml(apt.attendee_phone)}</span>` : ''}
             ${apt.notes ? `<span class="text-[11px] italic bg-surface-container px-2 py-0.5 rounded-md truncate max-w-xs">&ldquo;${escapeHtml(apt.notes)}&rdquo;</span>` : ''}
+            ${apt.admin_notes ? `<span class="flex items-center gap-1 text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400" title="Has internal admin note"><span class="material-symbols-outlined text-[13px]">lock</span>Admin note</span>` : ''}
           </div>
         </div>
       </div>
@@ -1180,16 +1181,72 @@ function openAppointmentDetailsModal(aptId) {
         <span class="font-mono text-on-surface-variant block uppercase text-[10px] mb-0.5">Scheduled Time</span>
         <span class="font-semibold text-on-surface text-xs sm:text-sm">${start.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} – ${end.toLocaleTimeString('en-US', { timeStyle: 'short' })}</span>
       </div>
-      ${apt.notes ? `
-        <div class="p-3 bg-surface-container rounded-xl text-xs">
-          <span class="font-mono font-bold text-on-surface-variant block text-[10px] uppercase mb-0.5">Attendee Notes</span>
-          <p class="text-on-surface">${escapeHtml(apt.notes)}</p>
-        </div>
-      ` : ''}
+      <div class="p-3 bg-surface-container rounded-xl text-xs flex flex-col gap-1.5">
+        <label for="apt-modal-notes" class="font-mono font-bold text-on-surface-variant block text-[10px] uppercase">Meeting Notes</label>
+        <textarea id="apt-modal-notes" rows="2" placeholder="No notes provided." class="w-full bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all">${escapeHtml(apt.notes || '')}</textarea>
+      </div>
+      <div class="p-3 bg-amber-500/10 border border-amber-500/25 rounded-xl text-xs flex flex-col gap-1.5">
+        <label for="apt-modal-admin-notes" class="font-mono font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 text-[10px] uppercase">
+          <span class="material-symbols-outlined text-[13px]">lock</span>Admin Notes <span class="font-normal normal-case text-amber-700/70 dark:text-amber-400/70">(internal only)</span>
+        </label>
+        <textarea id="apt-modal-admin-notes" rows="2" placeholder="Private context for leadership — never emailed or shown to the attendee." class="w-full bg-white dark:bg-[#2d3137] border border-amber-500/30 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-on-surface focus:outline-none focus:ring-2 focus:ring-amber-500/20 resize-none transition-all">${escapeHtml(apt.admin_notes || '')}</textarea>
+      </div>
+      <button type="button" onclick="handleSaveAppointmentNotes()" id="btn-save-appointment-notes" class="self-start px-3.5 py-2 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-mono font-bold flex items-center gap-1.5 transition-all active:scale-95">
+        <span class="material-symbols-outlined text-[15px]">save</span>Save Notes
+      </button>
     </div>
   `;
 
   openModal('appointment-details-modal');
+}
+
+/**
+ * Admin: save edits to an appointment's attendee-facing Meeting Notes and/or
+ * private Admin Notes from the appointment details modal. Admin Notes are
+ * never emailed or shown to the attendee — see api/admin-data.js
+ * (resource: 'appointments', action: 'update').
+ */
+async function handleSaveAppointmentNotes() {
+  const aptId = SCHEDULING_STATE.selectedAppointmentId;
+  if (!aptId) return;
+
+  const notesEl = document.getElementById('apt-modal-notes');
+  const adminNotesEl = document.getElementById('apt-modal-admin-notes');
+  const notes = notesEl ? notesEl.value.trim() : '';
+  const adminNotes = adminNotesEl ? adminNotesEl.value.trim() : '';
+
+  const btn = document.getElementById('btn-save-appointment-notes');
+  const originalContent = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px]">progress_activity</span>Saving...`;
+  }
+
+  try {
+    const result = await adminApiFetch('/api/admin-data', {
+      resource: 'appointments',
+      action: 'update',
+      id: aptId,
+      notes: notes || null,
+      admin_notes: adminNotes || null,
+    });
+
+    if (result && result.success) {
+      const apt = (SCHEDULING_STATE.appointments || []).find(a => a.id === aptId || String(a.id) === String(aptId));
+      if (apt) {
+        apt.notes = notes || null;
+        apt.admin_notes = adminNotes || null;
+        localStorage.setItem('ward_appointments', JSON.stringify(SCHEDULING_STATE.appointments));
+      }
+      showToast('Notes saved.', 'check_circle');
+      renderAppointmentsFeed();
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalContent;
+    }
+  }
 }
 
 
@@ -1317,10 +1374,12 @@ function handleAdminBookForSomeone() {
   const emailInput = document.getElementById('booking-input-email');
   const phoneInput = document.getElementById('booking-input-phone');
   const notesInput = document.getElementById('booking-input-notes');
+  const adminNotesInput = document.getElementById('booking-input-admin-notes');
   if (nameInput) nameInput.value = '';
   if (emailInput) emailInput.value = '';
   if (phoneInput) phoneInput.value = '';
   if (notesInput) notesInput.value = '';
+  if (adminNotesInput) adminNotesInput.value = '';
 
   goToBookingStep(1);
   showToast('Booking a meeting with the Bishop for someone else.', 'info');
@@ -2745,6 +2804,12 @@ function goToBookingStep(step) {
   const adminBanner = document.getElementById('admin-booking-banner');
   if (adminBanner) adminBanner.classList.toggle('hidden', !PUBLIC_BOOKING_STATE.adminBookingMode);
 
+  const adminNotesWrap = document.getElementById('booking-admin-notes-wrap');
+  if (adminNotesWrap) {
+    adminNotesWrap.classList.toggle('hidden', !PUBLIC_BOOKING_STATE.adminBookingMode);
+    adminNotesWrap.classList.toggle('flex', PUBLIC_BOOKING_STATE.adminBookingMode);
+  }
+
   const step4Subtitle = document.getElementById('booking-step4-subtitle');
   if (step4Subtitle) {
     step4Subtitle.textContent = PUBLIC_BOOKING_STATE.adminBookingMode
@@ -3286,6 +3351,11 @@ async function handlePublicBookingSubmit(event) {
   const email = document.getElementById('booking-input-email').value.trim();
   const phone = document.getElementById('booking-input-phone') ? document.getElementById('booking-input-phone').value.trim() : '';
   const notes = document.getElementById('booking-input-notes') ? document.getElementById('booking-input-notes').value.trim() : '';
+  // Admin Notes is only ever shown (and only ever meaningful) during a fresh
+  // "book for someone else" flow — ignore it outside that mode so a stray
+  // leftover value can't silently ride along on a reschedule.
+  const adminNotesEl = document.getElementById('booking-input-admin-notes');
+  const adminNotes = (PUBLIC_BOOKING_STATE.adminBookingMode && adminNotesEl) ? adminNotesEl.value.trim() : '';
 
   if (!name || !email || !phone) {
     showToast('Please provide your name, email address, and phone number.', 'warning');
@@ -3342,6 +3412,7 @@ async function handlePublicBookingSubmit(event) {
       attendee_email: email,
       attendee_phone: phone || null,
       notes: notes || null,
+      admin_notes: adminNotes || null,
       start_time: startISO,
       end_time: endISO,
       status: 'confirmed',
@@ -3357,6 +3428,10 @@ async function handlePublicBookingSubmit(event) {
         attendee_email: email,
         attendee_phone: phone || null,
         notes: notes || null,
+        // Only meaningful on the insert path below — api/reschedule-appointment.js
+        // ignores this field entirely, so it never clobbers an existing
+        // appointment's admin_notes during a reschedule.
+        admin_notes: adminNotes || null,
         start_time: startISO,
         end_time: endISO,
         status: 'confirmed',
@@ -3510,6 +3585,8 @@ async function handlePublicBookingSubmit(event) {
     PUBLIC_BOOKING_STATE.selectedSlotTime = null;
     const notesField = document.getElementById('booking-input-notes');
     if (notesField) notesField.value = '';
+    const adminNotesField = document.getElementById('booking-input-admin-notes');
+    if (adminNotesField) adminNotesField.value = '';
     goToBookingStep(1);
 
     // Admin booked this on behalf of someone else — return to the dashboard

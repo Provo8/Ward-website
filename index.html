@@ -977,6 +977,15 @@
               <textarea id="booking-input-notes" rows="2" placeholder="e.g. Endorsement renewal for BYU, general counsel..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
             </div>
 
+            <!-- Admin Notes (shown only when an admin is booking on behalf of someone else) -->
+            <div id="booking-admin-notes-wrap" class="hidden flex-col gap-1">
+              <label for="booking-input-admin-notes" class="text-xs font-mono font-bold text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px]">lock</span>
+                Admin Notes <span class="text-[10px] font-normal text-on-surface-variant/70">(Internal only — never emailed or shown to attendee)</span>
+              </label>
+              <textarea id="booking-input-admin-notes" rows="2" placeholder="Private context for leadership only..." class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2 text-sm text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm transition-all resize-none"></textarea>
+            </div>
+
             <!-- Submit CTA -->
             <button type="submit" id="btn-booking-submit" class="mt-2 w-full bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-base py-3.5 px-6 rounded-2xl flex items-center justify-center gap-2 active:scale-98 transition-all shadow-md interactive-shadow">
               <span>Schedule Event</span>

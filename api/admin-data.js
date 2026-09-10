@@ -1,7 +1,7 @@
 // api/admin-data.js
 // Vercel Serverless Function — full_access/scheduling_access admin
 // mutations/reads for meeting types, weekly availability, date overrides,
-// ward settings, and the full-PII appointments feed/cancel action.
+// ward settings, and the full-PII appointments feed/update/cancel actions.
 // announcements_only admins may not reach this endpoint. Combined into one route
 // (dispatched by `resource`) to stay under Vercel's per-deployment
 // serverless function limit on the Hobby plan — each of these used to be
@@ -164,6 +164,23 @@ async function handleAppointments(req, res) {
     if (!listRes.ok) throw new Error(await listRes.text());
     const appointments = await listRes.json();
     return res.status(200).json({ success: true, appointments });
+  }
+
+  if (action === "update") {
+    if (!id) return res.status(400).json({ error: "Missing appointment id." });
+    const { notes, admin_notes } = req.body;
+
+    const patch = {};
+    if (notes !== undefined) patch.notes = notes || null;
+    if (admin_notes !== undefined) patch.admin_notes = admin_notes || null;
+    if (Object.keys(patch).length === 0) return res.status(400).json({ error: "Nothing to update." });
+
+    const updateRes = await supabaseServiceFetch(`appointments?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+    if (!updateRes.ok) throw new Error(await updateRes.text());
+    return res.status(200).json({ success: true });
   }
 
   if (action === "cancel") {
