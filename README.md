@@ -2,15 +2,20 @@
 
 A full-stack Progressive Web App built for a real congregation: a public ward website with an integrated self-service appointment scheduler, an admin portal for leadership, and an automated email/push reminder pipeline — all running in production today.
 
-<p>
-  <img src="docs/screenshots/home.png" alt="Home page with Sunday schedule and quick links" width="66%">
-  <img src="docs/screenshots/booking-mobile.png" alt="Mobile booking flow: choosing a meeting type" width="22%">
+<p align="center">
+  <img src="docs/demo.gif" alt="Demo: a member books an appointment, an admin signs in and sees it on the dashboard, then edits a leader's phone number in place" width="100%">
 </p>
 
-> Screenshots use placeholder people and appointments. Real member and leader data never leaves the production database.
+<p align="center"><i>A member books an appointment → an admin signs in and sees it on the dashboard → the admin updates a leader's phone number right on the Leaders page.</i></p>
+
+> The demo and screenshots use placeholder people and appointments. Real member and leader data never leaves the production database.
 
 <details>
-<summary><b>More screenshots</b> (leadership directory, admin dashboard, role management)</summary>
+<summary><b>Screenshots</b> (home, mobile booking, leadership directory, admin dashboard, role management)</summary>
+
+| Home | Mobile booking |
+|---|---|
+| ![Home page](docs/screenshots/home.png) | <img src="docs/screenshots/booking-mobile.png" alt="Mobile booking flow" width="260"> |
 
 | Leadership directory (loaded from Postgres) | Admin appointment dashboard |
 |---|---|
