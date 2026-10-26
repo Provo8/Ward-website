@@ -461,7 +461,7 @@ function renderLeadersError() {
  * ========================================================
  */
 const GOOGLE_CALENDAR_ID = "provoysaeighthward@gmail.com";
-const GOOGLE_CALENDAR_API_KEY = "AIzaSyAV2MEi34Zd6x4zyifrkesJ9IfphXE8Tmk";
+const GOOGLE_CALENDAR_API_KEY = "AIzaSyChQYssKEq81q8i74ou8zIP76unyncWVqw";
 
 // Filter out recurring Sunday services and routine meetings so ONLY genuine ward activities show
 const IGNORED_CALENDAR_PATTERNS = [
