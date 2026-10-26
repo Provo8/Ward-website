@@ -236,6 +236,35 @@ CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users (lower(email));
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
+-- 5e. Leadership Directory
+--     The Contact tab's Bishopric / Ward Leadership cards. Kept in the
+--     database (not hardcoded in index.html) so leaders' names, phone
+--     numbers, and photos never live in the source repo, and so
+--     full_access admins can update the directory from the admin portal
+--     when callings change. Photos live in the public `leader-photos`
+--     Storage bucket (created by scripts/seed-leaders.js).
+-- ============================================================
+CREATE TABLE IF NOT EXISTS ward_leaders (
+  id                   UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  name                 TEXT        NOT NULL,
+  calling              TEXT        NOT NULL,
+  phone                TEXT,
+  photo_url            TEXT,
+  note                 TEXT,
+  section              TEXT        NOT NULL DEFAULT 'ward' CHECK (section IN ('bishopric', 'ward')),
+  sort_order           INT         NOT NULL DEFAULT 0,
+  show_schedule_button BOOLEAN     DEFAULT false,
+  is_active            BOOLEAN     DEFAULT true,
+  created_at           TIMESTAMPTZ DEFAULT now()
+);
+
+-- Public read-only, and only for active rows. Edits go through
+-- api/admin-data.js (resource 'leaders', full_access only).
+ALTER TABLE ward_leaders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public select active ward_leaders" ON ward_leaders;
+CREATE POLICY "Public select active ward_leaders" ON ward_leaders FOR SELECT TO anon, authenticated USING (is_active);
+
+-- ============================================================
 -- 6. Overlap Guard
 --    Prevents two confirmed appointments from occupying the
 --    same time range using a GiST exclusion constraint
@@ -321,3 +350,4 @@ GRANT SELECT ON meeting_types, weekly_availability, date_overrides, ward_schedul
 GRANT INSERT ON appointments TO anon, authenticated;
 GRANT SELECT (id, meeting_type_id, start_time, end_time, status) ON appointments TO anon, authenticated;
 GRANT INSERT ON attendee_push_subscriptions TO anon, authenticated;
+GRANT SELECT ON ward_leaders TO anon, authenticated;

@@ -11,6 +11,7 @@
   },
   "scripts": {
     "get-google-token": "node scripts/get-google-refresh-token.js",
-    "create-admin": "node scripts/create-admin-user.js"
+    "create-admin": "node scripts/create-admin-user.js",
+    "seed-leaders": "node scripts/seed-leaders.js"
   }
 }

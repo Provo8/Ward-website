@@ -1,0 +1,14 @@
+{
+  "photoDir": "pictures",
+  "leaders": [
+    { "name": "Bishop Example", "calling": "Bishop", "phone": "555-555-0100", "photo": "bishop.jpg", "section": "bishopric", "show_schedule_button": true },
+    { "name": "Alex Example", "calling": "1st Counselor", "phone": "555-555-0101", "section": "bishopric" },
+    { "name": "Jordan Example", "calling": "2nd Counselor", "phone": "555-555-0102", "section": "bishopric" },
+    { "name": "Sam Example", "calling": "Ward Clerk", "phone": "555-555-0103", "section": "bishopric" },
+    { "name": "Taylor Example", "calling": "Executive Secretary", "phone": "555-555-0104", "section": "bishopric" },
+    { "name": "Casey Example", "calling": "Assistant Stake Executive Secretary", "phone": "555-555-0105", "section": "bishopric", "note": "Contact to meet with a member of the stake presidency." },
+    { "name": "Riley Example", "calling": "Elder's Quorum President", "phone": "555-555-0106", "section": "ward" },
+    { "name": "Morgan Example", "calling": "Relief Society President", "phone": "555-555-0107", "section": "ward" },
+    { "name": "Jamie Example", "calling": "Sunday School President", "phone": "555-555-0108", "section": "ward" }
+  ]
+}

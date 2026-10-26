@@ -6,3 +6,8 @@ node_modules/
 .vercel
 .env*
 supabase/.temp/
+
+# Leadership directory personal data — lives in Supabase, seeded locally
+# via scripts/seed-leaders.js (see scripts/leaders.example.json).
+pictures/
+scripts/leaders.local.json

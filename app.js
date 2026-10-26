@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize Activities Feed from Google Calendar
   initActivitiesFeed();
 
+  // Load the Contact tab's leadership directory from Supabase
+  initLeadersDirectory();
+
   // If opened as an installed home-screen app, subscribe this device for
   // ward announcements (and, if it's booked before, appointment reminders).
   initSitePushNotifications();
@@ -304,6 +307,129 @@ function escapeHtml(string) {
   const div = document.createElement('div');
   div.textContent = string;
   return div.innerHTML;
+}
+
+/**
+ * ========================================================
+ * LEADERSHIP DIRECTORY (Contact tab)
+ * ========================================================
+ * Loaded from the ward_leaders table rather than hardcoded, so leaders'
+ * phone numbers and photos stay out of the source repo and full_access
+ * admins can update callings from the admin portal. The last good result is
+ * cached in localStorage so the directory still renders instantly (and
+ * offline) on repeat visits.
+ */
+const LEADERS_CACHE_KEY = 'ward_leaders_cache';
+
+const LEADER_CARD_CLASSES = "bg-surface-container-lowest dark:bg-[#1a1c20] rounded-2xl border border-surface-blue-tint dark:border-white/5 p-stack-md flex flex-col items-center text-center shadow-[0_2px_15px_-3px_rgba(0,48,87,0.05)] relative overflow-hidden group hover:shadow-[0_4px_20px_-3px_rgba(0,48,87,0.1)] transition-all duration-300";
+const LEADER_PHONE_CLASSES = "border border-outline-variant dark:border-white/10 hover:border-primary text-primary dark:text-primary-fixed font-mono uppercase tracking-wider font-bold rounded-xl flex items-center justify-center active:scale-95 transition-all hover:bg-surface-blue-tint dark:hover:bg-primary-container/30";
+
+async function initLeadersDirectory() {
+  let cached = null;
+  try {
+    cached = JSON.parse(localStorage.getItem(LEADERS_CACHE_KEY) || 'null');
+  } catch (e) {}
+
+  if (Array.isArray(cached) && cached.length > 0) {
+    renderLeadersDirectory(cached);
+  } else {
+    renderLeadersSkeleton();
+  }
+
+  try {
+    const leaders = await fetchActiveLeaders();
+    renderLeadersDirectory(leaders);
+    try {
+      localStorage.setItem(LEADERS_CACHE_KEY, JSON.stringify(leaders));
+    } catch (e) {}
+  } catch (err) {
+    console.warn('Failed to load leadership directory:', err);
+    if (!cached) renderLeadersError();
+  }
+}
+
+async function fetchActiveLeaders() {
+  const config = window.SUPABASE_CONFIG || {};
+  const url = (config.url || '').replace(/\/rest\/v1\/?$/, '');
+  const res = await fetch(
+    `${url}/rest/v1/ward_leaders?select=id,name,calling,phone,photo_url,note,section,show_schedule_button&order=sort_order.asc,name.asc`,
+    { headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` } }
+  );
+  if (!res.ok) throw new Error(`ward_leaders request failed (${res.status})`);
+  return res.json();
+}
+
+function renderLeadersDirectory(leaders) {
+  const sections = { bishopric: 'bishopric-grid', ward: 'ward-leaders-grid' };
+  Object.entries(sections).forEach(([section, gridId]) => {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    const rows = leaders.filter(l => l.section === section);
+    grid.innerHTML = rows.length > 0
+      ? rows.map(renderLeaderCard).join('')
+      : `<p class="md:col-span-3 text-sm text-on-surface-variant dark:text-outline-variant">No leaders listed yet.</p>`;
+    grid.removeAttribute('aria-busy');
+  });
+}
+
+function renderLeaderCard(leader) {
+  const name = escapeHtml(leader.name || '');
+  const phoneDigits = (leader.phone || '').replace(/\D/g, '');
+
+  const photo = leader.photo_url ? `
+    <div class="w-24 h-24 rounded-full overflow-hidden mb-stack-sm border-2 border-surface-blue-tint dark:border-white/10 bg-surface-container dark:bg-tertiary-container shadow-inner">
+      <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${name}" src="${escapeHtml(leader.photo_url)}" loading="lazy">
+    </div>` : '';
+
+  const phoneLink = (extraClasses, iconSize) => phoneDigits ? `
+    <a class="${LEADER_PHONE_CLASSES} ${extraClasses}" href="tel:${phoneDigits}">
+      <span class="material-symbols-outlined text-[${iconSize}px]">call</span>
+      <span>${escapeHtml(leader.phone)}</span>
+    </a>` : '';
+
+  // The bishop's card pairs the phone with a Schedule button (2-column row);
+  // everyone else gets a single full-width phone button.
+  const actions = leader.show_schedule_button ? `
+    <div class="w-full grid ${phoneDigits ? 'grid-cols-2' : 'grid-cols-1'} gap-2">
+      <button type="button" onclick="navigateTab('schedule')" class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-[11px] sm:text-xs uppercase tracking-wider font-bold py-3 px-1.5 rounded-xl flex items-center justify-center gap-1 active:scale-95 transition-all shadow-sm whitespace-nowrap">
+        <span class="material-symbols-outlined text-[16px]">event</span>
+        <span>Schedule</span>
+      </button>
+      ${phoneLink('text-[11px] sm:text-xs py-3 px-1.5 gap-1 whitespace-nowrap', 16)}
+    </div>` : phoneLink('w-full text-xs py-3 px-4 gap-2', 18);
+
+  return `
+    <div class="${LEADER_CARD_CLASSES}">
+      <div class="absolute top-0 left-0 w-full h-2 ${leader.show_schedule_button ? 'bg-primary-container' : 'bg-primary-container/60'}"></div>
+      ${photo}
+      <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">${name}</h3>
+      <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">${escapeHtml(leader.calling || '')}</p>
+      ${actions}
+      ${leader.note ? `<p class="text-sm text-on-surface-variant dark:text-outline-variant mt-3">${escapeHtml(leader.note)}</p>` : ''}
+    </div>`;
+}
+
+function renderLeadersSkeleton() {
+  const placeholder = `
+    <div class="${LEADER_CARD_CLASSES} animate-pulse">
+      <div class="w-24 h-24 rounded-full mb-stack-sm bg-surface-container dark:bg-tertiary-container"></div>
+      <div class="h-5 w-32 rounded bg-surface-container dark:bg-tertiary-container mb-2"></div>
+      <div class="h-4 w-24 rounded bg-surface-container dark:bg-tertiary-container mb-stack-md"></div>
+      <div class="h-11 w-full rounded-xl bg-surface-container dark:bg-tertiary-container"></div>
+    </div>`;
+  ['bishopric-grid', 'ward-leaders-grid'].forEach(id => {
+    const grid = document.getElementById(id);
+    if (grid) grid.innerHTML = placeholder.repeat(3);
+  });
+}
+
+function renderLeadersError() {
+  ['bishopric-grid', 'ward-leaders-grid'].forEach(id => {
+    const grid = document.getElementById(id);
+    if (!grid) return;
+    grid.innerHTML = `<p class="md:col-span-3 text-sm text-on-surface-variant dark:text-outline-variant">Couldn't load the leadership directory. Please check your connection and refresh.</p>`;
+    grid.removeAttribute('aria-busy');
+  });
 }
 
 /**

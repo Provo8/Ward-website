@@ -31,6 +31,43 @@ function supabaseServiceFetch(path, options = {}) {
   });
 }
 
+// Leadership directory photos (see ward_leaders in schema.sql). The bucket
+// is public-read so the Contact tab can load images straight from the CDN;
+// only the service-role key can create or overwrite objects in it.
+const LEADER_PHOTO_BUCKET = "leader-photos";
+
+async function ensureLeaderPhotoBucket() {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id: LEADER_PHOTO_BUCKET, name: LEADER_PHOTO_BUCKET, public: true }),
+  });
+  // 400/409 "already exists" is the normal re-run case.
+  if (!res.ok && res.status !== 400 && res.status !== 409) {
+    throw new Error(`Failed to create ${LEADER_PHOTO_BUCKET} bucket: ${await res.text()}`);
+  }
+}
+
+// Uploads (or overwrites) one photo and returns its public URL.
+async function uploadLeaderPhoto(objectName, buffer, contentType) {
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${LEADER_PHOTO_BUCKET}/${encodeURIComponent(objectName)}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": contentType,
+      "x-upsert": "true",
+    },
+    body: buffer,
+  });
+  if (!res.ok) throw new Error(`Photo upload failed: ${await res.text()}`);
+  return `${SUPABASE_URL}/storage/v1/object/public/${LEADER_PHOTO_BUCKET}/${encodeURIComponent(objectName)}`;
+}
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -350,6 +387,8 @@ module.exports = {
   SUPABASE_ANON_KEY,
   SUPABASE_SERVICE_ROLE_KEY,
   supabaseServiceFetch,
+  ensureLeaderPhotoBucket,
+  uploadLeaderPhoto,
   transporter,
   renderConfirmationHtml,
   renderReminderHtml,

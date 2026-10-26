@@ -1,14 +1,16 @@
 // api/admin-data.js
 // Vercel Serverless Function — full_access/scheduling_access admin
 // mutations/reads for meeting types, weekly availability, date overrides,
-// ward settings, and the full-PII appointments feed/update/cancel actions.
+// ward settings, the full-PII appointments feed/update/cancel actions, and
+// (full_access only) the Contact tab's leadership directory.
 // announcements_only admins may not reach this endpoint. Combined into one route
 // (dispatched by `resource`) to stay under Vercel's per-deployment
 // serverless function limit on the Hobby plan — each of these used to be
 // its own file; the request/response shapes are unchanged, just routed
 // through one endpoint instead of several.
 
-const { supabaseServiceFetch, requireAdmin, sendAdminPush } = require("./_lib");
+const crypto = require("crypto");
+const { supabaseServiceFetch, requireAdmin, sendAdminPush, ensureLeaderPhotoBucket, uploadLeaderPhoto } = require("./_lib");
 
 async function handleMeetingTypes(req, res) {
   const { action, id } = req.body;
@@ -219,12 +221,93 @@ async function handleAppointments(req, res) {
   return res.status(400).json({ error: "Unknown action." });
 }
 
+const LEADER_FIELDS = ["name", "calling", "phone", "photo_url", "note", "section", "sort_order", "show_schedule_button", "is_active"];
+const LEADER_PHOTO_TYPES = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
+
+function pickLeaderFields(body) {
+  const row = {};
+  LEADER_FIELDS.forEach((field) => {
+    if (body[field] !== undefined) row[field] = body[field] === "" ? null : body[field];
+  });
+  return row;
+}
+
+async function handleLeaders(req, res) {
+  const { action, id } = req.body;
+
+  if (action === "list") {
+    // Includes inactive leaders (the public anon read only sees active ones).
+    const listRes = await supabaseServiceFetch("ward_leaders?select=*&order=section.asc,sort_order.asc,name.asc");
+    if (!listRes.ok) throw new Error(await listRes.text());
+    return res.status(200).json({ success: true, leaders: await listRes.json() });
+  }
+
+  if (action === "create" || action === "update") {
+    const row = pickLeaderFields(req.body);
+    if (action === "create" && (!row.name || !row.calling)) {
+      return res.status(400).json({ error: "Name and calling are required." });
+    }
+    if (row.section && !["bishopric", "ward"].includes(row.section)) {
+      return res.status(400).json({ error: "Invalid section." });
+    }
+
+    if (action === "create") {
+      const createRes = await supabaseServiceFetch("ward_leaders", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify([row]),
+      });
+      if (!createRes.ok) throw new Error(await createRes.text());
+      const created = await createRes.json();
+      return res.status(200).json({ success: true, leader: Array.isArray(created) ? created[0] : created });
+    }
+
+    if (!id) return res.status(400).json({ error: "Missing leader id." });
+    const updateRes = await supabaseServiceFetch(`ward_leaders?id=eq.${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(row),
+    });
+    if (!updateRes.ok) throw new Error(await updateRes.text());
+    return res.status(200).json({ success: true });
+  }
+
+  if (action === "delete") {
+    if (!id) return res.status(400).json({ error: "Missing leader id." });
+    const deleteRes = await supabaseServiceFetch(`ward_leaders?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!deleteRes.ok) throw new Error(await deleteRes.text());
+    return res.status(200).json({ success: true });
+  }
+
+  if (action === "upload_photo") {
+    // The browser downsizes the image before sending (see
+    // resizeLeaderPhoto() in scheduling-admin.js), so this stays well
+    // under Vercel's 4.5 MB request body limit.
+    const { data_url } = req.body;
+    const match = /^data:(image\/[a-z]+);base64,(.+)$/.exec(data_url || "");
+    if (!match || !LEADER_PHOTO_TYPES[match[1]]) {
+      return res.status(400).json({ error: "Photo must be a JPEG, PNG, or WebP image." });
+    }
+    await ensureLeaderPhotoBucket();
+    const objectName = `${crypto.randomUUID()}${LEADER_PHOTO_TYPES[match[1]]}`;
+    const photo_url = await uploadLeaderPhoto(objectName, Buffer.from(match[2], "base64"), match[1]);
+    return res.status(200).json({ success: true, photo_url });
+  }
+
+  return res.status(400).json({ error: "Unknown action." });
+}
+
 const RESOURCE_HANDLERS = {
   meeting_types: handleMeetingTypes,
   weekly_availability: handleWeeklyAvailability,
   date_overrides: handleDateOverrides,
   settings: handleSettings,
   appointments: handleAppointments,
+  leaders: handleLeaders,
+};
+
+// Resources narrower than this endpoint's default full_access/scheduling_access.
+const RESOURCE_ROLES = {
+  leaders: ["full_access"],
 };
 
 module.exports = async function handler(req, res) {
@@ -241,6 +324,9 @@ module.exports = async function handler(req, res) {
   const { resource } = req.body || {};
   const resourceHandler = RESOURCE_HANDLERS[resource];
   if (!resourceHandler) return res.status(400).json({ error: "Unknown resource." });
+  if (RESOURCE_ROLES[resource] && !RESOURCE_ROLES[resource].includes(auth.admin.role)) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
 
   try {
     return await resourceHandler(req, res);

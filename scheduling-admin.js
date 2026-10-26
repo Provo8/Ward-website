@@ -860,6 +860,7 @@ function switchAdminSubTab(subTabId) {
 
   if (subTabId === 'admins') {
     renderAdminUsersList();
+    renderLeadersAdminList();
   }
 
   // Re-sync whichever nested Dashboard panel (appointments/types/weekly) was
@@ -1844,6 +1845,225 @@ async function executeConfirmedAdminDeletion() {
     renderAdminUsersList();
   }
   pendingDeleteAdminId = null;
+}
+
+/**
+ * ------------------------------------------------------------
+ * 2c. LEADERSHIP DIRECTORY MANAGEMENT (full_access only)
+ * ------------------------------------------------------------
+ * Edits the ward_leaders rows that app.js renders on the Contact tab.
+ * Lives inside the Admins sub-tab since both are full_access-only.
+ */
+let adminLeaders = [];
+let editingLeaderId = null;
+let pendingDeleteLeaderId = null;
+// The photo the modal will save: a URL string, null (no photo), or a
+// pending downsized data URL that gets uploaded on submit.
+let leaderModalPhoto = { url: null, dataUrl: null };
+
+async function renderLeadersAdminList() {
+  const container = document.getElementById('admin-leaders-list');
+  if (!container) return;
+
+  container.innerHTML = `<div class="p-6 text-center text-sm text-on-surface-variant dark:text-outline-variant">Loading leaders…</div>`;
+
+  const result = await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'list' });
+  adminLeaders = result && result.success ? result.leaders : [];
+
+  if (adminLeaders.length === 0) {
+    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No leaders yet. Add one to show it on the Contact tab.</p></div>`;
+    return;
+  }
+
+  const sectionLabels = { bishopric: 'Bishopric', ward: 'Ward Leadership' };
+
+  container.innerHTML = adminLeaders.map(leader => `
+    <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 border border-surface-blue-tint dark:border-white/10 flex items-center justify-between gap-3 ${leader.is_active ? '' : 'opacity-60'}">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl overflow-hidden bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0">
+          ${leader.photo_url
+            ? `<img src="${escapeHtml(leader.photo_url)}" alt="" class="w-full h-full object-cover" loading="lazy">`
+            : `<span class="material-symbols-outlined text-[20px]">person</span>`}
+        </div>
+        <div class="flex flex-col min-w-0">
+          <span class="font-headline font-bold text-sm text-primary dark:text-white truncate">${escapeHtml(leader.name)}</span>
+          <div class="mt-0.5 flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-on-surface-variant dark:text-outline-variant">${escapeHtml(leader.calling)}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-secondary-container text-on-secondary-container">${sectionLabels[leader.section] || leader.section}</span>
+            ${leader.is_active ? '' : `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">Hidden</span>`}
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button onclick="openEditLeaderModal('${escapeHtml(leader.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-blue-tint dark:hover:bg-[#1c2a38] transition-all" title="Edit leader">
+          <span class="material-symbols-outlined text-[20px]">edit</span>
+        </button>
+        <button onclick="openDeleteLeaderModal('${escapeHtml(leader.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove leader">
+          <span class="material-symbols-outlined text-[20px]">delete</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function setLeaderModalPhotoPreview(src) {
+  const preview = document.getElementById('leader-modal-photo-preview');
+  const placeholder = document.getElementById('leader-modal-photo-placeholder');
+  const removeBtn = document.getElementById('leader-modal-photo-remove');
+  if (src) {
+    preview.src = src;
+    preview.classList.remove('hidden');
+    placeholder.classList.add('hidden');
+    removeBtn.classList.remove('hidden');
+  } else {
+    preview.removeAttribute('src');
+    preview.classList.add('hidden');
+    placeholder.classList.remove('hidden');
+    removeBtn.classList.add('hidden');
+  }
+}
+
+function openCreateLeaderModal() {
+  editingLeaderId = null;
+  document.getElementById('leader-form').reset();
+  leaderModalPhoto = { url: null, dataUrl: null };
+  setLeaderModalPhotoPreview(null);
+
+  // Default new leaders to the end of the Ward Leadership list.
+  const wardOrders = adminLeaders.filter(l => l.section === 'ward').map(l => l.sort_order || 0);
+  document.getElementById('leader-modal-section').value = 'ward';
+  document.getElementById('leader-modal-order').value = wardOrders.length ? Math.max(...wardOrders) + 1 : 0;
+
+  document.getElementById('leader-modal-title').textContent = 'Add Leader';
+  document.getElementById('leader-modal-submit').textContent = 'Add Leader';
+  openModal('leader-modal');
+}
+
+function openEditLeaderModal(leaderId) {
+  const leader = adminLeaders.find(l => l.id === leaderId);
+  if (!leader) return;
+
+  editingLeaderId = leaderId;
+  document.getElementById('leader-form').reset();
+  document.getElementById('leader-modal-name').value = leader.name || '';
+  document.getElementById('leader-modal-calling').value = leader.calling || '';
+  document.getElementById('leader-modal-phone').value = leader.phone || '';
+  document.getElementById('leader-modal-section').value = leader.section || 'ward';
+  document.getElementById('leader-modal-order').value = leader.sort_order || 0;
+  document.getElementById('leader-modal-note').value = leader.note || '';
+  document.getElementById('leader-modal-schedule').checked = Boolean(leader.show_schedule_button);
+  document.getElementById('leader-modal-active').checked = leader.is_active !== false;
+
+  leaderModalPhoto = { url: leader.photo_url || null, dataUrl: null };
+  setLeaderModalPhotoPreview(leaderModalPhoto.url);
+
+  document.getElementById('leader-modal-title').textContent = 'Edit Leader';
+  document.getElementById('leader-modal-submit').textContent = 'Save Changes';
+  openModal('leader-modal');
+}
+
+// Downsizes a picked photo to a 400px square-ish JPEG in the browser so
+// uploads stay small (phone photos are often 3–5 MB, near Vercel's
+// request body limit) and the directory loads quickly.
+function resizeLeaderPhoto(file, maxSize = 400) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(objectUrl);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('Could not read that image.'));
+    };
+    img.src = objectUrl;
+  });
+}
+
+async function handleLeaderPhotoSelected(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  try {
+    leaderModalPhoto.dataUrl = await resizeLeaderPhoto(file);
+    setLeaderModalPhotoPreview(leaderModalPhoto.dataUrl);
+  } catch (err) {
+    showToast(err.message, 'error');
+    event.target.value = '';
+  }
+}
+
+function removeLeaderPhoto() {
+  leaderModalPhoto = { url: null, dataUrl: null };
+  document.getElementById('leader-modal-photo').value = '';
+  setLeaderModalPhotoPreview(null);
+}
+
+async function handleSaveLeaderForm(event) {
+  event.preventDefault();
+  const submitBtn = document.getElementById('leader-modal-submit');
+  submitBtn.disabled = true;
+
+  try {
+    let photo_url = leaderModalPhoto.url;
+    if (leaderModalPhoto.dataUrl) {
+      const upload = await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'upload_photo', data_url: leaderModalPhoto.dataUrl });
+      if (!upload || !upload.success) return;
+      photo_url = upload.photo_url;
+    }
+
+    const payload = {
+      name: document.getElementById('leader-modal-name').value.trim(),
+      calling: document.getElementById('leader-modal-calling').value.trim(),
+      phone: document.getElementById('leader-modal-phone').value.trim(),
+      section: document.getElementById('leader-modal-section').value,
+      sort_order: parseInt(document.getElementById('leader-modal-order').value, 10) || 0,
+      note: document.getElementById('leader-modal-note').value.trim(),
+      show_schedule_button: document.getElementById('leader-modal-schedule').checked,
+      is_active: document.getElementById('leader-modal-active').checked,
+      photo_url,
+    };
+
+    const result = editingLeaderId
+      ? await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'update', id: editingLeaderId, ...payload })
+      : await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'create', ...payload });
+
+    if (result && result.success) {
+      closeModal('leader-modal');
+      showToast(editingLeaderId ? 'Leader updated' : 'Leader added', 'check_circle');
+      renderLeadersAdminList();
+      initLeadersDirectory();
+    }
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+function openDeleteLeaderModal(leaderId) {
+  const leader = adminLeaders.find(l => l.id === leaderId);
+  if (!leader) return;
+  pendingDeleteLeaderId = leaderId;
+  document.getElementById('delete-leader-modal-details').innerHTML = `
+    <div class="font-bold text-primary dark:text-white text-sm">${escapeHtml(leader.name)}</div>
+    <div class="text-on-surface-variant dark:text-outline-variant">${escapeHtml(leader.calling)}</div>`;
+  openModal('delete-leader-modal');
+}
+
+async function executeConfirmedLeaderDeletion() {
+  if (!pendingDeleteLeaderId) return;
+  const result = await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'delete', id: pendingDeleteLeaderId });
+  closeModal('delete-leader-modal');
+  if (result && result.success) {
+    showToast('Leader removed', 'delete');
+    renderLeadersAdminList();
+    initLeadersDirectory();
+  }
+  pendingDeleteLeaderId = null;
 }
 
 /**

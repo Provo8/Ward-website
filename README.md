@@ -4,6 +4,26 @@ A full-stack Progressive Web App built for a real congregation: a public ward we
 
 **Live site:** [provo8ward.vercel.app](https://provo8ward.vercel.app)
 
+<p>
+  <img src="docs/screenshots/home.png" alt="Home page with Sunday schedule and quick links" width="66%">
+  <img src="docs/screenshots/booking-mobile.png" alt="Mobile booking flow: choosing a meeting type" width="22%">
+</p>
+
+> Screenshots use placeholder people and appointments. Real member and leader data never leaves the production database.
+
+<details>
+<summary><b>More screenshots</b> (leadership directory, admin dashboard, role management)</summary>
+
+| Leadership directory (loaded from Postgres) | Admin appointment dashboard |
+|---|---|
+| ![Leadership directory](docs/screenshots/leaders.png) | ![Admin dashboard](docs/screenshots/admin-dashboard.png) |
+
+| Role-based admin management + directory editor |
+|---|
+| ![Admin roles](docs/screenshots/admin-roles.png) |
+
+</details>
+
 ---
 
 ## What it does
@@ -20,6 +40,7 @@ A full-stack Progressive Web App built for a real congregation: a public ward we
 - Dashboard of upcoming/past appointments with attendee contact info, reschedule/cancel controls
 - Push broadcast announcements to subscribed devices
 - "Book on behalf of" flow for members who call or stop by in person
+- Leadership directory editor — add/edit/hide leaders and upload photos (resized in the browser before upload) when callings change, no code deploy needed
 
 **Automated reminders**
 - A GitHub Actions cron job pings a Vercel serverless function every 5 minutes
@@ -46,7 +67,7 @@ A full-stack Progressive Web App built for a real congregation: a public ward we
 
 - **Frontend:** no build step — plain HTML/CSS/JS with Tailwind via CDN, talking directly to Supabase (anon key) for read-only public data and to Vercel functions for anything that touches sensitive data or third-party APIs.
 - **Backend:** Vercel serverless functions handle authentication, appointment booking/rescheduling/cancellation, admin data access, push notifications, and Google Calendar sync.
-- **Database:** Supabase (Postgres). Public/anon access is locked to specific non-PII columns via `GRANT` statements — full attendee records (name/email/phone/notes) are only readable through the authenticated admin API, which uses the service-role key server-side. Row-level security backs every table.
+- **Database:** Supabase (Postgres). Public/anon access is locked to specific non-PII columns via `GRANT` statements — full attendee records (name/email/phone/notes) are only readable through the authenticated admin API, which uses the service-role key server-side. Row-level security backs every table. Leaders' names, phone numbers, and photos also live in the database (`ward_leaders` + a Storage bucket) rather than in this repo, and the client caches the last directory in `localStorage` so it still renders offline.
 - **Reminders:** since Vercel's Hobby plan only allows daily cron, a GitHub Actions workflow calls the reminder endpoint every 5 minutes instead, protected by a shared secret header.
 - **Notifications:** transactional email via Nodemailer/Gmail, browser push via the Web Push protocol (VAPID), calendar sync via the Google Calendar API.
 
@@ -73,7 +94,8 @@ config.js               Public Supabase URL/anon key, VAPID public key
 sw.js                   Service worker (PWA offline + push)
 schema.sql              Full Postgres schema, RLS policies, column grants
 api/                     Vercel serverless functions (booking, admin, reminders, calendar sync, push)
-scripts/                 One-time local setup helpers (create admin user, Google OAuth token)
+scripts/                 One-time local setup helpers (create admin user, seed leadership directory, Google OAuth token)
+docs/screenshots/        README images (placeholder data only)
 .github/workflows/       Cron workflow that drives the reminder pipeline
 ```
 
@@ -81,6 +103,10 @@ scripts/                 One-time local setup helpers (create admin user, Google
 
 ```bash
 npm install
+# run schema.sql in the Supabase SQL editor, then:
+npm run create-admin -- --email you@example.com --password "..." --role full_access
+cp scripts/leaders.example.json scripts/leaders.local.json   # edit with your leaders
+npm run seed-leaders
 vercel dev
 ```
 
