@@ -502,6 +502,18 @@
         </p>
       </div>
 
+      <!-- Edit bar — shown only to signed-in full_access admins (see renderLeadersDirectory in app.js) -->
+      <div id="leaders-admin-bar" class="hidden bg-secondary-container/30 dark:bg-secondary-container/10 border border-secondary-container rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 text-sm text-on-surface dark:text-white">
+          <span class="material-symbols-outlined text-secondary">edit_note</span>
+          <span>You're signed in as a Full Access admin. Tap <span class="material-symbols-outlined text-[16px] align-middle">edit</span> on a card to change a name, calling, phone number, or photo.</span>
+        </div>
+        <button type="button" onclick="openCreateLeaderModal()" class="shrink-0 bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          <span>Add Leader</span>
+        </button>
+      </div>
+
       <!-- Bishopric Directory Grid -->
       <div class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
@@ -1854,6 +1866,10 @@
         </div>
 
         <div class="flex justify-end gap-2 pt-3 border-t border-surface-variant/40">
+          <button type="button" id="leader-modal-delete" onclick="handleDeleteFromLeaderModal()" class="hidden mr-auto px-3 py-2 rounded-xl text-xs font-mono font-bold text-error hover:bg-error-container/20 flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">delete</span>
+            <span>Remove</span>
+          </button>
           <button type="button" onclick="closeModal('leader-modal')" class="px-4 py-2 rounded-xl text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:bg-surface-container dark:hover:bg-tertiary-container">Cancel</button>
           <button type="submit" id="leader-modal-submit" class="px-5 py-2 rounded-xl bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-mono text-xs font-bold active:scale-95 transition-all shadow-sm disabled:opacity-60">Add Leader</button>
         </div>

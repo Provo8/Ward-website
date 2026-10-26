@@ -2,8 +2,6 @@
 
 A full-stack Progressive Web App built for a real congregation: a public ward website with an integrated self-service appointment scheduler, an admin portal for leadership, and an automated email/push reminder pipeline — all running in production today.
 
-**Live site:** [provo8ward.vercel.app](https://provo8ward.vercel.app)
-
 <p>
   <img src="docs/screenshots/home.png" alt="Home page with Sunday schedule and quick links" width="66%">
   <img src="docs/screenshots/booking-mobile.png" alt="Mobile booking flow: choosing a meeting type" width="22%">
@@ -40,7 +38,7 @@ A full-stack Progressive Web App built for a real congregation: a public ward we
 - Dashboard of upcoming/past appointments with attendee contact info, reschedule/cancel controls
 - Push broadcast announcements to subscribed devices
 - "Book on behalf of" flow for members who call or stop by in person
-- Leadership directory editor — add/edit/hide leaders and upload photos (resized in the browser before upload) when callings change, no code deploy needed
+- In-place leadership directory editing — Full Access admins get edit controls right on the Leaders tab to add/edit/hide leaders and upload photos (resized in the browser before upload) when callings change, no code deploy needed
 
 **Automated reminders**
 - A GitHub Actions cron job pings a Vercel serverless function every 5 minutes

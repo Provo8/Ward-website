@@ -336,6 +336,18 @@ async function initLeadersDirectory() {
     renderLeadersSkeleton();
   }
 
+  // Full Access admins edit the directory in place, from the admin list
+  // (which includes hidden leaders) with edit controls on each card.
+  // canEditLeaders()/adminLeaders live in scheduling-admin.js.
+  if (typeof canEditLeaders === 'function' && canEditLeaders()) {
+    const result = await adminApiFetch('/api/admin-data', { resource: 'leaders', action: 'list' });
+    if (result && result.success) {
+      adminLeaders = result.leaders;
+      renderLeadersDirectory(result.leaders, { editable: true });
+      return;
+    }
+  }
+
   try {
     const leaders = await fetchActiveLeaders();
     renderLeadersDirectory(leaders);
@@ -359,20 +371,23 @@ async function fetchActiveLeaders() {
   return res.json();
 }
 
-function renderLeadersDirectory(leaders) {
+function renderLeadersDirectory(leaders, { editable = false } = {}) {
+  const adminBar = document.getElementById('leaders-admin-bar');
+  if (adminBar) adminBar.classList.toggle('hidden', !editable);
+
   const sections = { bishopric: 'bishopric-grid', ward: 'ward-leaders-grid' };
   Object.entries(sections).forEach(([section, gridId]) => {
     const grid = document.getElementById(gridId);
     if (!grid) return;
     const rows = leaders.filter(l => l.section === section);
     grid.innerHTML = rows.length > 0
-      ? rows.map(renderLeaderCard).join('')
+      ? rows.map(leader => renderLeaderCard(leader, editable)).join('')
       : `<p class="md:col-span-3 text-sm text-on-surface-variant dark:text-outline-variant">No leaders listed yet.</p>`;
     grid.removeAttribute('aria-busy');
   });
 }
 
-function renderLeaderCard(leader) {
+function renderLeaderCard(leader, editable = false) {
   const name = escapeHtml(leader.name || '');
   const phoneDigits = (leader.phone || '').replace(/\D/g, '');
 
@@ -398,9 +413,17 @@ function renderLeaderCard(leader) {
       ${phoneLink('text-[11px] sm:text-xs py-3 px-1.5 gap-1 whitespace-nowrap', 16)}
     </div>` : phoneLink('w-full text-xs py-3 px-4 gap-2', 18);
 
+  const isHidden = leader.is_active === false;
+  const editControls = editable ? `
+    <button type="button" onclick="openEditLeaderModal('${escapeHtml(leader.id)}')" class="absolute top-4 right-3 w-9 h-9 rounded-xl bg-secondary-container text-on-secondary-container shadow-sm flex items-center justify-center hover:bg-secondary-fixed-dim active:scale-95 transition-all" title="Edit ${name}" aria-label="Edit ${name}">
+      <span class="material-symbols-outlined text-[18px]">edit</span>
+    </button>
+    ${isHidden ? `<span class="absolute top-4 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">Hidden</span>` : ''}` : '';
+
   return `
-    <div class="${LEADER_CARD_CLASSES}">
+    <div class="${LEADER_CARD_CLASSES} ${isHidden ? 'opacity-60' : ''}">
       <div class="absolute top-0 left-0 w-full h-2 ${leader.show_schedule_button ? 'bg-primary-container' : 'bg-primary-container/60'}"></div>
+      ${editControls}
       ${photo}
       <h3 class="font-headline font-bold text-lg text-on-surface dark:text-white">${name}</h3>
       <p class="text-sm font-mono text-on-surface-variant dark:text-outline-variant mb-stack-md">${escapeHtml(leader.calling || '')}</p>

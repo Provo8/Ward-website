@@ -503,6 +503,7 @@ async function processAdminLogin(email, password, inputElement) {
       if (inputElement) inputElement.value = '';
       showToast(`Signed in as ${data.admin.email}`, 'verified_user');
       checkAdminAuth();
+      initLeadersDirectory();
       const permission = await permissionPromise;
       if (adminCanSchedule(data.admin.role)) {
         initAdminPushNotifications({ permission });
@@ -533,6 +534,7 @@ async function handleAdminLogout() {
   SCHEDULING_STATE.currentAdmin = null;
   showToast('Logged out of Admin Portal', 'lock');
   checkAdminAuth();
+  initLeadersDirectory();
   navigateTab('ward');
 }
 
@@ -1861,6 +1863,20 @@ let pendingDeleteLeaderId = null;
 // pending downsized data URL that gets uploaded on submit.
 let leaderModalPhoto = { url: null, dataUrl: null };
 
+// Whether to show edit controls on the public Leaders tab. Reads the
+// session straight from localStorage because app.js renders the directory
+// before checkAdminAuth() has run on page load. UI-only — the API enforces
+// full_access server-side (RESOURCE_ROLES in api/admin-data.js).
+function canEditLeaders() {
+  if (!hasValidAdminSession()) return false;
+  try {
+    const identity = JSON.parse(localStorage.getItem('ward_admin_identity') || 'null');
+    return Boolean(identity && identity.role === 'full_access');
+  } catch (e) {
+    return false;
+  }
+}
+
 async function renderLeadersAdminList() {
   const container = document.getElementById('admin-leaders-list');
   if (!container) return;
@@ -1936,6 +1952,7 @@ function openCreateLeaderModal() {
 
   document.getElementById('leader-modal-title').textContent = 'Add Leader';
   document.getElementById('leader-modal-submit').textContent = 'Add Leader';
+  document.getElementById('leader-modal-delete').classList.add('hidden');
   openModal('leader-modal');
 }
 
@@ -1959,7 +1976,14 @@ function openEditLeaderModal(leaderId) {
 
   document.getElementById('leader-modal-title').textContent = 'Edit Leader';
   document.getElementById('leader-modal-submit').textContent = 'Save Changes';
+  document.getElementById('leader-modal-delete').classList.remove('hidden');
   openModal('leader-modal');
+}
+
+function handleDeleteFromLeaderModal() {
+  if (!editingLeaderId) return;
+  closeModal('leader-modal');
+  openDeleteLeaderModal(editingLeaderId);
 }
 
 // Downsizes a picked photo to a 400px square-ish JPEG in the browser so
