@@ -985,6 +985,15 @@ async function handleToggleAcceptingAppointments(e) {
   showToast(isAccepting ? 'Ward is accepting appointments' : 'Appointments paused', isAccepting ? 'check_circle' : 'pause_circle');
 }
 
+/**
+ * An appointment only counts as past once its day is over, so today's
+ * finished appointments stay under "Today" until midnight.
+ */
+function isAppointmentPast(apt, now = new Date()) {
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return new Date(apt.end_time || apt.start_time) < startOfToday;
+}
+
 function renderAppointmentsFeed() {
   const container = document.getElementById('admin-appointments-feed');
   if (!container) return;
@@ -1011,8 +1020,7 @@ function renderAppointmentsFeed() {
   const grouped = {};
   apts.forEach(apt => {
     const aptDate = new Date(apt.start_time);
-    const aptEndDate = new Date(apt.end_time || apt.start_time);
-    if (aptEndDate < now) return;
+    if (isAppointmentPast(apt, now)) return;
 
     let groupKey = aptDate.toDateString();
 
@@ -1063,9 +1071,8 @@ function renderPastAppointmentsFeed() {
   const container = document.getElementById('admin-past-appointments-feed');
   if (!container) return;
 
-  const now = new Date();
   const apts = (SCHEDULING_STATE.appointments || [])
-    .filter(apt => new Date(apt.end_time || apt.start_time) < now)
+    .filter(apt => isAppointmentPast(apt))
     .sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
 
   if (countBadge) countBadge.textContent = apts.length;
@@ -1688,8 +1695,14 @@ async function handleDeleteMeetingType(typeId) {
     localStorage.setItem('ward_meeting_types', JSON.stringify(SCHEDULING_STATE.meetingTypes));
   }
 
+  // Mirrors the ON DELETE CASCADE on date_overrides.meeting_type_id.
+  SCHEDULING_STATE.dateOverrides = (SCHEDULING_STATE.dateOverrides || []).filter(o => o.meeting_type_id !== typeId);
+  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
+
   showToast('Meeting type deleted', 'delete');
   renderMeetingTypesList();
+  renderDateOverridesCalendar();
+  renderUpcomingOverridesList();
   if (typeof renderPublicMeetingTypes === 'function') {
     renderPublicMeetingTypes();
   }
@@ -2636,7 +2649,7 @@ function renderDateOverridesCalendar() {
   }
 
   // Check if selected date already has an override and prefill
-  const existing = SCHEDULING_STATE.dateOverrides.find(o => o.override_date === selectedDateStr);
+  const existing = SCHEDULING_STATE.dateOverrides.find(o => o.override_date === selectedDateStr && !o.meeting_type_id);
   const unavailRadio = document.getElementById('override-type-unavailable');
   const availRadio = document.getElementById('override-type-available');
   const timeSlotFields = document.getElementById('override-timeslot-fields');
@@ -2651,6 +2664,18 @@ function renderDateOverridesCalendar() {
   if (startSelect) startSelect.innerHTML = generateTimeSelectOptions(defaultStart);
   if (endSelect) endSelect.innerHTML = generateTimeSelectOptions(defaultEnd);
   if (pillText) pillText.textContent = `${formatTime12h(defaultStart)} – ${formatTime12h(defaultEnd)}`;
+
+  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
+  if (meetingTypeSelect) {
+    // Keep the current choice across re-renders, so adding several blocks of
+    // hours for one appointment type doesn't mean re-picking it every time.
+    const selectedTypeId = meetingTypeSelect.value;
+    const typeOptions = (SCHEDULING_STATE.meetingTypes || [])
+      .filter(t => t.is_active !== false)
+      .map(t => `<option value="${escapeHtml(t.id)}" ${t.id === selectedTypeId ? 'selected' : ''}>${escapeHtml(t.title)} only</option>`)
+      .join('');
+    meetingTypeSelect.innerHTML = `<option value="">All appointments</option>${typeOptions}`;
+  }
 
   if (existing) {
     if (deleteBtn) deleteBtn.classList.remove('hidden');
@@ -2667,6 +2692,23 @@ function renderDateOverridesCalendar() {
     if (timeSlotFields) timeSlotFields.classList.remove('hidden');
   }
 
+  handleOverrideMeetingTypeChange();
+}
+
+/**
+ * The form's Delete button removes the day's all-appointments override, so it
+ * doesn't apply while adding hours for one type (those have their own delete
+ * buttons in the Upcoming Overrides list).
+ */
+function handleOverrideMeetingTypeChange() {
+  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
+  const deleteBtn = document.getElementById('btn-delete-date-override');
+  if (deleteBtn && SCHEDULING_STATE.selectedDate) {
+    const selected = SCHEDULING_STATE.selectedDate;
+    const selectedDateStr = `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}`;
+    const hasAllTypesOverride =SCHEDULING_STATE.dateOverrides.some(o => o.override_date === selectedDateStr && !o.meeting_type_id);
+    deleteBtn.classList.toggle('hidden', !hasAllTypesOverride || Boolean(meetingTypeSelect && meetingTypeSelect.value));
+  }
   updateOverrideConflictWarning();
 }
 
@@ -2674,20 +2716,29 @@ function renderDateOverridesCalendar() {
  * Find confirmed appointments on `dateStr` that would fall outside the
  * override being configured — a full-day "Unavailable" override conflicts
  * with every appointment that day; a narrowed "Available" window conflicts
- * with any appointment that starts or ends outside those hours. These need
- * to be manually rescheduled or cancelled by the admin — saving an override
- * does not touch existing appointments.
+ * with any appointment that starts or ends outside those hours. Appointments
+ * inside hours added for their own type are unaffected, and adding hours for
+ * one type (`meetingTypeId`) never conflicts with anything. These need to be
+ * manually rescheduled or cancelled by the admin — saving an override does
+ * not touch existing appointments.
  */
-function getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime) {
-  if (!dateStr) return [];
+function getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime, meetingTypeId = null) {
+  if (!dateStr || (meetingTypeId && !isUnavailable)) return [];
 
   const [y, m, d] = dateStr.split('-').map(Number);
+  const addedHours = (SCHEDULING_STATE.dateOverrides || []).filter(o => o.override_date === dateStr && o.meeting_type_id);
 
   const dayAppointments = (SCHEDULING_STATE.appointments || []).filter(apt => {
     if (!apt || apt.status === 'cancelled' || !apt.start_time) return false;
     const aptStart = new Date(apt.start_time);
     if (isNaN(aptStart.getTime())) return false;
-    return aptStart.getFullYear() === y && (aptStart.getMonth() + 1) === m && aptStart.getDate() === d;
+    if (aptStart.getFullYear() !== y || (aptStart.getMonth() + 1) !== m || aptStart.getDate() !== d) return false;
+
+    const aptEnd = apt.end_time ? new Date(apt.end_time) : new Date(aptStart.getTime() + 15 * 60 * 1000);
+    const aptStartMins = aptStart.getHours() * 60 + aptStart.getMinutes();
+    const aptEndMins = aptEnd.getHours() * 60 + aptEnd.getMinutes();
+    return !addedHours.some(o => o.meeting_type_id === apt.meeting_type_id
+      && aptStartMins >= timeStrToMinutes(o.start_time) && aptEndMins <= timeStrToMinutes(o.end_time));
   });
 
   if (isUnavailable) return dayAppointments;
@@ -2726,8 +2777,10 @@ function updateOverrideConflictWarning() {
   const endSelect = document.getElementById('override-end-select');
   const startTime = startSelect ? startSelect.value : '09:00:00';
   const endTime = endSelect ? endSelect.value : '12:00:00';
+  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
+  const meetingTypeId = meetingTypeSelect ? meetingTypeSelect.value || null : null;
 
-  const conflicts = getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime)
+  const conflicts = getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime, meetingTypeId)
     .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
   if (conflicts.length === 0) {
@@ -2793,6 +2846,7 @@ function handleOverrideTypeChange(isUnavailable) {
       timeFields.classList.remove('hidden');
     }
   }
+  updateOverrideConflictWarning();
 }
 
 async function handleSaveDateOverrideForm(event) {
@@ -2804,33 +2858,46 @@ async function handleSaveDateOverrideForm(event) {
 
   const startTime = startSelect ? startSelect.value : '09:00:00';
   const endTime = endSelect ? endSelect.value : '12:00:00';
+  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
+  const meetingTypeId = meetingTypeSelect ? meetingTypeSelect.value || null : null;
 
   const yyyy = SCHEDULING_STATE.selectedDate.getFullYear();
   const mm = String(SCHEDULING_STATE.selectedDate.getMonth() + 1).padStart(2, '0');
   const dd = String(SCHEDULING_STATE.selectedDate.getDate()).padStart(2, '0');
   const dateStr = `${yyyy}-${mm}-${dd}`;
 
+  if (!isUnavailable && timeStrToMinutes(endTime) <= timeStrToMinutes(startTime)) {
+    showToast('End time must be after the start time', 'error');
+    return;
+  }
+
   const payload = {
     override_date: dateStr,
     is_unavailable: isUnavailable,
     start_time: isUnavailable ? null : startTime,
-    end_time: isUnavailable ? null : endTime
+    end_time: isUnavailable ? null : endTime,
+    meeting_type_id: isUnavailable ? null : meetingTypeId
   };
 
-  // Remove previous override for this date if exists
-  const existingIdx = SCHEDULING_STATE.dateOverrides.findIndex(o => o.override_date === dateStr);
+  // Replace the day's all-appointments override if one exists; hours added
+  // for one appointment type always stack up as a new row.
+  const existingIdx = payload.meeting_type_id
+    ? -1
+    : SCHEDULING_STATE.dateOverrides.findIndex(o => o.override_date === dateStr && !o.meeting_type_id);
+  const record = { id: existingIdx !== -1 ? SCHEDULING_STATE.dateOverrides[existingIdx].id : 'do-' + Date.now(), ...payload };
   if (existingIdx !== -1) {
-    SCHEDULING_STATE.dateOverrides[existingIdx] = { id: SCHEDULING_STATE.dateOverrides[existingIdx].id, ...payload };
+    SCHEDULING_STATE.dateOverrides[existingIdx] = record;
   } else {
-    SCHEDULING_STATE.dateOverrides.push({ id: 'do-' + Date.now(), ...payload });
+    SCHEDULING_STATE.dateOverrides.push(record);
   }
-
-  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
 
   const sb = SCHEDULING_STATE.supabaseClient;
   if (sb) {
-    await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'save', override_date: dateStr, ...payload });
+    const result = await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'save', override_date: dateStr, ...payload });
+    if (result && result.override) record.id = result.override.id;
   }
+
+  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
 
   showToast(`Saved override for ${SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'check_circle');
   renderDateOverridesCalendar();
@@ -2847,7 +2914,10 @@ function renderUpcomingOverridesList() {
     return;
   }
 
-  container.innerHTML = overrides.map(ov => {
+  const sortedOverrides = [...overrides].sort((a, b) =>
+    a.override_date.localeCompare(b.override_date) || timeStrToMinutes(a.start_time) - timeStrToMinutes(b.start_time));
+
+  container.innerHTML = sortedOverrides.map(ov => {
     const parts = ov.override_date.split('-');
     const d = new Date(parts[0], parts[1] - 1, parts[2]);
     const dateFormatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
@@ -2859,6 +2929,10 @@ function renderUpcomingOverridesList() {
       const start = ov.start_time ? formatTimeString(ov.start_time) : '9:00 AM';
       const end = ov.end_time ? formatTimeString(ov.end_time) : '5:00 PM';
       statusText = `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">Available: ${start} – ${end}</span>`;
+      if (ov.meeting_type_id) {
+        const reservedType = (SCHEDULING_STATE.meetingTypes || []).find(t => t.id === ov.meeting_type_id);
+        statusText += `<span class="block mt-1 text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant">${escapeHtml(reservedType ? reservedType.title : 'One meeting type')} only</span>`;
+      }
     }
 
     return `
@@ -2881,8 +2955,10 @@ function renderUpcomingOverridesList() {
 }
 
 async function handleDeleteDateOverride(overrideId) {
-  const ov = SCHEDULING_STATE.dateOverrides.find(o => o.id === overrideId || o.override_date === overrideId);
-  SCHEDULING_STATE.dateOverrides = SCHEDULING_STATE.dateOverrides.filter(o => o.id !== overrideId && o.override_date !== overrideId);
+  // A date (from the form's Delete button) means that day's all-appointments
+  // override; hours added for one type are only ever removed by their own id.
+  const ov = SCHEDULING_STATE.dateOverrides.find(o => o.id === overrideId || (o.override_date === overrideId && !o.meeting_type_id));
+  SCHEDULING_STATE.dateOverrides = SCHEDULING_STATE.dateOverrides.filter(o => o !== ov);
   localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
 
   const sb = SCHEDULING_STATE.supabaseClient;
@@ -3233,7 +3309,7 @@ function changeBookingMonth(delta) {
 function hasAvailabilityOnDate(dateStr) {
   const selectedType = PUBLIC_BOOKING_STATE.selectedType || DEFAULT_MEETING_TYPES[0];
   const duration = selectedType.duration_minutes || 15;
-  const slots = calculateAvailableSlotsForDate(dateStr, duration);
+  const slots = calculateAvailableSlotsForDate(dateStr, duration, selectedType.id);
   return slots.some(s => !s.booked);
 }
 
@@ -3440,7 +3516,7 @@ function isSlotBookedByAppointments(dateStr, slotStartMins, slotEndMins, allAppo
 /**
  * Core Algorithm: Calculate Dynamic Available Appointment Slots for a Date
  */
-function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15) {
+function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15, meetingTypeId = null) {
   if (!dateStr) return [];
 
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -3454,15 +3530,14 @@ function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15) {
 
   // 1. Check Date Overrides first
   const overrides = SCHEDULING_STATE.dateOverrides || DEFAULT_DATE_OVERRIDES;
-  const matchOverride = overrides.find(o => o.override_date === dateStr);
+  const matchOverride = overrides.find(o => o.override_date === dateStr && !o.meeting_type_id);
 
   let windows = [];
 
   if (matchOverride) {
-    if (matchOverride.is_unavailable) {
-      return []; // Day completely blocked off
-    }
-    if (matchOverride.start_time && matchOverride.end_time) {
+    // is_unavailable closes the regular hours; hours added for a specific
+    // meeting type below still apply.
+    if (!matchOverride.is_unavailable && matchOverride.start_time && matchOverride.end_time) {
       windows.push({
         start_time: matchOverride.start_time,
         end_time: matchOverride.end_time
@@ -3480,6 +3555,11 @@ function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15) {
     }
   }
 
+  // Extra hours added for this meeting type, on top of the regular hours
+  if (meetingTypeId) {
+    windows = [...windows, ...overrides.filter(o => o.override_date === dateStr && o.meeting_type_id === meetingTypeId)];
+  }
+
   if (windows.length === 0) {
     return [];
   }
@@ -3493,16 +3573,20 @@ function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15) {
 
     let current = startMins;
     while (current + durationMinutes <= endMins) {
-      const slotTimeStr = minutesToTimeStr(current);
-      candidateSlots.push({
-        start_time: slotTimeStr,
-        end_time: minutesToTimeStr(current + durationMinutes),
-        start_minutes: current,
-        end_minutes: current + durationMinutes
-      });
+      const startMinutes = current;
+      // Added hours can overlap the regular hours — offer each time once.
+      if (!candidateSlots.some(s => s.start_minutes === startMinutes)) {
+        candidateSlots.push({
+          start_time: minutesToTimeStr(startMinutes),
+          end_time: minutesToTimeStr(startMinutes + durationMinutes),
+          start_minutes: startMinutes,
+          end_minutes: startMinutes + durationMinutes
+        });
+      }
       current += durationMinutes;
     }
   });
+  candidateSlots.sort((a, b) => a.start_minutes - b.start_minutes);
 
   // 4. Tag each candidate slot as booked/available instead of dropping it,
   //    so already-booked times are shown grayed out, crossed out, and unclickable.
@@ -3583,7 +3667,7 @@ function renderPublicTimeSlots() {
 
   const selectedType = PUBLIC_BOOKING_STATE.selectedType || DEFAULT_MEETING_TYPES[0];
   const duration = selectedType.duration_minutes || 15;
-  const availableSlots = calculateAvailableSlotsForDate(dateStr, duration);
+  const availableSlots = calculateAvailableSlotsForDate(dateStr, duration, selectedType.id);
 
   if (availableSlots.length === 0) {
     container.innerHTML = '';

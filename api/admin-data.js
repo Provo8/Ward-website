@@ -110,24 +110,33 @@ async function handleDateOverrides(req, res) {
   const { action } = req.body;
 
   if (action === "save") {
-    const { override_date, is_unavailable, start_time, end_time } = req.body;
+    const { override_date, is_unavailable, start_time, end_time, meeting_type_id } = req.body;
     if (!override_date) return res.status(400).json({ error: "Missing override_date." });
 
-    const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}`, { method: "DELETE" });
-    if (!delRes.ok) throw new Error(await delRes.text());
+    const addedTypeId = is_unavailable ? null : (meeting_type_id || null);
+
+    // Hours added for one meeting type stack up; only the day's single
+    // all-types override gets replaced.
+    if (!addedTypeId) {
+      const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}&meeting_type_id=is.null`, { method: "DELETE" });
+      if (!delRes.ok) throw new Error(await delRes.text());
+    }
 
     const insertRes = await supabaseServiceFetch("date_overrides", {
       method: "POST",
+      headers: { Prefer: "return=representation" },
       body: JSON.stringify([{
         override_date,
         is_unavailable: Boolean(is_unavailable),
         start_time: is_unavailable ? null : start_time,
         end_time: is_unavailable ? null : end_time,
+        meeting_type_id: addedTypeId,
       }]),
     });
     if (!insertRes.ok) throw new Error(await insertRes.text());
+    const inserted = await insertRes.json();
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, override: Array.isArray(inserted) ? inserted[0] : inserted });
   }
 
   if (action === "delete") {
@@ -135,9 +144,8 @@ async function handleDateOverrides(req, res) {
     if (id) {
       const delRes = await supabaseServiceFetch(`date_overrides?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!delRes.ok) throw new Error(await delRes.text());
-    }
-    if (override_date) {
-      const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}`, { method: "DELETE" });
+    } else if (override_date) {
+      const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}&meeting_type_id=is.null`, { method: "DELETE" });
       if (!delRes.ok) throw new Error(await delRes.text());
     }
     return res.status(200).json({ success: true });

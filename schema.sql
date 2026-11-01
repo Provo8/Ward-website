@@ -83,6 +83,13 @@ CREATE TABLE IF NOT EXISTS date_overrides (
   end_time       TIME    -- NULL when is_unavailable = true
 );
 
+-- When set, this row adds extra hours on this date that only this meeting
+-- type (e.g. tithing declarations) can book, on top of the day's regular
+-- hours; a date can have several. NULL means the row replaces the day's
+-- regular hours for every type, and a date has at most one of those.
+-- Deleting the type removes its added hours.
+ALTER TABLE date_overrides ADD COLUMN IF NOT EXISTS meeting_type_id UUID REFERENCES meeting_types(id) ON DELETE CASCADE;
+
 -- ============================================================
 -- 4. Ward Scheduling Settings
 --    Global toggles and metadata for the scheduling system
