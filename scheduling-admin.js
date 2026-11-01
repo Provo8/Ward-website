@@ -17,6 +17,7 @@ const SCHEDULING_STATE = {
     timezone: 'America/Denver'
   },
   meetingTypes: [],
+  dataLoaded: false,
   weeklyAvailability: [],
   dateOverrides: [],
   appointments: [],
@@ -679,6 +680,7 @@ async function loadAllSchedulingData() {
       // own "WHERE NOT EXISTS" seed already guarantees they exist.
       const { data, error } = await sb.from('meeting_types').select('*').order('created_at', { ascending: true });
       if (!error && data && data.length > 0) {
+        data.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
         SCHEDULING_STATE.meetingTypes = data;
         localStorage.setItem('ward_meeting_types', JSON.stringify(data));
       } else {
@@ -789,6 +791,14 @@ async function loadAllSchedulingData() {
 
   // Render active views
   renderAllAdminViews();
+
+  // The booking wizard first drew before this data arrived (with the
+  // hardcoded default types), so it has to redraw with the real data too.
+  SCHEDULING_STATE.dataLoaded = true;
+  renderPublicMeetingTypes();
+  if (PUBLIC_BOOKING_STATE.step === 2) renderPublicBookingCalendar();
+  if (PUBLIC_BOOKING_STATE.step === 3) renderPublicTimeSlots();
+  applyLinkedBookingType();
 }
 
 /**
@@ -949,7 +959,7 @@ function switchAvailabilityMiniTab(mode) {
     if (hoursBtn) hoursBtn.className = "px-3.5 py-1 rounded-full font-medium text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all";
     if (overridesBtn) overridesBtn.className = "px-3.5 py-1 rounded-full font-bold bg-white dark:bg-[#2d3137] text-primary dark:text-white shadow-sm transition-all";
     if (title) title.textContent = "Date Overrides";
-    if (subtitle) subtitle.textContent = "Block dates or set special hours for specific calendar days";
+    if (subtitle) subtitle.textContent = "Change the hours and appointments for any single day";
     renderDateOverridesCalendar();
     renderUpcomingOverridesList();
   }
@@ -1470,7 +1480,7 @@ function renderMeetingTypesList() {
   
   const types = SCHEDULING_STATE.meetingTypes || [];
 
-  const renderItem = (type) => `
+  const renderItem = (type, index) => `
     <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 sm:p-5 border border-surface-blue-tint dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-primary/40 transition-all">
       <div class="flex items-start gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-primary-container text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
@@ -1493,6 +1503,15 @@ function renderMeetingTypesList() {
           <input type="checkbox" ${type.is_active !== false ? 'checked' : ''} onchange="handleToggleMeetingTypeActive('${escapeHtml(type.id)}', this.checked)" class="sr-only peer">
           <div class="w-9 h-5 bg-outline-variant/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-secondary-container"></div>
         </label>
+        <button onclick="handleMoveMeetingType('${escapeHtml(type.id)}', -1)" ${index === 0 ? 'disabled' : ''} class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container dark:hover:bg-tertiary-container disabled:opacity-30 disabled:pointer-events-none transition-all" title="Move up" aria-label="Move ${escapeHtml(type.title)} up">
+          <span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+        </button>
+        <button onclick="handleMoveMeetingType('${escapeHtml(type.id)}', 1)" ${index === types.length - 1 ? 'disabled' : ''} class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container dark:hover:bg-tertiary-container disabled:opacity-30 disabled:pointer-events-none transition-all" title="Move down" aria-label="Move ${escapeHtml(type.title)} down">
+          <span class="material-symbols-outlined text-[20px]">arrow_downward</span>
+        </button>
+        <button onclick="handleCopyMeetingTypeLink('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container dark:hover:bg-tertiary-container transition-all" title="Copy booking link" aria-label="Copy booking link for ${escapeHtml(type.title)}">
+          <span class="material-symbols-outlined text-[20px]">link</span>
+        </button>
         <button onclick="openEditMeetingTypeModal('${escapeHtml(type.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-primary hover:bg-surface-container dark:hover:bg-tertiary-container transition-all" title="Edit">
           <span class="material-symbols-outlined text-[20px]">edit</span>
         </button>
@@ -1521,6 +1540,43 @@ function renderMeetingTypesList() {
         <span class="w-2.5 h-2.5 rounded-full ${t.is_active !== false ? 'bg-success-green' : 'bg-outline-variant'}"></span>
       </div>
     `).join('');
+  }
+}
+
+/**
+ * Move a meeting type up (-1) or down (1). This order is shared by the admin
+ * list and the public Schedule tab.
+ */
+async function handleMoveMeetingType(typeId, delta) {
+  const types = SCHEDULING_STATE.meetingTypes;
+  const from = types.findIndex(t => t.id === typeId);
+  const to = from + delta;
+  if (from === -1 || to < 0 || to >= types.length) return;
+
+  const swap = () => {
+    [types[from], types[to]] = [types[to], types[from]];
+    types.forEach((t, index) => { t.sort_order = index; });
+    localStorage.setItem('ward_meeting_types', JSON.stringify(types));
+    renderMeetingTypesList();
+    renderPublicMeetingTypes();
+  };
+
+  swap();
+  if (SCHEDULING_STATE.supabaseClient) {
+    const result = await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'reorder', ids: types.map(t => t.id) });
+    if (!result) swap();
+  }
+}
+
+async function handleCopyMeetingTypeLink(typeId) {
+  const type = SCHEDULING_STATE.meetingTypes.find(t => t.id === typeId);
+  const link = `${window.location.origin}/schedule/${type ? meetingTypeSlug(type) : typeId}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    showToast(`Booking link copied${type ? ` for ${type.title}` : ''}`, 'link');
+  } catch (err) {
+    console.warn('Could not copy booking link:', err);
+    showToast('Could not copy the link. Please try again.', 'error');
   }
 }
 
@@ -1640,11 +1696,13 @@ async function handleSaveMeetingTypeForm(event) {
   } else {
     // Create new
     const newId = 'mt-' + Date.now();
-    const newRecord = { id: newId, ...typePayload, created_at: new Date().toISOString() };
+    // New types go to the end of the list
+    const sort_order = SCHEDULING_STATE.meetingTypes.reduce((max, t) => Math.max(max, t.sort_order || 0), 0) + 1;
+    const newRecord = { id: newId, ...typePayload, sort_order, created_at: new Date().toISOString() };
     SCHEDULING_STATE.meetingTypes.push(newRecord);
 
     if (sb) {
-      const result = await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'create', ...typePayload });
+      const result = await adminApiFetch('/api/admin-data', { resource: 'meeting_types', action: 'create', ...typePayload, sort_order });
       if (result && result.success && result.meeting_type) {
         newRecord.id = result.meeting_type.id;
       }
@@ -1697,6 +1755,7 @@ async function handleDeleteMeetingType(typeId) {
 
   // Mirrors the ON DELETE CASCADE on date_overrides.meeting_type_id.
   SCHEDULING_STATE.dateOverrides = (SCHEDULING_STATE.dateOverrides || []).filter(o => o.meeting_type_id !== typeId);
+  DAY_EDITOR.dirty = false;
   localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
 
   showToast('Meeting type deleted', 'delete');
@@ -2497,21 +2556,6 @@ function applyMobileTimePicker() {
   const start24h = partsTo24h(s.hour, s.minute, s.period);
   const end24h = partsTo24h(e.hour, e.minute, e.period);
 
-  if (TIME_PICKER_STATE.isOverrideMode) {
-    const startSel = document.getElementById('override-start-select');
-    const endSel = document.getElementById('override-end-select');
-    const pillText = document.getElementById('override-time-pill-text');
-
-    if (startSel) startSel.value = start24h;
-    if (endSel) endSel.value = end24h;
-    if (pillText) pillText.textContent = `${formatTime12h(start24h)} – ${formatTime12h(end24h)}`;
-
-    closeModal('mobile-time-picker-modal');
-    showToast('Override hours set', 'check_circle');
-    updateOverrideConflictWarning();
-    return;
-  }
-
   const slot = SCHEDULING_STATE.weeklyAvailability.find(item => item.id === slotId);
   if (slot) {
     slot.start_time = start24h;
@@ -2530,36 +2574,6 @@ function applyMobileTimePicker() {
   closeModal('mobile-time-picker-modal');
   renderWeeklyAvailabilityEditor();
   showToast('Time window updated!', 'check_circle');
-}
-
-function openOverrideMobileTimePicker() {
-  TIME_PICKER_STATE.isOverrideMode = true;
-  TIME_PICKER_STATE.slotId = null;
-
-  const startSel = document.getElementById('override-start-select');
-  const endSel = document.getElementById('override-end-select');
-
-  const startVal = startSel ? startSel.value : '09:00:00';
-  const endVal = endSel ? endSel.value : '12:00:00';
-
-  TIME_PICKER_STATE.start = parseTime24hToParts(startVal);
-  TIME_PICKER_STATE.end = parseTime24hToParts(endVal);
-
-  updatePickerDisplayTabs();
-  switchPickerMode(true);
-  openModal('mobile-time-picker-modal');
-}
-
-function handleOverrideSelectChange() {
-  const startSel = document.getElementById('override-start-select');
-  const endSel = document.getElementById('override-end-select');
-  const pillText = document.getElementById('override-time-pill-text');
-
-  if (startSel && endSel && pillText) {
-    pillText.textContent = `${formatTime12h(startSel.value)} – ${formatTime12h(endSel.value)}`;
-  }
-
-  updateOverrideConflictWarning();
 }
 
 async function handleSaveWeeklyAvailability() {
@@ -2583,6 +2597,13 @@ async function handleSaveWeeklyAvailability() {
  * 4. DATE OVERRIDES & CALENDAR
  * ------------------------------------------------------------
  */
+// The day open in the editor. `rows` are its hours as currently shown, saved or not.
+const DAY_EDITOR = {
+  dateStr: null,
+  rows: [],
+  dirty: false
+};
+
 function renderDateOverridesCalendar() {
   const monthTitle = document.getElementById('override-calendar-month');
   const daysGrid = document.getElementById('override-calendar-days');
@@ -2597,7 +2618,8 @@ function renderDateOverridesCalendar() {
   const firstDayIndex = monthDate.getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const selectedDateStr = SCHEDULING_STATE.selectedDate.toISOString().split('T')[0];
+  const selected = SCHEDULING_STATE.selectedDate;
+  const selectedDateStr = `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}`;
 
   let html = '';
 
@@ -2642,93 +2664,225 @@ function renderDateOverridesCalendar() {
 
   daysGrid.innerHTML = html;
 
-  // Update override form header for selected date
+  // Keep unsaved edits when only the calendar redraws (e.g. changing month)
+  if (DAY_EDITOR.dateStr !== selectedDateStr || !DAY_EDITOR.dirty) {
+    loadDayEditor(selectedDateStr);
+  }
+  renderDayEditor();
+}
+
+/**
+ * The hours a date actually has, as editor rows. Rows saved for all
+ * appointments (or a closed-day marker) replace the regular weekly hours; rows
+ * for one meeting type alone are extra time on top of them. This has to match
+ * how calculateAvailableSlotsForDate() reads the same data.
+ */
+function getEffectiveDayRows(dateStr) {
+  const dayOverrides = (SCHEDULING_STATE.dateOverrides || []).filter(o => o.override_date === dateStr);
+  const savedRows = dayOverrides
+    .filter(o => !o.is_unavailable && o.start_time && o.end_time)
+    .map(o => ({ start_time: o.start_time, end_time: o.end_time, meeting_type_id: o.meeting_type_id || '' }));
+
+  let rows = savedRows;
+  if (!dayOverrides.some(o => !o.meeting_type_id)) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dayOfWeek = new Date(y, m - 1, d).getDay();
+    const weekly = (SCHEDULING_STATE.weeklyAvailability && SCHEDULING_STATE.weeklyAvailability.length > 0)
+      ? SCHEDULING_STATE.weeklyAvailability
+      : DEFAULT_WEEKLY_AVAILABILITY;
+    const regularRows = weekly
+      .filter(w => w.day_of_week === dayOfWeek)
+      .map(w => ({ start_time: w.start_time, end_time: w.end_time, meeting_type_id: '' }));
+    rows = [...regularRows, ...savedRows];
+  }
+
+  return rows.sort((a, b) => timeStrToMinutes(a.start_time) - timeStrToMinutes(b.start_time));
+}
+
+function loadDayEditor(dateStr) {
+  DAY_EDITOR.dateStr = dateStr;
+  DAY_EDITOR.rows = getEffectiveDayRows(dateStr);
+  DAY_EDITOR.dirty = false;
+}
+
+function getDayTimeOptions(selectedTime) {
+  const options = generateTimeSelectOptions(selectedTime);
+  // Saved hours can fall outside the dropdown's 15-minute steps
+  const selectedValue = `${selectedTime.slice(0, 5)}:00`;
+  return options.includes(`value="${selectedValue}"`)
+    ? options
+    : `<option value="${selectedValue}" selected>${formatTime12h(selectedValue)}</option>${options}`;
+}
+
+function getDayMeetingOptions(selectedTypeId) {
+  const typeOptions = (SCHEDULING_STATE.meetingTypes || [])
+    .filter(t => t.is_active !== false || t.id === selectedTypeId)
+    .map(t => `<option value="${escapeHtml(t.id)}" ${t.id === selectedTypeId ? 'selected' : ''}>${escapeHtml(t.title)} only</option>`)
+    .join('');
+  return `<option value="">All appointments</option>${typeOptions}`;
+}
+
+function renderDayEditor() {
   const selDateDisplay = document.getElementById('override-selected-date-display');
   if (selDateDisplay) {
-    selDateDisplay.textContent = SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    selDateDisplay.textContent = SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
   }
 
-  // Check if selected date already has an override and prefill
-  const existing = SCHEDULING_STATE.dateOverrides.find(o => o.override_date === selectedDateStr && !o.meeting_type_id);
-  const unavailRadio = document.getElementById('override-type-unavailable');
-  const availRadio = document.getElementById('override-type-available');
-  const timeSlotFields = document.getElementById('override-timeslot-fields');
-  const startSelect = document.getElementById('override-start-select');
-  const endSelect = document.getElementById('override-end-select');
-  const pillText = document.getElementById('override-time-pill-text');
-  const deleteBtn = document.getElementById('btn-delete-date-override');
-
-  const defaultStart = (existing && existing.start_time) ? existing.start_time : '09:00:00';
-  const defaultEnd = (existing && existing.end_time) ? existing.end_time : '12:00:00';
-
-  if (startSelect) startSelect.innerHTML = generateTimeSelectOptions(defaultStart);
-  if (endSelect) endSelect.innerHTML = generateTimeSelectOptions(defaultEnd);
-  if (pillText) pillText.textContent = `${formatTime12h(defaultStart)} – ${formatTime12h(defaultEnd)}`;
-
-  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
-  if (meetingTypeSelect) {
-    // Keep the current choice across re-renders, so adding several blocks of
-    // hours for one appointment type doesn't mean re-picking it every time.
-    const selectedTypeId = meetingTypeSelect.value;
-    const typeOptions = (SCHEDULING_STATE.meetingTypes || [])
-      .filter(t => t.is_active !== false)
-      .map(t => `<option value="${escapeHtml(t.id)}" ${t.id === selectedTypeId ? 'selected' : ''}>${escapeHtml(t.title)} only</option>`)
-      .join('');
-    meetingTypeSelect.innerHTML = `<option value="">All appointments</option>${typeOptions}`;
+  const rowsEl = document.getElementById('day-editor-rows');
+  if (rowsEl) {
+    const selectClass = 'bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-2.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all';
+    rowsEl.innerHTML = DAY_EDITOR.rows.length === 0
+      ? `<div class="p-5 text-center bg-error-container/15 border border-error/30 rounded-xl">
+           <p class="font-headline font-bold text-sm text-error">Closed</p>
+           <p class="text-xs text-on-surface-variant dark:text-outline-variant mt-1">No appointments can be booked this day.</p>
+         </div>`
+      : DAY_EDITOR.rows.map((row, index) => `
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30 dark:border-white/10">
+          <div class="flex items-center gap-1.5 shrink-0">
+            <select aria-label="Start time" onchange="handleDayRowChange(${index}, 'start_time', this.value)" class="${selectClass} pr-7">${getDayTimeOptions(row.start_time)}</select>
+            <span class="text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant">to</span>
+            <select aria-label="End time" onchange="handleDayRowChange(${index}, 'end_time', this.value)" class="${selectClass} pr-7">${getDayTimeOptions(row.end_time)}</select>
+          </div>
+          <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <select aria-label="What appointment" onchange="handleDayRowChange(${index}, 'meeting_type_id', this.value)" class="${selectClass} flex-1 min-w-0">${getDayMeetingOptions(row.meeting_type_id)}</select>
+            <button type="button" onclick="handleRemoveDayRow(${index})" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all shrink-0" title="Remove these hours" aria-label="Remove these hours">
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
   }
 
-  if (existing) {
-    if (deleteBtn) deleteBtn.classList.remove('hidden');
-    if (existing.is_unavailable) {
-      if (unavailRadio) unavailRadio.checked = true;
-      if (timeSlotFields) timeSlotFields.classList.add('hidden');
-    } else {
-      if (availRadio) availRadio.checked = true;
-      if (timeSlotFields) timeSlotFields.classList.remove('hidden');
+  updateDayEditorStatus();
+}
+
+/**
+ * Everything around the rows that changes as they're edited. Separate from
+ * renderDayEditor() so changing a dropdown doesn't redraw the dropdowns.
+ */
+function updateDayEditorStatus() {
+  const isEdited = (SCHEDULING_STATE.dateOverrides || []).some(o => o.override_date === DAY_EDITOR.dateStr);
+
+  const statusEl = document.getElementById('day-editor-status');
+  if (statusEl) {
+    if (DAY_EDITOR.dirty) statusEl.textContent = 'Unsaved changes';
+    else if (DAY_EDITOR.rows.length === 0) statusEl.textContent = 'Closed';
+    else statusEl.textContent = isEdited ? 'Edited' : 'Regular hours';
+  }
+
+  const resetBtn = document.getElementById('btn-day-reset');
+  if (resetBtn) resetBtn.classList.toggle('hidden', !isEdited && !DAY_EDITOR.dirty);
+
+  const saveBtn = document.getElementById('btn-day-save');
+  if (saveBtn) saveBtn.disabled = !DAY_EDITOR.dirty;
+
+  updateDayConflictWarning();
+}
+
+function handleDayRowChange(index, field, value) {
+  const row = DAY_EDITOR.rows[index];
+  if (!row) return;
+  row[field] = value;
+  DAY_EDITOR.dirty = true;
+  updateDayEditorStatus();
+}
+
+function handleAddDayRow() {
+  const last = DAY_EDITOR.rows[DAY_EDITOR.rows.length - 1];
+  const startMins = last ? Math.min(timeStrToMinutes(last.end_time), 22 * 60) : 9 * 60;
+  DAY_EDITOR.rows.push({
+    start_time: minutesToTimeStr(startMins),
+    end_time: minutesToTimeStr(startMins + 60),
+    meeting_type_id: last ? last.meeting_type_id : ''
+  });
+  DAY_EDITOR.dirty = true;
+  renderDayEditor();
+}
+
+function handleRemoveDayRow(index) {
+  DAY_EDITOR.rows.splice(index, 1);
+  DAY_EDITOR.dirty = true;
+  renderDayEditor();
+}
+
+/**
+ * Save the day exactly as shown. With no rows for all appointments, a closed
+ * marker is saved too, so the regular weekly hours don't come back on their own.
+ */
+async function handleSaveDay() {
+  const dateStr = DAY_EDITOR.dateStr;
+  if (DAY_EDITOR.rows.some(r => timeStrToMinutes(r.end_time) <= timeStrToMinutes(r.start_time))) {
+    showToast('Each end time must be after its start time', 'error');
+    return;
+  }
+
+  const seen = new Set();
+  const rows = DAY_EDITOR.rows
+    .filter(r => {
+      const key = `${timeStrToMinutes(r.start_time)}-${timeStrToMinutes(r.end_time)}-${r.meeting_type_id}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(r => ({ override_date: dateStr, is_unavailable: false, start_time: r.start_time, end_time: r.end_time, meeting_type_id: r.meeting_type_id || null }));
+  if (!rows.some(r => !r.meeting_type_id)) {
+    rows.push({ override_date: dateStr, is_unavailable: true, start_time: null, end_time: null, meeting_type_id: null });
+  }
+
+  const saveBtn = document.getElementById('btn-day-save');
+  if (saveBtn) saveBtn.disabled = true;
+
+  let savedRows = rows.map((r, index) => ({ id: `do-${Date.now()}-${index}`, ...r }));
+  if (SCHEDULING_STATE.supabaseClient) {
+    const result = await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'save_day', override_date: dateStr, overrides: rows });
+    if (!result) {
+      if (saveBtn) saveBtn.disabled = false;
+      return;
     }
-  } else {
-    if (deleteBtn) deleteBtn.classList.add('hidden');
-    if (availRadio) availRadio.checked = true;
-    if (timeSlotFields) timeSlotFields.classList.remove('hidden');
+    savedRows = result.overrides;
   }
 
-  handleOverrideMeetingTypeChange();
+  SCHEDULING_STATE.dateOverrides = [...SCHEDULING_STATE.dateOverrides.filter(o => o.override_date !== dateStr), ...savedRows];
+  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
+
+  showToast(`Saved ${SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'check_circle');
+  loadDayEditor(dateStr);
+  renderDateOverridesCalendar();
+  renderUpcomingOverridesList();
 }
 
 /**
- * The form's Delete button removes the day's all-appointments override, so it
- * doesn't apply while adding hours for one type (those have their own delete
- * buttons in the Upcoming Overrides list).
+ * Put a day back on its regular weekly hours.
  */
-function handleOverrideMeetingTypeChange() {
-  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
-  const deleteBtn = document.getElementById('btn-delete-date-override');
-  if (deleteBtn && SCHEDULING_STATE.selectedDate) {
-    const selected = SCHEDULING_STATE.selectedDate;
-    const selectedDateStr = `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}`;
-    const hasAllTypesOverride =SCHEDULING_STATE.dateOverrides.some(o => o.override_date === selectedDateStr && !o.meeting_type_id);
-    deleteBtn.classList.toggle('hidden', !hasAllTypesOverride || Boolean(meetingTypeSelect && meetingTypeSelect.value));
+async function handleResetDay(dateStr = DAY_EDITOR.dateStr) {
+  const hasSavedRows = (SCHEDULING_STATE.dateOverrides || []).some(o => o.override_date === dateStr);
+  if (hasSavedRows) {
+    if (SCHEDULING_STATE.supabaseClient) {
+      const result = await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'reset_day', override_date: dateStr });
+      if (!result) return;
+    }
+    SCHEDULING_STATE.dateOverrides = SCHEDULING_STATE.dateOverrides.filter(o => o.override_date !== dateStr);
+    localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
+    showToast('Day reset to regular hours', 'check_circle');
   }
-  updateOverrideConflictWarning();
+
+  if (DAY_EDITOR.dateStr === dateStr) DAY_EDITOR.dirty = false;
+  renderDateOverridesCalendar();
+  renderUpcomingOverridesList();
 }
 
 /**
- * Find confirmed appointments on `dateStr` that would fall outside the
- * override being configured — a full-day "Unavailable" override conflicts
- * with every appointment that day; a narrowed "Available" window conflicts
- * with any appointment that starts or ends outside those hours. Appointments
- * inside hours added for their own type are unaffected, and adding hours for
- * one type (`meetingTypeId`) never conflicts with anything. These need to be
- * manually rescheduled or cancelled by the admin — saving an override does
- * not touch existing appointments.
+ * Find confirmed appointments on `dateStr` that don't fit the hours in `rows`:
+ * outside every row, or inside only rows for a different meeting type. These
+ * need to be manually rescheduled or cancelled by the admin — saving a day
+ * does not touch existing appointments.
  */
-function getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime, meetingTypeId = null) {
-  if (!dateStr || (meetingTypeId && !isUnavailable)) return [];
+function getConflictingAppointmentsForDay(dateStr, rows) {
+  if (!dateStr) return [];
 
   const [y, m, d] = dateStr.split('-').map(Number);
-  const addedHours = (SCHEDULING_STATE.dateOverrides || []).filter(o => o.override_date === dateStr && o.meeting_type_id);
 
-  const dayAppointments = (SCHEDULING_STATE.appointments || []).filter(apt => {
+  return (SCHEDULING_STATE.appointments || []).filter(apt => {
     if (!apt || apt.status === 'cancelled' || !apt.start_time) return false;
     const aptStart = new Date(apt.start_time);
     if (isNaN(aptStart.getTime())) return false;
@@ -2737,50 +2891,22 @@ function getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime
     const aptEnd = apt.end_time ? new Date(apt.end_time) : new Date(aptStart.getTime() + 15 * 60 * 1000);
     const aptStartMins = aptStart.getHours() * 60 + aptStart.getMinutes();
     const aptEndMins = aptEnd.getHours() * 60 + aptEnd.getMinutes();
-    return !addedHours.some(o => o.meeting_type_id === apt.meeting_type_id
-      && aptStartMins >= timeStrToMinutes(o.start_time) && aptEndMins <= timeStrToMinutes(o.end_time));
-  });
-
-  if (isUnavailable) return dayAppointments;
-
-  const windowStartMins = timeStrToMinutes(startTime);
-  const windowEndMins = timeStrToMinutes(endTime);
-
-  return dayAppointments.filter(apt => {
-    const aptStart = new Date(apt.start_time);
-    const aptEnd = apt.end_time ? new Date(apt.end_time) : new Date(aptStart.getTime() + 15 * 60 * 1000);
-    const aptStartMins = aptStart.getHours() * 60 + aptStart.getMinutes();
-    const aptEndMins = aptEnd.getHours() * 60 + aptEnd.getMinutes();
-    return aptStartMins < windowStartMins || aptEndMins > windowEndMins;
+    return !rows.some(r => (!r.meeting_type_id || r.meeting_type_id === apt.meeting_type_id)
+      && aptStartMins >= timeStrToMinutes(r.start_time) && aptEndMins <= timeStrToMinutes(r.end_time));
   });
 }
 
 /**
- * Re-render the "conflicting appointments" warning under the Add Override
- * form, reflecting whatever date/availability choice is currently selected.
- * Called on date select, Available/Unavailable toggle, and hours change.
+ * Re-render the "conflicting appointments" warning under the day editor,
+ * reflecting the rows as they currently stand, saved or not.
  */
-function updateOverrideConflictWarning() {
+function updateDayConflictWarning() {
   const warningEl = document.getElementById('override-conflict-warning');
   const countTextEl = document.getElementById('override-conflict-count-text');
   const listEl = document.getElementById('override-conflict-list');
-  if (!warningEl || !listEl || !SCHEDULING_STATE.selectedDate) return;
+  if (!warningEl || !listEl) return;
 
-  const yyyy = SCHEDULING_STATE.selectedDate.getFullYear();
-  const mm = String(SCHEDULING_STATE.selectedDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(SCHEDULING_STATE.selectedDate.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-
-  const unavailRadio = document.getElementById('override-type-unavailable');
-  const isUnavailable = unavailRadio ? unavailRadio.checked : false;
-  const startSelect = document.getElementById('override-start-select');
-  const endSelect = document.getElementById('override-end-select');
-  const startTime = startSelect ? startSelect.value : '09:00:00';
-  const endTime = endSelect ? endSelect.value : '12:00:00';
-  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
-  const meetingTypeId = meetingTypeSelect ? meetingTypeSelect.value || null : null;
-
-  const conflicts = getConflictingAppointmentsForOverride(dateStr, isUnavailable, startTime, endTime, meetingTypeId)
+  const conflicts = getConflictingAppointmentsForDay(DAY_EDITOR.dateStr, DAY_EDITOR.rows)
     .sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
 
   if (conflicts.length === 0) {
@@ -2793,7 +2919,7 @@ function updateOverrideConflictWarning() {
   warningEl.classList.remove('hidden');
   warningEl.classList.add('flex');
   if (countTextEl) {
-    countTextEl.textContent = `${conflicts.length} appointment${conflicts.length === 1 ? '' : 's'} ${conflicts.length === 1 ? 'conflicts' : 'conflict'} with this override and will need to be rescheduled or cancelled`;
+    countTextEl.textContent = `${conflicts.length} appointment${conflicts.length === 1 ? " doesn't" : "s don't"} fit these hours and will need to be rescheduled or cancelled`;
   }
 
   listEl.innerHTML = conflicts.map(apt => {
@@ -2812,6 +2938,10 @@ function updateOverrideConflictWarning() {
 }
 
 function handleSelectCalendarDate(dateStr) {
+  if (DAY_EDITOR.dirty && DAY_EDITOR.dateStr !== dateStr) {
+    showToast('Unsaved changes to the previous day were discarded', 'info');
+    DAY_EDITOR.dirty = false;
+  }
   const parts = dateStr.split('-');
   SCHEDULING_STATE.selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
   renderDateOverridesCalendar();
@@ -2837,152 +2967,63 @@ function handleCalendarNextMonth() {
   renderDateOverridesCalendar();
 }
 
-function handleOverrideTypeChange(isUnavailable) {
-  const timeFields = document.getElementById('override-timeslot-fields');
-  if (timeFields) {
-    if (isUnavailable) {
-      timeFields.classList.add('hidden');
-    } else {
-      timeFields.classList.remove('hidden');
-    }
-  }
-  updateOverrideConflictWarning();
-}
-
-async function handleSaveDateOverrideForm(event) {
-  if (event) event.preventDefault();
-
-  const isUnavailable = document.getElementById('override-type-unavailable').checked;
-  const startSelect = document.getElementById('override-start-select');
-  const endSelect = document.getElementById('override-end-select');
-
-  const startTime = startSelect ? startSelect.value : '09:00:00';
-  const endTime = endSelect ? endSelect.value : '12:00:00';
-  const meetingTypeSelect = document.getElementById('override-meeting-type-select');
-  const meetingTypeId = meetingTypeSelect ? meetingTypeSelect.value || null : null;
-
-  const yyyy = SCHEDULING_STATE.selectedDate.getFullYear();
-  const mm = String(SCHEDULING_STATE.selectedDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(SCHEDULING_STATE.selectedDate.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-
-  if (!isUnavailable && timeStrToMinutes(endTime) <= timeStrToMinutes(startTime)) {
-    showToast('End time must be after the start time', 'error');
-    return;
-  }
-
-  const payload = {
-    override_date: dateStr,
-    is_unavailable: isUnavailable,
-    start_time: isUnavailable ? null : startTime,
-    end_time: isUnavailable ? null : endTime,
-    meeting_type_id: isUnavailable ? null : meetingTypeId
-  };
-
-  // Replace the day's all-appointments override if one exists; hours added
-  // for one appointment type always stack up as a new row.
-  const existingIdx = payload.meeting_type_id
-    ? -1
-    : SCHEDULING_STATE.dateOverrides.findIndex(o => o.override_date === dateStr && !o.meeting_type_id);
-  const record = { id: existingIdx !== -1 ? SCHEDULING_STATE.dateOverrides[existingIdx].id : 'do-' + Date.now(), ...payload };
-  if (existingIdx !== -1) {
-    SCHEDULING_STATE.dateOverrides[existingIdx] = record;
-  } else {
-    SCHEDULING_STATE.dateOverrides.push(record);
-  }
-
-  const sb = SCHEDULING_STATE.supabaseClient;
-  if (sb) {
-    const result = await adminApiFetch('/api/admin-data', { resource: 'date_overrides', action: 'save', override_date: dateStr, ...payload });
-    if (result && result.override) record.id = result.override.id;
-  }
-
-  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
-
-  showToast(`Saved override for ${SCHEDULING_STATE.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, 'check_circle');
-  renderDateOverridesCalendar();
-  renderUpcomingOverridesList();
+/**
+ * Open a day from the Edited Days list in the editor above it.
+ */
+function handleOpenEditedDay(dateStr) {
+  const [y, m] = dateStr.split('-').map(Number);
+  SCHEDULING_STATE.currentCalendarYear = y;
+  SCHEDULING_STATE.currentCalendarMonth = m - 1;
+  handleSelectCalendarDate(dateStr);
+  const editor = document.getElementById('day-editor-card');
+  if (editor) editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderUpcomingOverridesList() {
   const container = document.getElementById('upcoming-overrides-list');
   if (!container) return;
 
-  const overrides = SCHEDULING_STATE.dateOverrides || [];
-  if (overrides.length === 0) {
-    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No date overrides configured.</p></div>`;
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const dates = [...new Set((SCHEDULING_STATE.dateOverrides || []).map(o => o.override_date))]
+    .filter(dateStr => dateStr >= todayStr)
+    .sort();
+  if (dates.length === 0) {
+    container.innerHTML = `<div class="p-6 text-center bg-surface-container-low dark:bg-[#1c1f24] rounded-2xl"><p class="text-sm text-on-surface-variant dark:text-outline-variant">No upcoming edited days. Every day is using its regular hours.</p></div>`;
     return;
   }
 
-  const sortedOverrides = [...overrides].sort((a, b) =>
-    a.override_date.localeCompare(b.override_date) || timeStrToMinutes(a.start_time) - timeStrToMinutes(b.start_time));
-
-  container.innerHTML = sortedOverrides.map(ov => {
-    const parts = ov.override_date.split('-');
+  container.innerHTML = dates.map(dateStr => {
+    const parts = dateStr.split('-');
     const d = new Date(parts[0], parts[1] - 1, parts[2]);
     const dateFormatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const rows = getEffectiveDayRows(dateStr);
 
-    let statusText = '';
-    if (ov.is_unavailable) {
-      statusText = `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-error-container/60 text-error">Unavailable (Full Day)</span>`;
-    } else {
-      const start = ov.start_time ? formatTimeString(ov.start_time) : '9:00 AM';
-      const end = ov.end_time ? formatTimeString(ov.end_time) : '5:00 PM';
-      statusText = `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">Available: ${start} – ${end}</span>`;
-      if (ov.meeting_type_id) {
-        const reservedType = (SCHEDULING_STATE.meetingTypes || []).find(t => t.id === ov.meeting_type_id);
-        statusText += `<span class="block mt-1 text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant">${escapeHtml(reservedType ? reservedType.title : 'One meeting type')} only</span>`;
-      }
-    }
+    const summary = rows.length === 0
+      ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-error-container/60 text-error self-start">Closed</span>`
+      : rows.map(r => {
+          const type = r.meeting_type_id && (SCHEDULING_STATE.meetingTypes || []).find(t => t.id === r.meeting_type_id);
+          const label = r.meeting_type_id ? `${type ? type.title : 'One meeting type'} only` : 'All appointments';
+          return `<span class="text-xs font-mono text-on-surface-variant dark:text-outline-variant"><span class="font-bold text-primary dark:text-white">${formatTimeString(r.start_time)} – ${formatTimeString(r.end_time)}</span> &bull; ${escapeHtml(label)}</span>`;
+        }).join('');
 
     return `
       <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-4 border border-surface-blue-tint dark:border-white/10 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
+        <button type="button" onclick="handleOpenEditedDay('${dateStr}')" class="flex items-center gap-3 min-w-0 flex-1 text-left" title="Edit this day">
           <div class="w-10 h-10 rounded-xl bg-surface-blue-tint dark:bg-[#1c2a38] text-primary dark:text-primary-fixed flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-[20px]">event</span>
           </div>
-          <div class="flex flex-col">
+          <div class="flex flex-col gap-0.5 min-w-0">
             <span class="font-headline font-bold text-sm text-primary dark:text-white">${dateFormatted}</span>
-            <div class="mt-0.5">${statusText}</div>
+            ${summary}
           </div>
-        </div>
-        <button onclick="handleDeleteDateOverride('${escapeHtml(ov.id)}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all" title="Remove override">
-          <span class="material-symbols-outlined text-[20px]">delete</span>
+        </button>
+        <button type="button" onclick="handleResetDay('${dateStr}')" class="p-2 rounded-xl text-on-surface-variant dark:text-outline-variant hover:text-error hover:bg-error-container/20 transition-all shrink-0" title="Reset to regular hours" aria-label="Reset ${dateFormatted} to regular hours">
+          <span class="material-symbols-outlined text-[20px]">restart_alt</span>
         </button>
       </div>
     `;
   }).join('');
-}
-
-async function handleDeleteDateOverride(overrideId) {
-  // A date (from the form's Delete button) means that day's all-appointments
-  // override; hours added for one type are only ever removed by their own id.
-  const ov = SCHEDULING_STATE.dateOverrides.find(o => o.id === overrideId || (o.override_date === overrideId && !o.meeting_type_id));
-  SCHEDULING_STATE.dateOverrides = SCHEDULING_STATE.dateOverrides.filter(o => o !== ov);
-  localStorage.setItem('ward_date_overrides', JSON.stringify(SCHEDULING_STATE.dateOverrides));
-
-  const sb = SCHEDULING_STATE.supabaseClient;
-  if (sb && ov) {
-    const isUUID = (str) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-    await adminApiFetch('/api/admin-data', {
-      resource: 'date_overrides',
-      action: 'delete',
-      id: isUUID(ov.id) ? ov.id : undefined,
-      override_date: ov.override_date,
-    });
-  }
-
-  showToast('Date override removed from database', 'delete');
-  renderDateOverridesCalendar();
-  renderUpcomingOverridesList();
-}
-
-async function handleDeleteSelectedDateOverride() {
-  const yyyy = SCHEDULING_STATE.selectedDate.getFullYear();
-  const mm = String(SCHEDULING_STATE.selectedDate.getMonth() + 1).padStart(2, '0');
-  const dd = String(SCHEDULING_STATE.selectedDate.getDate()).padStart(2, '0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-  await handleDeleteDateOverride(dateStr);
 }
 
 function formatTimeString(timeStr) {
@@ -3009,6 +3050,7 @@ const PUBLIC_BOOKING_STATE = {
   step: 1,
   selectedTypeId: 'mt-1',
   selectedType: null,
+  linkedTypeId: null,
   calendarYear: new Date().getFullYear(),
   calendarMonth: new Date().getMonth(),
   selectedDate: null,
@@ -3060,6 +3102,28 @@ function initPublicBookingUI() {
   renderPublicMeetingTypes();
   renderPublicBookingCalendar();
   renderMyAppointmentsSection();
+  applyLinkedBookingType();
+}
+
+/**
+ * Open the wizard on the meeting type named by a direct booking link
+ * (/schedule/<slug or id>, see navigateTab). A link to a type that was deleted
+ * or turned off just lands on the normal list of types.
+ */
+function applyLinkedBookingType() {
+  const linked = PUBLIC_BOOKING_STATE.linkedTypeId;
+  if (!linked || !SCHEDULING_STATE.dataLoaded) return;
+
+  PUBLIC_BOOKING_STATE.linkedTypeId = null;
+  const linkedType = SCHEDULING_STATE.meetingTypes.find(t => t.id === linked || meetingTypeSlug(t) === linked);
+  if (linkedType && linkedType.is_active !== false) {
+    selectBookingMeetingType(linkedType.id);
+  }
+}
+
+// "Tithing Declaration" -> "tithing-declaration"
+function meetingTypeSlug(type) {
+  return (type.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 /**
@@ -3530,19 +3594,14 @@ function calculateAvailableSlotsForDate(dateStr, durationMinutes = 15, meetingTy
 
   // 1. Check Date Overrides first
   const overrides = SCHEDULING_STATE.dateOverrides || DEFAULT_DATE_OVERRIDES;
-  const matchOverride = overrides.find(o => o.override_date === dateStr && !o.meeting_type_id);
+  const allTypesOverrides = overrides.filter(o => o.override_date === dateStr && !o.meeting_type_id);
 
   let windows = [];
 
-  if (matchOverride) {
-    // is_unavailable closes the regular hours; hours added for a specific
-    // meeting type below still apply.
-    if (!matchOverride.is_unavailable && matchOverride.start_time && matchOverride.end_time) {
-      windows.push({
-        start_time: matchOverride.start_time,
-        end_time: matchOverride.end_time
-      });
-    }
+  if (allTypesOverrides.length > 0) {
+    // Any of these replace the regular hours. is_unavailable just adds no
+    // hours of its own, so custom hours saved alongside it still apply.
+    windows = allTypesOverrides.filter(o => !o.is_unavailable && o.start_time && o.end_time);
   } else {
     // 2. Check Weekly Availability for this day of week
     const weekly = (SCHEDULING_STATE.weeklyAvailability && SCHEDULING_STATE.weeklyAvailability.length > 0)

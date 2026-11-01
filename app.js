@@ -8,9 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem('ward_theme');
   } catch (e) {}
 
-  // Initialize navigation based on URL hash or default to 'home'
-  const initialHash = window.location.hash.replace('#', '') || 'home';
-  navigateTab(initialHash, false);
+  // Initialize navigation based on the URL, defaulting to 'home'
+  handleRouteChange();
 
   // Initialize Sunday Class Check-In component state
   initCheckInUI();
@@ -25,11 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ward announcements (and, if it's booked before, appointment reminders).
   initSitePushNotifications();
 
-  // Listen for hash changes
-  window.addEventListener('hashchange', () => {
-    const hash = window.location.hash.replace('#', '') || 'home';
-    navigateTab(hash, false);
-  });
+  // Back/forward buttons, plus any old-style #tab link
+  window.addEventListener('popstate', handleRouteChange);
+  window.addEventListener('hashchange', handleRouteChange);
 
   // Setup keyboard shortcuts (e.g. Escape closes modal)
   document.addEventListener('keydown', (e) => {
@@ -80,13 +77,64 @@ async function initSitePushNotifications() {
   }
 }
 
+// Each tab's own URL. vercel.json serves index.html for all of them.
+const TAB_PATHS = {
+  home: '/',
+  ward: '/leaders',
+  schedule: '/schedule',
+  'admin-scheduling': '/admin'
+};
+
+const TAB_TITLES = {
+  ward: 'Leaders',
+  schedule: 'Schedule',
+  'admin-scheduling': 'Dashboard'
+};
+const SITE_TITLE = document.title;
+
+/**
+ * Read the route from the URL as a tab id, or 'schedule?type=<slug or id>' for
+ * a direct booking link. Links from before tabs had their own URLs (#schedule,
+ * still in sent emails) keep working.
+ */
+function getRouteFromUrl() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash) return hash;
+
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  const bookingLink = /^\/schedule\/([^/]+)$/.exec(path);
+  if (bookingLink) return `schedule?type=${bookingLink[1]}`;
+
+  const tabId = Object.keys(TAB_PATHS).find(id => TAB_PATHS[id] === path);
+  return tabId || 'home';
+}
+
+function handleRouteChange() {
+  const route = getRouteFromUrl();
+  navigateTab(route, false);
+
+  // Swap an old-style #tab URL for the tab's real one
+  if (window.location.hash) {
+    const bookingLink = /^schedule\?type=(.+)$/.exec(route);
+    const path = bookingLink ? `/schedule/${bookingLink[1]}` : (TAB_PATHS[route] || '/');
+    window.history.replaceState(null, '', path);
+  }
+}
+
 /**
  * Tab Navigation Management
  * Supports 'home', 'ward'
  */
-function navigateTab(tabId, updateHash = true) {
+function navigateTab(tabId, updateUrl = true) {
   if (tabId === 'tools' || tabId === 'reimbursements') {
     tabId = 'ward';
+  }
+
+  // Direct booking link for one meeting type (see getRouteFromUrl)
+  const bookingLink = /^schedule\?type=(.+)$/.exec(tabId);
+  if (bookingLink) {
+    PUBLIC_BOOKING_STATE.linkedTypeId = bookingLink[1];
+    tabId = 'schedule';
   }
 
   // Check authentication if attempting to access admin scheduling
@@ -98,7 +146,7 @@ function navigateTab(tabId, updateHash = true) {
       openAdminLoginModal();
     }
     // Do not switch to admin view if not authenticated
-    tabId = window.location.hash.replace('#', '') || 'home';
+    tabId = getRouteFromUrl().split('?')[0];
     if (tabId === 'admin-scheduling') tabId = 'home';
   }
 
@@ -107,10 +155,12 @@ function navigateTab(tabId, updateHash = true) {
     tabId = 'home';
   }
 
-  // Update hash if requested
-  if (updateHash) {
-    window.location.hash = tabId;
+  // Update URL if requested
+  if (updateUrl && window.location.pathname !== TAB_PATHS[tabId]) {
+    window.history.pushState(null, '', TAB_PATHS[tabId]);
   }
+
+  document.title = TAB_TITLES[tabId] ? `${TAB_TITLES[tabId]} | Provo YSA 8th Ward` : SITE_TITLE;
 
   // Hide all views
   validTabs.forEach(id => {

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html class="light" lang="en">
 <head>
+  <base href="/">
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>Provo YSA 8th Ward | Meeting Times, Location & Activities</title>
@@ -128,7 +129,7 @@
     <div class="max-w-7xl mx-auto px-container-padding h-16 flex items-center justify-between">
       
       <!-- Brand Logo / Title -->
-      <a href="#home" class="flex items-center gap-2.5 group cursor-pointer" onclick="navigateTab('home')">
+      <a href="/" class="flex items-center gap-2.5 group cursor-pointer" onclick="navigateTab('home'); return false;">
 
         <div class="flex flex-col">
           <span class="font-headline font-bold text-lg md:text-xl text-primary dark:text-primary-fixed leading-tight">Provo YSA 8th Ward</span>
@@ -1176,87 +1177,50 @@
               </div>
             </div>
 
-            <!-- Add Override Form for Selected Date -->
-            <div class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
-              <div class="flex items-center justify-between border-b border-surface-variant/40 pb-2.5">
-                <div class="flex items-center gap-2">
+            <!-- Day Editor: the selected date's hours and who can book them -->
+            <div id="day-editor-card" class="bg-surface-container-lowest dark:bg-[#1a1c20] card-shadow rounded-2xl p-5 sm:p-6 border border-surface-blue-tint dark:border-white/5 flex flex-col gap-4">
+              <div class="flex items-center justify-between gap-2 border-b border-surface-variant/40 pb-2.5">
+                <div class="flex items-center gap-2 min-w-0">
                   <span class="material-symbols-outlined text-primary dark:text-white text-[20px]">event_note</span>
-                  <h3 class="font-headline font-bold text-base text-primary dark:text-white">
-                    Add Override for <span id="override-selected-date-display" class="text-secondary">Today</span>
-                  </h3>
-                </div>
-              </div>
-
-              <!-- Segmented Selection: Available vs Unavailable -->
-              <div class="grid grid-cols-2 gap-2 p-1 bg-surface-container-low dark:bg-[#1c1f24] rounded-xl border border-outline-variant/30 dark:border-white/10">
-                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-[#2d3137] has-[:checked]:text-primary dark:has-[:checked]:text-white has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant dark:text-outline-variant">
-                  <input type="radio" name="override-status-toggle" id="override-type-available" onchange="handleOverrideTypeChange(false)" checked class="sr-only">
-                  <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
-                  <span>Available</span>
-                </label>
-                <label class="flex items-center justify-center gap-2 p-2.5 rounded-lg cursor-pointer transition-all has-[:checked]:bg-white dark:has-[:checked]:bg-[#2d3137] has-[:checked]:text-error has-[:checked]:shadow-sm has-[:checked]:font-bold text-xs font-mono text-on-surface-variant dark:text-outline-variant">
-                  <input type="radio" name="override-status-toggle" id="override-type-unavailable" onchange="handleOverrideTypeChange(true)" class="sr-only">
-                  <span class="material-symbols-outlined text-[16px] text-error">block</span>
-                  <span>Unavailable</span>
-                </label>
-              </div>
-
-              <!-- Custom Hours Window (Hidden if marked Unavailable) -->
-              <div id="override-timeslot-fields" class="flex flex-col gap-3">
-                <span class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Specify available hours for this date:</span>
-                <div class="flex items-center justify-between p-3 bg-surface-container-low dark:bg-[#202327] rounded-xl border border-outline-variant/30 dark:border-white/10">
-                  <!-- Mobile Trigger -->
-                  <div class="md:hidden flex items-center">
-                    <button type="button" onclick="openOverrideMobileTimePicker()" id="override-mobile-time-pill" class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#2d3137] border border-outline-variant/40 dark:border-white/10 text-xs font-mono font-bold text-primary dark:text-white shadow-sm active:scale-95 transition-all">
-                      <span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
-                      <span id="override-time-pill-text">9:00 AM – 12:00 PM</span>
-                    </button>
-                  </div>
-
-                  <!-- Desktop Clean Selects -->
-                  <div class="hidden md:flex items-center gap-2 text-xs font-mono">
-                    <select id="override-start-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
-                      <!-- Options populated via JS -->
-                    </select>
-                    <span class="text-on-surface-variant dark:text-outline-variant font-bold px-1">to</span>
-                    <select id="override-end-select" onchange="handleOverrideSelectChange()" class="bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
-                      <!-- Options populated via JS -->
-                    </select>
+                  <div class="flex flex-col min-w-0">
+                    <h3 id="override-selected-date-display" class="font-headline font-bold text-base text-primary dark:text-white">Today</h3>
+                    <span id="day-editor-status" class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">Regular hours</span>
                   </div>
                 </div>
-
-                <label for="override-meeting-type-select" class="text-xs font-mono text-on-surface-variant dark:text-outline-variant">What appointment:</label>
-                <select id="override-meeting-type-select" onchange="handleOverrideMeetingTypeChange()" class="w-full bg-white dark:bg-[#2d3137] border border-outline-variant/50 dark:border-white/10 focus:border-primary rounded-xl px-3.5 py-2 font-mono text-xs font-semibold text-primary dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer transition-all">
-                  <!-- Options populated via JS -->
-                </select>
+                <button type="button" id="btn-day-reset" onclick="handleResetDay()" class="hidden shrink-0 text-xs font-mono font-bold text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-white px-2 py-1 rounded-lg transition-all">
+                  Reset to regular hours
+                </button>
               </div>
 
-              <!-- Conflict Warning: appointments already booked that fall outside the new override -->
+              <div id="day-editor-rows" class="flex flex-col gap-2">
+                <!-- Dynamically populated -->
+              </div>
+
+              <button type="button" onclick="handleAddDayRow()" class="self-start flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-bold text-primary dark:text-white hover:bg-surface-blue-tint dark:hover:bg-[#1c2a38] active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-[16px]">add</span>
+                <span>Add hours</span>
+              </button>
+
+              <!-- Conflict Warning: appointments already booked that don't fit the hours above -->
               <div id="override-conflict-warning" class="hidden flex-col gap-2.5 p-3.5 bg-error-container/15 border border-error/30 rounded-xl">
                 <div class="flex items-center gap-1.5 text-error text-xs font-mono font-bold">
                   <span class="material-symbols-outlined text-[16px]">warning</span>
-                  <span id="override-conflict-count-text">Appointments conflict with this override</span>
+                  <span id="override-conflict-count-text">Appointments don't fit these hours</span>
                 </div>
                 <div id="override-conflict-list" class="flex flex-col gap-1.5">
                   <!-- Dynamically populated -->
                 </div>
               </div>
 
-              <div class="flex items-center gap-2">
-                <button type="button" id="btn-delete-date-override" onclick="handleDeleteSelectedDateOverride()" class="hidden w-1/3 bg-error-container/20 hover:bg-error-container/40 text-error font-headline font-bold text-xs py-3 px-3 rounded-xl flex items-center justify-center gap-1.5 active:scale-95 transition-all">
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
-                  <span>Delete</span>
-                </button>
-                <button onclick="handleSaveDateOverrideForm(event)" class="flex-1 bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-sm">
-                  <span class="material-symbols-outlined text-[18px]">save</span>
-                  <span>Save Override</span>
-                </button>
-              </div>
+              <button type="button" id="btn-day-save" onclick="handleSaveDay()" disabled class="bg-secondary-container hover:bg-secondary-fixed-dim text-on-secondary-container font-headline font-bold text-sm py-3 px-6 rounded-xl flex items-center justify-center gap-2 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                <span>Save Day</span>
+              </button>
             </div>
 
-            <!-- Upcoming Overrides List Card -->
+            <!-- Edited Days List Card -->
             <div class="flex flex-col gap-3">
-              <h3 class="font-headline font-bold text-lg text-primary dark:text-white">Upcoming Overrides</h3>
+              <h3 class="font-headline font-bold text-lg text-primary dark:text-white">Upcoming Edited Days</h3>
               <div id="upcoming-overrides-list" class="flex flex-col gap-2.5">
                 <!-- Dynamically populated -->
               </div>

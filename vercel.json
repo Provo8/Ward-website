@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/leaders", "destination": "/index.html" },
+    { "source": "/schedule", "destination": "/index.html" },
+    { "source": "/schedule/:type", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" }
+  ]
+}

@@ -16,13 +16,13 @@ async function handleMeetingTypes(req, res) {
   const { action, id } = req.body;
 
   if (action === "create") {
-    const { title, description, duration_minutes, buffer_minutes, assigned_to, is_active } = req.body;
+    const { title, description, duration_minutes, buffer_minutes, assigned_to, is_active, sort_order } = req.body;
     if (!title) return res.status(400).json({ error: "Title is required." });
 
     const createRes = await supabaseServiceFetch("meeting_types", {
       method: "POST",
       headers: { Prefer: "return=representation" },
-      body: JSON.stringify([{ title, description, duration_minutes, buffer_minutes, assigned_to, is_active }]),
+      body: JSON.stringify([{ title, description, duration_minutes, buffer_minutes, assigned_to, is_active, sort_order }]),
     });
     if (!createRes.ok) throw new Error(await createRes.text());
     const created = await createRes.json();
@@ -50,6 +50,21 @@ async function handleMeetingTypes(req, res) {
       body: JSON.stringify({ is_active: Boolean(is_active) }),
     });
     if (!toggleRes.ok) throw new Error(await toggleRes.text());
+    return res.status(200).json({ success: true });
+  }
+
+  if (action === "reorder") {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: "Missing ids array." });
+
+    const results = await Promise.all(ids.map((typeId, index) =>
+      supabaseServiceFetch(`meeting_types?id=eq.${encodeURIComponent(typeId)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ sort_order: index }),
+      })
+    ));
+    const failed = results.find((r) => !r.ok);
+    if (failed) throw new Error(await failed.text());
     return res.status(200).json({ success: true });
   }
 
@@ -107,47 +122,41 @@ async function handleWeeklyAvailability(req, res) {
 }
 
 async function handleDateOverrides(req, res) {
-  const { action } = req.body;
+  const { action, override_date } = req.body;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(override_date || "")) return res.status(400).json({ error: "Missing override_date." });
+  const dateFilter = `date_overrides?override_date=eq.${override_date}`;
 
-  if (action === "save") {
-    const { override_date, is_unavailable, start_time, end_time, meeting_type_id } = req.body;
-    if (!override_date) return res.status(400).json({ error: "Missing override_date." });
+  if (action === "save_day") {
+    const { overrides } = req.body;
+    if (!Array.isArray(overrides) || overrides.length === 0) return res.status(400).json({ error: "Missing overrides array." });
 
-    const addedTypeId = is_unavailable ? null : (meeting_type_id || null);
+    const rows = overrides.map((o) => ({
+      override_date,
+      is_unavailable: Boolean(o.is_unavailable),
+      start_time: o.is_unavailable ? null : o.start_time,
+      end_time: o.is_unavailable ? null : o.end_time,
+      meeting_type_id: o.is_unavailable ? null : (o.meeting_type_id || null),
+    }));
 
-    // Hours added for one meeting type stack up; only the day's single
-    // all-types override gets replaced.
-    if (!addedTypeId) {
-      const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}&meeting_type_id=is.null`, { method: "DELETE" });
-      if (!delRes.ok) throw new Error(await delRes.text());
-    }
-
+    // Insert before deleting, so a failed save leaves the day's old hours in place.
     const insertRes = await supabaseServiceFetch("date_overrides", {
       method: "POST",
       headers: { Prefer: "return=representation" },
-      body: JSON.stringify([{
-        override_date,
-        is_unavailable: Boolean(is_unavailable),
-        start_time: is_unavailable ? null : start_time,
-        end_time: is_unavailable ? null : end_time,
-        meeting_type_id: addedTypeId,
-      }]),
+      body: JSON.stringify(rows),
     });
     if (!insertRes.ok) throw new Error(await insertRes.text());
-    const inserted = await insertRes.json();
+    const saved = await insertRes.json();
 
-    return res.status(200).json({ success: true, override: Array.isArray(inserted) ? inserted[0] : inserted });
+    const keepIds = saved.map((o) => o.id).join(",");
+    const delRes = await supabaseServiceFetch(`${dateFilter}&id=not.in.(${keepIds})`, { method: "DELETE" });
+    if (!delRes.ok) throw new Error(await delRes.text());
+
+    return res.status(200).json({ success: true, overrides: saved });
   }
 
-  if (action === "delete") {
-    const { id, override_date } = req.body;
-    if (id) {
-      const delRes = await supabaseServiceFetch(`date_overrides?id=eq.${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (!delRes.ok) throw new Error(await delRes.text());
-    } else if (override_date) {
-      const delRes = await supabaseServiceFetch(`date_overrides?override_date=eq.${encodeURIComponent(override_date)}&meeting_type_id=is.null`, { method: "DELETE" });
-      if (!delRes.ok) throw new Error(await delRes.text());
-    }
+  if (action === "reset_day") {
+    const delRes = await supabaseServiceFetch(dateFilter, { method: "DELETE" });
+    if (!delRes.ok) throw new Error(await delRes.text());
     return res.status(200).json({ success: true });
   }
 

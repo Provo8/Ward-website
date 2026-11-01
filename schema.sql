@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS meeting_types (
   created_at       TIMESTAMPTZ DEFAULT now()
 );
 
+-- Display order on the admin dashboard and the public Schedule tab
+ALTER TABLE meeting_types ADD COLUMN IF NOT EXISTS sort_order INT NOT NULL DEFAULT 0;
+
 -- Seed 7 Standard Meeting Types
 INSERT INTO meeting_types (title, description, duration_minutes, buffer_minutes, assigned_to, is_active)
 SELECT 'Ecclesiastical Endorsement', 'Please schedule your meeting for the earliest available time to prevent gaps. Submit your endorsement before your appointment. Thank you! https://honorcode.byu.edu/ecclesiastical-endorsements-and-resources', 15, 0, 'Bishopric', true
@@ -83,11 +86,12 @@ CREATE TABLE IF NOT EXISTS date_overrides (
   end_time       TIME    -- NULL when is_unavailable = true
 );
 
--- When set, this row adds extra hours on this date that only this meeting
--- type (e.g. tithing declarations) can book, on top of the day's regular
--- hours; a date can have several. NULL means the row replaces the day's
--- regular hours for every type, and a date has at most one of those.
--- Deleting the type removes its added hours.
+-- A date's rows together define that whole day (see the day editor in
+-- scheduling-admin.js). When set, a row's hours can only be booked for this
+-- meeting type (e.g. tithing declarations). NULL means any type, and any such
+-- row replaces the day's regular weekly hours; a day with no hours for all
+-- types is saved with an is_unavailable row to mark them closed. Deleting the
+-- type removes its hours.
 ALTER TABLE date_overrides ADD COLUMN IF NOT EXISTS meeting_type_id UUID REFERENCES meeting_types(id) ON DELETE CASCADE;
 
 -- ============================================================
