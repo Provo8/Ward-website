@@ -3121,6 +3121,33 @@ function applyLinkedBookingType() {
   }
 }
 
+/**
+ * The URL for where the booking wizard is: the type list, or a picked type's
+ * own page. Rescheduling and booking for someone else are tied to this
+ * session, so a link to them wouldn't mean anything and they stay on /schedule.
+ */
+function getBookingPath() {
+  const { step, selectedType, reschedulingAppointment, adminBookingMode } = PUBLIC_BOOKING_STATE;
+  return step > 1 && selectedType && !reschedulingAppointment && !adminBookingMode
+    ? `/schedule/${meetingTypeSlug(selectedType)}`
+    : '/schedule';
+}
+
+function syncBookingUrl() {
+  const current = window.location.pathname;
+  if (current !== '/schedule' && !current.startsWith('/schedule/')) return;
+
+  const path = getBookingPath();
+  if (path === current) return;
+  // Going between two addresses for the same type (an id link becoming its
+  // short link) shouldn't add a Back step.
+  if (current.startsWith('/schedule/') && path.startsWith('/schedule/')) {
+    window.history.replaceState(null, '', path);
+  } else {
+    window.history.pushState(null, '', path);
+  }
+}
+
 // "Tithing Declaration" -> "tithing-declaration"
 function meetingTypeSlug(type) {
   return (type.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -3286,6 +3313,7 @@ function goToBookingStep(step) {
   if (step > 4) step = 4;
 
   PUBLIC_BOOKING_STATE.step = step;
+  syncBookingUrl();
 
   // Show a banner (with a way back to the dashboard) while an admin is
   // booking this appointment on behalf of someone else.

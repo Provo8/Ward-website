@@ -113,6 +113,11 @@ function handleRouteChange() {
   const route = getRouteFromUrl();
   navigateTab(route, false);
 
+  // Back from a meeting type's page returns to the list of types
+  if (route === 'schedule' && PUBLIC_BOOKING_STATE.step > 1 && getBookingPath() !== '/schedule') {
+    goToBookingStep(1);
+  }
+
   // Swap an old-style #tab URL for the tab's real one
   if (window.location.hash) {
     const bookingLink = /^schedule\?type=(.+)$/.exec(route);
@@ -156,8 +161,9 @@ function navigateTab(tabId, updateUrl = true) {
   }
 
   // Update URL if requested
-  if (updateUrl && window.location.pathname !== TAB_PATHS[tabId]) {
-    window.history.pushState(null, '', TAB_PATHS[tabId]);
+  const tabPath = tabId === 'schedule' ? getBookingPath() : TAB_PATHS[tabId];
+  if (updateUrl && window.location.pathname !== tabPath) {
+    window.history.pushState(null, '', tabPath);
   }
 
   document.title = TAB_TITLES[tabId] ? `${TAB_TITLES[tabId]} | Provo YSA 8th Ward` : SITE_TITLE;
